@@ -1,0 +1,7 @@
+*.pyc
+*.swp
+*.py~
+build
+dist
+python_omgeo.egg-info
+docs
