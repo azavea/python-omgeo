@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import os
 import subprocess
 from setuptools import setup, find_packages, Command
@@ -15,7 +16,7 @@ class RunTests(Command):
 
     def run(self):
         run_tests_script_path = os.path.join(os.path.dirname(__file__), 'omgeo', 'run_tests.py')
-        subprocess.call([run_tests_script_path])
+        sys.exit(subprocess.call([run_tests_script_path]))
 
     def initialize_options(self):
         pass

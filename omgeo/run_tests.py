@@ -44,4 +44,6 @@ if __name__ == "__main__":
             if inspect.isclass(class_obj):
                 suite.addTest(unittest.makeSuite(class_obj))
 
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    results = unittest.TextTestRunner(verbosity=2).run(suite)
+    # Return the failure count as the exit code of the process. No failures = clean exit.
+    sys.exit(len(results.failures))
