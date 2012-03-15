@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import unittest
 from omgeo import Geocoder
 from omgeo.places import Viewbox, PlaceQuery, Candidate
@@ -7,7 +8,7 @@ from omgeo.processors.preprocessors import CountryPreProcessor, RequireCountry, 
 from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename, AttrSorter, AttrReverseSorter, UseHighScoreIfAtLeast, GroupBy, ScoreSorter
 
 # Required to run the tests for BING
-BING_API_KEY = None
+BING_MAPS_API_KEY = os.getenv("BING_MAPS_API_KEY")
 
 class OmgeoTestCase(unittest.TestCase):
     def assertEqual_(self, output, expected):
@@ -55,7 +56,7 @@ class GeocoderTest(OmgeoTestCase):
         self.g = Geocoder()
         self.g_esri_na = Geocoder([['omgeo.services.EsriNA',{}]])
         self.g_esri_eu = Geocoder([['omgeo.services.EsriEU',{}]])
-        self.g_bing = Geocoder([['omgeo.services.Bing', {'settings':{'api_key':BING_API_KEY}}]])
+        self.g_bing = Geocoder([['omgeo.services.Bing', {'settings':{'api_key':BING_MAPS_API_KEY}}]])
         self.g_nom = Geocoder([['omgeo.services.Nominatim',{}]])
 
     def tearDown(self):
@@ -78,7 +79,7 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g.geocode(PlaceQuery('8 Kirkbride Rd'))
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
-    @unittest.skipIf(BING_API_KEY is None, 'Enter a Bing API key to run the bing tests')
+    @unittest.skipIf(BING_MAPS_API_KEY is None, 'Enter a Bing Maps API key to run the bing tests')
     def test_geocode_bing(self):
         candidates = self.g_bing.geocode(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
