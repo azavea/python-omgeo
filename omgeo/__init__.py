@@ -46,12 +46,15 @@ class Geocoder():
 
     
     def _get_service_by_name(self, service_name):
-        module, separator, class_name = service_name.rpartition('.')
-        m = __import__( module )
-        path = service_name.split('.')[1:]
-        for p in path:
-            m = getattr(m, p)
-        return m
+        try:
+            module, separator, class_name = service_name.rpartition('.')
+            m = __import__( module )
+            path = service_name.split('.')[1:]
+            for p in path:
+                m = getattr(m, p)
+            return m
+        except:
+            raise Exception("No geocoder with the name %s" % service_name)
 
     def add_source(self, source):
         geocode_service = self._get_service_by_name(source[0])
