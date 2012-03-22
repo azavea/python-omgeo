@@ -92,7 +92,36 @@ class Bing(GeocodeService):
             returned_candidates.append(c)
         return returned_candidates
 
-class EsriEU(GeocodeService):
+class EsriGeocodeService(GeocodeService):
+    """
+    Settings used by an EsriGeocodeService object may include:
+    ============================================================
+    api_key --  The API key used to access ESRI premium services.  If this
+                key is present, the object's endpoint will be set to use
+                premium tasks.
+    """
+
+    def __init__(self, preprocessors=None, postprocessors=None, settings={}):
+        """
+        ESRI services can be used as free services or "premium tasks".  If an
+        ESRI service is created with an api_key in the settings, we'll set this
+        service up with the premium task URL.
+        """
+        GeocodeService.__init__(self, preprocessors, postprocessors, settings)
+
+        service_url = 'http://tasks.arcgisonline.com/ArcGIS'
+        
+        if 'api_key' in self._settings:
+            service_url = 'http://premiumtasks.arcgisonline.com/server'
+
+        self._endpoint = service_url + self._task_endpoint
+
+    def append_token_if_needed(self, query_dict):
+        if 'api_key' in self._settings:
+            query_dict.update({'token': self._settings['api_key']})
+        return query_dict
+
+class EsriEU(EsriGeocodeService):
     """
     Class to geocode using the ESRI TA_Address_EU locator service.
 
@@ -149,7 +178,7 @@ class EsriEU(GeocodeService):
     _postprocessors.append(GroupBy('match_addr'))
     _postprocessors.append(ScoreSorter())
 
-    _endpoint = 'http://tasks.arcgisonline.com/ArcGIS/rest/services/Locators/TA_Address_EU/GeocodeServer/findAddressCandidates'
+    _task_endpoint = '/rest/services/Locators/TA_Address_EU/GeocodeServer/findAddressCandidates'
             
     def _geocode(self, location):
         query = {
@@ -159,6 +188,8 @@ class EsriEU(GeocodeService):
             'Country':location.country,
             'outfields':'Loc_name',
             'f':'json'}
+
+        query = self.append_token_if_needed(query)
 
         response_obj = self._get_json_obj(self._endpoint, query)
         if response_obj is False: return []
@@ -180,7 +211,7 @@ class EsriEU(GeocodeService):
             return []
         return returned_candidates
 
-class EsriNA(GeocodeService):
+class EsriNA(EsriGeocodeService):
     """
     Class to geocode using the ESRI TA_Address_NA_10 locator service.
     """
@@ -205,7 +236,7 @@ class EsriNA(GeocodeService):
     _postprocessors.append(GroupBy('match_addr'))
     _postprocessors.append(ScoreSorter())
 
-    _endpoint = 'http://tasks.arcgisonline.com/ArcGIS/rest/services/Locators/TA_Address_NA_10/GeocodeServer/findAddressCandidates'
+    _task_endpoint = '/rest/services/Locators/TA_Address_NA_10/GeocodeServer/findAddressCandidates'
             
     def _geocode(self, location):
         query = {
@@ -217,6 +248,8 @@ class EsriNA(GeocodeService):
             'Country':location.country,
             'outfields':'Loc_name,Addr_Type,Zip4_Type',
             'f':'json'}
+
+        query = self.append_token_if_needed(query)
 
         response_obj = self._get_json_obj(self._endpoint, query)
         if response_obj is False: return [] 

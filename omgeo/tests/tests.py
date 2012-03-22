@@ -9,6 +9,7 @@ from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename,
 
 # Required to run the tests for BING
 BING_MAPS_API_KEY = os.getenv("BING_MAPS_API_KEY")
+ESRI_MAPS_API_KEY = os.getenv("ESRI_MAPS_API_KEY")
 
 class OmgeoTestCase(unittest.TestCase):
     def assertEqual_(self, output, expected):
@@ -46,16 +47,23 @@ class GeocoderTest(OmgeoTestCase):
         self.pq['quebec_hyphenated'] = PlaceQuery('227-227A Rue Commerciale, Saint-Louis-du-Ha! Ha! QC')
         # European Addresses:
         self.pq['london_pieces'] = PlaceQuery(address='31 Maiden Lane', city='London', country='UK')
-        self.pq['london_one_line'] = PlaceQuery('31 Maiden Lane, London WC2E 7', country='UK')
+        self.pq['london_one_line'] = PlaceQuery('31 Maiden Lane, London WC2E', country='UK')
         self.pq['london_pieces_hyphenated'] = PlaceQuery(address='31-32 Maiden Lane', city='London', country='UK')
-        self.pq['london_one_line_hyphenated'] = PlaceQuery('31-32 Maiden Lane London WC2E 7', country='UK')
+        self.pq['london_one_line_hyphenated'] = PlaceQuery('31-32 Maiden Lane London WC2E', country='UK')
         # Oceanic Addresses:
         self.pq['karori'] = PlaceQuery('102 Karori Road Karori Wellington', country='NZ')
 
         # Geocoder objects
         self.g = Geocoder()
-        self.g_esri_na = Geocoder([['omgeo.services.EsriNA',{}]])
-        self.g_esri_eu = Geocoder([['omgeo.services.EsriEU',{}]])
+        if ESRI_MAPS_API_KEY is not None:
+            self.g_esri_na = Geocoder([['omgeo.services.EsriNA',
+                    {'settings':{'api_key':ESRI_MAPS_API_KEY}}]])
+            self.g_esri_eu = Geocoder([['omgeo.services.EsriEU',
+                    {'settings':{'api_key':ESRI_MAPS_API_KEY}}]])
+        else:
+            self.g_esri_na = Geocoder([['omgeo.services.EsriNA', {}]])
+            self.g_esri_eu = Geocoder([['omgeo.services.EsriEU', {}]])
+
         self.g_bing = Geocoder([['omgeo.services.Bing', {'settings':{'api_key':BING_MAPS_API_KEY}}]])
         self.g_nom = Geocoder([['omgeo.services.Nominatim',{}]])
 
@@ -104,11 +112,11 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(len(self.pq), queries_with_results, 'Got results for %d of %d queries.' % (queries_with_results, len(self.pq)))
 
     def test_geocode_results_all(self):
-        self._test_geocode_results_all()
-    """
-    def test_nom_with_all(self):
-        self._test_geocode_results_all(geocoder=self.g_nom)
-    """
+        if BING_MAPS_API_KEY is not None:
+            self.g.add_source(['omgeo.services.Bing',
+                     {'settings':{'api_key':BING_MAPS_API_KEY}}])
+        self._test_geocode_results_all(geocoder=self.g)
+
 class GeocoderProcessorTest(OmgeoTestCase):
     def setUp(self):
         # places
