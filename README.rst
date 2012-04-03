@@ -7,6 +7,7 @@ supported geocoders:
 * ESRI's North American locator
 * ESRI's European address locator
 * Nominatim
+* Citizen Atlas (Washington DC)
 
 
 See the source for more info.  Here's a quick example.
