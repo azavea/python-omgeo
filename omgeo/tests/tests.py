@@ -66,6 +66,7 @@ class GeocoderTest(OmgeoTestCase):
 
         self.g_bing = Geocoder([['omgeo.services.Bing', {'settings':{'api_key':BING_MAPS_API_KEY}}]])
         self.g_nom = Geocoder([['omgeo.services.Nominatim',{}]])
+        self.g_dc = Geocoder([['omgeo.services.CitizenAtlas', {}]])
 
     def tearDown(self):
         pass
@@ -91,6 +92,16 @@ class GeocoderTest(OmgeoTestCase):
     def test_geocode_bing(self):
         candidates = self.g_bing.geocode(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
+
+    def test_geocode_dc_address(self):
+        candidates = self.g_dc.geocode(PlaceQuery('1600 pennsylvania'))
+        self.assertTrue(len(candidates) > 0, 'No candidates returned.')
+        self.assertTrue(candidates[0].locator == 'DC Address', 'Expected 1600 pennsylvania to be an address match')
+
+    def test_geocode_dc_intersection(self):
+        candidates = self.g_dc.geocode(PlaceQuery('h and 15th'))
+        self.assertTrue(len(candidates) > 0, 'No candidates returned.')
+        self.assertTrue(candidates[0].locator == 'DC Intersection', 'h and 15th to be an intersection match')
 
     def test_geocode_dupepicker(self):
         candidates = self.g.geocode(self.pq['ambiguous_azavea'])
