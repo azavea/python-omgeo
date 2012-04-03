@@ -1,6 +1,7 @@
 import copy
 from urllib import urlencode, urlopen
 from json import loads
+from xml.dom import minidom
 
 class GeocodeService():
     """
@@ -87,6 +88,19 @@ class GeocodeService():
         except ValueError as ex:
             raise Exception('Could not decode JSON: %s' % ex) #TODO: log this error internally 
             return False
+
+    def _get_xml_doc(self, endpoint, query):
+        """
+        Return False if connection could not be made.
+        Otherwise, return a minidom Document.
+        """
+        try:
+            response = urlopen('%s?%s' % (endpoint, urlencode(query)))
+        except:
+            raise Exception('Could not connect') #TODO: log this error internally (could not connect, etc)
+            return False
+        if response.code != 200: return False
+        return minidom.parse(response)
 
     def _geocode(self, place_query):
         """
