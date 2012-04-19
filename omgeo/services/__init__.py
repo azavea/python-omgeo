@@ -3,6 +3,8 @@ from omgeo.places import Candidate
 from omgeo.processors.preprocessors import CountryPreProcessor, RequireCountry, ParseSingleLine, ReplaceRangeWithNumber
 from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename, AttrSorter, AttrMigrator, UseHighScoreIfAtLeast, GroupBy, ScoreSorter
 
+from suds.client import Client
+
 class Bing(GeocodeService):
     """
     Class to geocode using Bing services:
@@ -211,6 +213,113 @@ class EsriEU(EsriGeocodeService):
             return []
         return returned_candidates
 
+class EsriNASoap(EsriGeocodeService):
+    """
+    Use the SOAP version of the ArcGIS-10-style Geocoder for North America
+    """
+
+    _preprocessors = []
+    _preprocessors.append(CountryPreProcessor(['US', 'CA']))
+    
+    _postprocessors = []
+    _postprocessors.append(UseHighScoreIfAtLeast(99.8))
+    _postprocessors.append(GroupBy('match_addr'))
+    _postprocessors.append(ScoreSorter())
+
+    _task_endpoint = '/services/Locators/TA_Address_NA_10/GeocodeServer'
+    _wkid = 4326
+
+    client = None
+    fields = None
+
+    mapping = {
+        'Loc_name': 'locator',
+        'Match_addr': 'match_addr',
+        'Score': 'score',
+        'X': 'x',
+        'Y': 'y',
+    }
+
+    def __init__(self, preprocessors=None, postprocessors=None, settings={}):
+        EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
+        
+        if 'api_key' in self._settings:
+            self._endpoint = self._endpoint + "?token=" + self._settings['api_key']
+            self.client = Client(self._endpoint + '&wsdl')
+            # WSDL's url doesn't set your token so we have to do that, too.
+            self.client.set_options(location=self._endpoint)
+        else:
+            self.client = Client(self._endpoint + '?wsdl')
+
+        self.fields = self.client.service.GetCandidateFields()
+
+    def _get_property_set_properties(self, location):
+        props = []
+        for k, v in location.iteritems():
+            ps = self.client.factory.create('PropertySetProperty')
+            ps.Key = k
+            ps.Value = v
+            props.append(ps)
+        return props
+
+    
+    def _get_candidates_from_record_set(self, record_set):
+        """
+        Given a RecordSet, create a list of Candidate objects for processing
+        """
+        candidates = []
+        for record in record_set.Records.Record:
+            
+            c_dict = {}
+
+            for field, value in zip(record_set.Fields.FieldArray.Field,
+                        record.Values.Value):
+                    
+                if field.Name in self.mapping:
+                    c_dict[self.mapping[field.Name]] = value
+                
+            candidate = Candidate(**c_dict)
+            candidate.wkid = self._wkid
+            candidate.geoservice = self.__class__.__name__
+            candidates.append(candidate)
+        return candidates
+
+    def _geocode(self, location):
+        address = self.client.factory.create('PropertySet')
+
+        if location.query:
+            # Single line geocoding
+            location_dict = {
+                'Single Line Input': location.query
+            }
+        else:
+            # Split address
+            location_dict = {
+                'Address': location.address,
+                'City': location.city,
+                'Country': location.country,
+                'Zip': location.postal
+            }
+
+            # Check for full postal codes
+            if location.country.lower == 'us' and len(location.postal > 9):
+                location_dict['Zip'] = location.postal[:5]
+                location_dict['Zip4'] = location.postal[-4:]
+
+        address.PropertyArray.PropertySetProperty.append(
+                self._get_property_set_properties(location_dict))
+
+        result_set = self.client.service.FindAddressCandidates(Address=address)
+
+        try:
+            candidates = self._get_candidates_from_record_set(result_set)
+        except AttributeError:
+            if result_set.Records == "":
+                return []
+
+        return candidates
+        
+        
 class EsriNA(EsriGeocodeService):
     """
     Class to geocode using the ESRI TA_Address_NA_10 locator service.

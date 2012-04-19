@@ -26,7 +26,7 @@ class RunTests(Command):
 
 setup(
     name="python-omgeo",
-    version="1.2",
+    version="1.3",
     description="A Python Geocoding Library",
     author="Azavea, Inc.",
     author_email="info@azavea.com",
@@ -41,5 +41,8 @@ setup(
         'Topic :: Scientific/Engineering :: GIS',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 2.6'
+    ],
+    install_requires=[
+        'suds==0.4'
     ]
 )

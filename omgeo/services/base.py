@@ -2,6 +2,11 @@ import copy
 from urllib import urlencode, urlopen
 from json import loads
 from xml.dom import minidom
+from datetime import datetime
+from traceback import format_exc
+import logging
+
+logger = logging.getLogger(__name__)
 
 class GeocodeService():
     """
@@ -121,7 +126,17 @@ class GeocodeService():
             processed_pq = p.process(processed_pq)
             if processed_pq == False: return []
         
-        candidates = self._geocode(processed_pq)
+    
+        try:
+            start = datetime.now()
+            candidates = self._geocode(processed_pq)
+            end = datetime.now()
+            logger.info('GEOCODER: %s; results %d; time %s;' %
+                (self.__class__.__name__, len(candidates), end-start))
+        except:
+            logger.info('GEOCODER: %s; Exception when attempting to geocode %s' %
+                (self.__class__.__name__, format_exc()))
+            candidates = []
 
         for p in self._postprocessors: # apply universal candidate postprocessing
             candidates = p.process(candidates) # merge lists
@@ -129,4 +144,4 @@ class GeocodeService():
         return candidates
     
     def get_service_name(self):
-        return self.__name__
+        return self.__class__.__name__

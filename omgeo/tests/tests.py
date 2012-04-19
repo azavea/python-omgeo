@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os
@@ -67,6 +68,7 @@ class GeocoderTest(OmgeoTestCase):
         self.g_bing = Geocoder([['omgeo.services.Bing', {'settings':{'api_key':BING_MAPS_API_KEY}}]])
         self.g_nom = Geocoder([['omgeo.services.Nominatim',{}]])
         self.g_dc = Geocoder([['omgeo.services.CitizenAtlas', {}]])
+        self.g_esri_soap = Geocoder([['omgeo.services.EsriNASoap', {}]])
 
     def tearDown(self):
         pass
@@ -75,6 +77,10 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g.geocode(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
+
+    def test_geocode_esri_na_us_soap(self):
+        candidates = self.g_esri_soap.geocode(PlaceQuery('340 N 12th St., Philadelphia, PA, US'))
+        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     def test_geocode_esri_na_us(self):
         candidates = self.g_esri_na.geocode(self.pq['alpha_774_W_Central_Ave_Rear'])
@@ -107,7 +113,12 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g.geocode(self.pq['ambiguous_azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
-    def _test_geocode_results_all(self, verbosity=0, geocoder=Geocoder()):
+    def _test_geocode_results_all(self, verbosity=2, geocoder=Geocoder(),
+            expected_results=15):
+        """
+        Geocode a list of addresses.  Some of these only work with Bing so 
+        fewer results are expected when Bing is not used as a geocoder
+        """
         queries_with_results = 0
         for place in self.pq:
             if verbosity > 1: print '\n%s' % place
@@ -120,13 +131,15 @@ class GeocoderTest(OmgeoTestCase):
                 if verbosity > 1: print 'Input:  %s' % self.pq[place].query
                 for x in ['Output: %r (%s %s)' % (c.match_addr, c.geoservice, [c.locator, c.score, c.confidence, c.entity]) for c in candidates]:
                     if verbosity > 1: print x
-        self.assertEqual(len(self.pq), queries_with_results, 'Got results for %d of %d queries.' % (queries_with_results, len(self.pq)))
+        self.assertEqual(expected_results, queries_with_results, 'Got results for %d of %d queries.' % (queries_with_results, len(self.pq)))
 
     def test_geocode_results_all(self):
         if BING_MAPS_API_KEY is not None:
             self.g.add_source(['omgeo.services.Bing',
                      {'settings':{'api_key':BING_MAPS_API_KEY}}])
-        self._test_geocode_results_all(geocoder=self.g)
+
+        self.g.add_source(['omgeo.services.EsriNASoap', {}])
+        self._test_geocode_results_all(geocoder=self.g, expected_results=21)
 
 class GeocoderProcessorTest(OmgeoTestCase):
     def setUp(self):
