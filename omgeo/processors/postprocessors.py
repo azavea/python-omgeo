@@ -132,6 +132,7 @@ class AttrSorter(PostProcessor):
     Arguments:
     ==========
     ordered_values   --  A list of values placed in the desired order.
+    attr             --  The attribute on which to sort.
     """
 
     def __init__(self, ordered_values=[], attr='locator'):
