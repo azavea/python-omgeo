@@ -3,6 +3,8 @@
 
 import os
 import unittest
+import logging
+
 from omgeo import Geocoder
 from omgeo.places import Viewbox, PlaceQuery, Candidate
 from omgeo.processors.preprocessors import CountryPreProcessor, RequireCountry, ParseSingleLine, ReplaceRangeWithNumber
@@ -11,6 +13,8 @@ from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename,
 # Required to run the tests for BING
 BING_MAPS_API_KEY = os.getenv("BING_MAPS_API_KEY")
 ESRI_MAPS_API_KEY = os.getenv("ESRI_MAPS_API_KEY")
+
+logger = logging.getLogger(__name__)
 
 class OmgeoTestCase(unittest.TestCase):
     def assertEqual_(self, output, expected):
@@ -119,18 +123,24 @@ class GeocoderTest(OmgeoTestCase):
         Geocode a list of addresses.  Some of these only work with Bing so 
         fewer results are expected when Bing is not used as a geocoder
         """
+        if verbosity > 1: 
+            logger.setLevel(logging.INFO)
+
         queries_with_results = 0
         for place in self.pq:
-            if verbosity > 1: print '\n%s' % place
-            if verbosity > 1: print len(place) * '-'
+            logging.info(place)
+            logging.info(len(place) * '-')
             candidates = geocoder.geocode(self.pq[place])
             if len(candidates) == 0:
-                if verbosity > 1: print 'Input:  %s\n(no results)' % self.pq[place].query
+                logging.info('Input: %s\n(no results)' % self.pq[place].query)
             else:
                 queries_with_results += 1
-                if verbosity > 1: print 'Input:  %s' % self.pq[place].query
-                for x in ['Output: %r (%s %s)' % (c.match_addr, c.geoservice, [c.locator, c.score, c.confidence, c.entity]) for c in candidates]:
-                    if verbosity > 1: print x
+                logging.info('Input:  %s' % self.pq[place].query)
+                logging.info(map(lambda c: 'Output: %r (%s %s)\n' %
+                    (c.match_addr, 
+                    c.geoservice, 
+                    [c.locator, c.score, c.confidence, c.entity]),
+                    candidates))
         self.assertEqual(expected_results, queries_with_results, 'Got results for %d of %d queries.' % (queries_with_results, len(self.pq)))
 
     def test_geocode_results_all(self):

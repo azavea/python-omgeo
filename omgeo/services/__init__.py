@@ -5,6 +5,10 @@ from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename,
 
 from suds.client import Client
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class Bing(GeocodeService):
     """
     Class to geocode using Bing services:
@@ -209,11 +213,12 @@ class EsriEU(EsriGeocodeService):
                 c.geoservice = self.__class__.__name__
                 returned_candidates.append(c)
         except KeyError as ex:
-            print "I'm not what you expected, but hey, I'm still JSON! %s" % ex #TODO: put on error stack
+            logger.warning('Received unusual JSON result from geocode: %s, %s' %
+                (response_obj, ex))
             return []
         return returned_candidates
 
-class EsriNASoap(EsriGeocodeService):
+class EsriNASoap(EsriSoapGeocoder):
     """
     Use the SOAP version of the ArcGIS-10-style Geocoder for North America
     """

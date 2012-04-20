@@ -88,7 +88,6 @@ class AttrRename(PostProcessor):
             elif _cc(attr_val) in [_cc(a) for a in self.attr_map]:
                 map_key = [k for k in self.attr_map if _cc(k) == _cc(attr_val)][0]
                 setattr(c, self.attr, self.attr_map[map_key])
-            #else: print 'Warning: %s not found in map.' % attr_val
             new_candidates.append(c)
         return new_candidates
 
@@ -205,7 +204,6 @@ class AttrMigrator(PostProcessor):
             elif _cc(from_val) in [_cc(a) for a in self.attr_map]:
                 map_key = [k for k in self.attr_map if _cc(k) == _cc(from_val)][0]
                 setattr(c, self.attr_to, self.attr_map[map_key])
-            #else: print 'Warning: %s not found in map.' % attr_val
             new_candidates.append(c)
         return new_candidates
 
