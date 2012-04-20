@@ -373,7 +373,7 @@ class EsriNASoap(EsriSoapGeocoder):
         return candidates
         
         
-class EsriNA(EsriGeocodeService):
+class EsriNAGeocodeService():
     """
     Class to geocode using the ESRI TA_Address_NA_10 locator service.
     """
@@ -385,21 +385,30 @@ class EsriNA(EsriGeocodeService):
         },
     }
 
-    _preprocessors = []
-    """Preprocessors to use with this geocoder service, in order of desired execution."""
-    _preprocessors.append(CountryPreProcessor(['US', 'CA']))
-    
-    _postprocessors = []
-    """Postprocessors to use with this geocoder service, in order of desired execution."""
-    _postprocessors.append(AttrRename('locator', ATTR_MAP['locator']))
-    _postprocessors.append(AttrFilter(['rooftop', 'interpolation'], 'locator'))
-    _postprocessors.append(AttrSorter(['rooftop', 'interpolation'], 'locator'))
-    _postprocessors.append(UseHighScoreIfAtLeast(99.8))
-    _postprocessors.append(GroupBy('match_addr'))
-    _postprocessors.append(ScoreSorter())
+    def __init__(self, preprocessors=None, postprocessors=None, settings={}):
+        """
+        ESRI services can be used as free services or "premium tasks".  If an
+        ESRI service is created with an api_key in the settings, we'll set this
+        service up with the premium task URL.
+        """
+        """Preprocessors to use with this geocoder service, in order of desired execution."""
+        self._preprocessors.append(CountryPreProcessor(['US', 'CA']))
+        
+        """Postprocessors to use with this geocoder service, in order of desired execution."""
+        self._postprocessors.append(AttrRename('locator', self.ATTR_MAP['locator']))
+        self._postprocessors.append(AttrFilter(['rooftop', 'interpolation'], 'locator'))
+        self._postprocessors.append(AttrSorter(['rooftop', 'interpolation'], 'locator'))
+        self._postprocessors.append(UseHighScoreIfAtLeast(99.8))
+        self._postprocessors.append(GroupBy('match_addr'))
+        self._postprocessors.append(ScoreSorter())
 
+class EsriNA(EsriGeocodeService, EsriNAGeocodeService):
     _task_endpoint = '/rest/services/Locators/TA_Address_NA_10/GeocodeServer/findAddressCandidates'
             
+    def __init__(self, preprocessors=None, postprocessors=None, settings={}):
+        EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
+        EsriNAGeocodeService.__init__(self)
+
     def _geocode(self, location):
         query = {
             'SingleLine':location.query,
