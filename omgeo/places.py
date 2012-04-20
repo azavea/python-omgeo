@@ -119,3 +119,9 @@ class Candidate():
             if k not in ['self', 'kwargs']: setattr(self, k, locals()[k])
         for k in kwargs:
             setattr(self, k, kwargs[k])
+
+    def __unicode__(self):
+        return '%s - (%s, %s) via %s' % (self.match_addr, self.x, self.y, self.locator)
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
