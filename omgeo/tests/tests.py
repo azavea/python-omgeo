@@ -59,7 +59,15 @@ class GeocoderTest(OmgeoTestCase):
         self.pq['karori'] = PlaceQuery('102 Karori Road Karori Wellington', country='NZ')
 
         # Geocoder objects
-        self.g = Geocoder()
+        self.g = Geocoder([
+            ['omgeo.services.Nominatim',{}],
+            ['omgeo.services.CitizenAtlas', {}],
+            ['omgeo.services.EsriNASoap', {}],
+            ['omgeo.services.EsriEUSoap', {}],
+            ['omgeo.services.EsriNA', {}],
+            ['omgeo.services.EsriEU', {}]
+        ])
+
         if ESRI_MAPS_API_KEY is not None:
             self.g_esri_na = Geocoder([['omgeo.services.EsriNA',
                     {'settings':{'api_key':ESRI_MAPS_API_KEY}}]])
@@ -72,7 +80,8 @@ class GeocoderTest(OmgeoTestCase):
         self.g_bing = Geocoder([['omgeo.services.Bing', {'settings':{'api_key':BING_MAPS_API_KEY}}]])
         self.g_nom = Geocoder([['omgeo.services.Nominatim',{}]])
         self.g_dc = Geocoder([['omgeo.services.CitizenAtlas', {}]])
-        self.g_esri_soap = Geocoder([['omgeo.services.EsriNASoap', {}]])
+        self.g_esri_na_soap = Geocoder([['omgeo.services.EsriNASoap', {}]])
+        self.g_esri_eu_soap = Geocoder([['omgeo.services.EsriEUSoap', {}]])
 
     def tearDown(self):
         pass
@@ -83,11 +92,16 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
 
     def test_geocode_esri_na_us_soap(self):
-        candidates = self.g_esri_soap.geocode(PlaceQuery('340 N 12th St., Philadelphia, PA, US'))
+        candidates = self.g_esri_na_soap.geocode(PlaceQuery('340 N 12th St., Philadelphia, PA, US'))
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     def test_geocode_esri_na_us(self):
         candidates = self.g_esri_na.geocode(self.pq['alpha_774_W_Central_Ave_Rear'])
+        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
+
+    def test_geocode_esri_eu_soap(self):
+        candidates = self.g_esri_eu_soap.geocode(PlaceQuery(
+            address='31 Maiden Lane', city='London', country='UK'))
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     def test_geocode_esri_na_nz(self):
@@ -148,7 +162,6 @@ class GeocoderTest(OmgeoTestCase):
             self.g.add_source(['omgeo.services.Bing',
                      {'settings':{'api_key':BING_MAPS_API_KEY}}])
 
-        self.g.add_source(['omgeo.services.EsriNASoap', {}])
         self._test_geocode_results_all(geocoder=self.g, expected_results=21)
 
 class GeocoderProcessorTest(OmgeoTestCase):

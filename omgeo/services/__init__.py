@@ -127,7 +127,66 @@ class EsriGeocodeService(GeocodeService):
             query_dict.update({'token': self._settings['api_key']})
         return query_dict
 
-class EsriEU(EsriGeocodeService):
+class EsriSoapGeocoder(EsriGeocodeService):
+    # Our suds client
+    _client = None
+
+    # The CandidateFields returned by an ESRI geocoder. The result rows are
+    # ordered just as they are - there are no 'keys' in the results
+    _fields = None
+
+    # Used to map the returned results' fields to a Candidate's fields
+    _mapping = {}
+
+    def __init__(self, preprocessors=None, postprocessors=None, settings={}):
+        # First, initialize the usual geocoder stuff like settings and
+        # processors
+        EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
+        
+        # Set up the URLs necessary to get soap and create a suds clients
+        if 'api_key' in self._settings:
+            self._endpoint = self._endpoint + "?token=" + self._settings['api_key']
+            self._client = Client(self._endpoint + '&wsdl')
+            # WSDL's url doesn't set your token so we have to do that, too.
+            self._client.set_options(location=self._endpoint)
+        else:
+            self._client = Client(self._endpoint + '?wsdl')
+
+        # Grab the candidate fields for later - we'll use them in every call
+        self.fields = self._client.service.GetCandidateFields()
+
+    def _get_property_set_properties(self, location_dict):
+        props = []
+        for k, v in location_dict.iteritems():
+            ps = self._client.factory.create('PropertySetProperty')
+            ps.Key = k
+            ps.Value = v
+            props.append(ps)
+        return props
+
+    
+    def _get_candidates_from_record_set(self, record_set):
+        """
+        Given a RecordSet, create a list of Candidate objects for processing
+        """
+        candidates = []
+        for record in record_set.Records.Record:
+            
+            c_dict = {}
+
+            for field, value in zip(record_set.Fields.FieldArray.Field,
+                        record.Values.Value):
+                    
+                if field.Name in self._mapping:
+                    c_dict[self._mapping[field.Name]] = value
+                
+            candidate = Candidate(**c_dict)
+            candidate.wkid = self._wkid
+            candidate.geoservice = self.__class__.__name__
+            candidates.append(candidate)
+        return candidates
+
+class EsriEuGeocoder():
     """
     Class to geocode using the ESRI TA_Address_EU locator service.
 
@@ -184,6 +243,42 @@ class EsriEU(EsriGeocodeService):
     _postprocessors.append(GroupBy('match_addr'))
     _postprocessors.append(ScoreSorter())
 
+class EsriEUSoap(EsriEuGeocoder, EsriSoapGeocoder):
+    _task_endpoint = '/services/Locators/TA_Address_EU/GeocodeServer'
+
+    _mapping = {
+        'Loc_name': 'locator',
+        'Match_addr': 'match_addr',
+        'Score': 'score',
+        'X': 'x',
+        'Y': 'y',
+    }
+
+    def _geocode(self, location):
+        address = self._client.factory.create('PropertySet')
+
+        # Split address
+        location_dict = {
+            'Address': location.address,
+            'City': location.city,
+            'Postcode': location.postal,
+            'Country': location.country
+        }
+
+        address.PropertyArray.PropertySetProperty.append(
+                self._get_property_set_properties(location_dict))
+
+        result_set = self._client.service.FindAddressCandidates(Address=address)
+
+        try:
+            candidates = self._get_candidates_from_record_set(result_set)
+        except AttributeError:
+            if result_set.Records == "":
+                return []
+
+        return candidates
+
+class EsriEU(EsriGeocodeService, EsriEuGeocoder):
     _task_endpoint = '/rest/services/Locators/TA_Address_EU/GeocodeServer/findAddressCandidates'
             
     def _geocode(self, location):
@@ -233,11 +328,8 @@ class EsriNASoap(EsriSoapGeocoder):
 
     _task_endpoint = '/services/Locators/TA_Address_NA_10/GeocodeServer'
     _wkid = 4326
-
-    client = None
-    fields = None
-
-    mapping = {
+    
+    _mapping = {
         'Loc_name': 'locator',
         'Match_addr': 'match_addr',
         'Score': 'score',
@@ -245,52 +337,8 @@ class EsriNASoap(EsriSoapGeocoder):
         'Y': 'y',
     }
 
-    def __init__(self, preprocessors=None, postprocessors=None, settings={}):
-        EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
-        
-        if 'api_key' in self._settings:
-            self._endpoint = self._endpoint + "?token=" + self._settings['api_key']
-            self.client = Client(self._endpoint + '&wsdl')
-            # WSDL's url doesn't set your token so we have to do that, too.
-            self.client.set_options(location=self._endpoint)
-        else:
-            self.client = Client(self._endpoint + '?wsdl')
-
-        self.fields = self.client.service.GetCandidateFields()
-
-    def _get_property_set_properties(self, location):
-        props = []
-        for k, v in location.iteritems():
-            ps = self.client.factory.create('PropertySetProperty')
-            ps.Key = k
-            ps.Value = v
-            props.append(ps)
-        return props
-
-    
-    def _get_candidates_from_record_set(self, record_set):
-        """
-        Given a RecordSet, create a list of Candidate objects for processing
-        """
-        candidates = []
-        for record in record_set.Records.Record:
-            
-            c_dict = {}
-
-            for field, value in zip(record_set.Fields.FieldArray.Field,
-                        record.Values.Value):
-                    
-                if field.Name in self.mapping:
-                    c_dict[self.mapping[field.Name]] = value
-                
-            candidate = Candidate(**c_dict)
-            candidate.wkid = self._wkid
-            candidate.geoservice = self.__class__.__name__
-            candidates.append(candidate)
-        return candidates
-
     def _geocode(self, location):
-        address = self.client.factory.create('PropertySet')
+        address = self._client.factory.create('PropertySet')
 
         if location.query:
             # Single line geocoding
@@ -314,7 +362,7 @@ class EsriNASoap(EsriSoapGeocoder):
         address.PropertyArray.PropertySetProperty.append(
                 self._get_property_set_properties(location_dict))
 
-        result_set = self.client.service.FindAddressCandidates(Address=address)
+        result_set = self._client.service.FindAddressCandidates(Address=address)
 
         try:
             candidates = self._get_candidates_from_record_set(result_set)
