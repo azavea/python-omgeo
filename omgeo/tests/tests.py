@@ -8,7 +8,9 @@ import logging
 from omgeo import Geocoder
 from omgeo.places import Viewbox, PlaceQuery, Candidate
 from omgeo.processors.preprocessors import CountryPreProcessor, RequireCountry, ParseSingleLine, ReplaceRangeWithNumber
-from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename, AttrSorter, AttrReverseSorter, UseHighScoreIfAtLeast, GroupBy, ScoreSorter
+from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename,\
+                                            AttrSorter, AttrReverseSorter, UseHighScoreIfAtLeast,\
+                                            GroupBy, GroupByMultiple, ScoreSorter
 
 # Required to run the tests for BING
 BING_MAPS_API_KEY = os.getenv("BING_MAPS_API_KEY")
@@ -171,7 +173,16 @@ class GeocoderProcessorTest(OmgeoTestCase):
         self.best = Candidate(match_addr='123 Any St', locator='rooftop', score=100)
         self.wolf_good = Candidate(match_addr='1200 Callowhill St', locator='address', score=76)
         self.wolf_better = Candidate(match_addr='1200 Callowhill St', locator='parcel', score=90)
-        self.wolf_best = Candidate(match_addr='1200 Callowhill St', locator='rooftop', score=99.9)
+        self.wolf_best = Candidate(match_addr='1200 Callowhill St', locator='rooftop',
+                                   score=99.9, x=-75.158, y=39.959)
+        self.wolf_340 = Candidate(match_addr='340 N 12th St', locator='rooftop',
+                                  score=99.5, x=-75.158, y=39.959) # same coords
+        self.inky = Candidate(match_addr='324 N Broad St', locator='rooftop',
+                              score=99.9, x=-75.163, y=39.959) # same y
+        self.capt_thomas = Candidate(match_addr='843 Callowhill St', locator='rooftop',
+                                     score=99.9, x=-75.163, y=39.959) # same y
+        self.reading_term = Candidate(match_addr='1200 Arch St', locator='rooftop',
+                                      score=99.9, x=-75.163, y=39.953) # same x
 
         self.locators_worse_to_better = ['address', 'parcel', 'rooftop']
 
@@ -225,10 +236,16 @@ class GeocoderProcessorTest(OmgeoTestCase):
         candidates_out = AttrExclude(bad_values, 'locator', exact_match=False).process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
 
-    def test_pro_group_GroupBy(self):
+    def test_postpro_GroupBy(self):
         candidates_in = [self.best, self.good, self.better, self.wolf_best, self.wolf_good]
         candidates_exp = [self.best, self.wolf_best]
         candidates_out = GroupBy('match_addr').process(candidates_in)
+        self.assertEqual_(candidates_out, candidates_exp)
+        
+    def test_postpro_GroupByMultiple(self):
+        candidates_in = [self.wolf_best, self.wolf_340]
+        candidates_exp = [self.wolf_best]
+        candidates_out = GroupBy(('x', 'y')).process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
 
     def test_pro_parsing_ParseSingleLine(self):

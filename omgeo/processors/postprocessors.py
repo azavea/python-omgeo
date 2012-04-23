@@ -375,13 +375,17 @@ class GroupBy(PostProcessor):
 
     Arguments:
     ==========
-    attribute   --  The attribute on which to combine results
+    attr   --  The attribute on which to combine results
+               or a list or tuple of attributes where all
+               attributes must match between candidates.
     """
 
     def __init__(self, attr='match_addr'):
         self._init_helper(vars())
 
     def process(self, candidates):
+        if type(self.attr) in (tuple, list):
+            return GroupByMultiple(attrs=self.attr).process(candidates)
         keepers = []
         for c_from_all in candidates[:]:
             matches = [c for c in candidates if getattr(c, self.attr) == getattr(c_from_all, self.attr)]
@@ -390,3 +394,29 @@ class GroupBy(PostProcessor):
                 for m in matches:
                     candidates.remove(m)
         return keepers
+    
+class GroupByMultiple(PostProcessor):
+    """
+    Groups results by a certain attribute by choosing the
+    first occurrence in the list of candidates 
+    (this means you will want to sort ahead of time).
+
+    Arguments:
+    ==========
+    attrs   --  A list or tuple of attributes on which to combine results
+    """
+    
+    def __init__(self, attrs):
+        self._init_helper(vars())
+
+    def process(self, candidates):
+        keepers = []
+        for c_from_all in candidates[:]:
+            matches = [c for c in candidates
+                       if all([getattr(c, attr) == getattr(c_from_all, attr)
+                               for attr in self.attrs])]
+            if matches != []:
+                keepers.append(matches[0])
+                for m in matches:
+                    candidates.remove(m)
+        return keepers   
