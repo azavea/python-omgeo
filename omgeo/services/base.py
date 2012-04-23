@@ -84,14 +84,18 @@ class GeocodeService():
         try:
             response = urlopen('%s?%s' % (endpoint, urlencode(query)))
         except:
-            raise Exception('Could not connect') #TODO: log this error internally (could not connect, etc)
+            logger.error("%s couldn't connect to server" %
+                self.get_service_name())
+            logger.error(format_exc())
             return False
         if response.code != 200: return False
         content = response.read()  
         try:  
             return loads(content)
-        except ValueError as ex:
-            raise Exception('Could not decode JSON: %s' % ex) #TODO: log this error internally 
+        except ValueError:
+            logger.error("%s couldn't decode JSON: %s" % 
+                self.get_service_name, content)
+            logger.error(format_exc())
             return False
 
     def _get_xml_doc(self, endpoint, query):
@@ -102,7 +106,9 @@ class GeocodeService():
         try:
             response = urlopen('%s?%s' % (endpoint, urlencode(query)))
         except:
-            raise Exception('Could not connect') #TODO: log this error internally (could not connect, etc)
+            logger.error("%s couldn't connect to server" %
+                self.get_service_name())
+            logger.error(format_exc())
             return False
         if response.code != 200: return False
         return minidom.parse(response)
