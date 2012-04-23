@@ -2,4 +2,6 @@ v1.0, 2012-03-13 -- Initial Release
 v1.1, 2012-03-22 -- Add ability to use ESRI premium tasks.
 v1.2, 2012-04-04 -- Add Citizen Atlas (Washington DC) as a supported geocoder.
 v1.3, 2012-04-20 -- Add ESRI SOAP locators as supported geocoders. Added suds
-dependency
+dependency. Removed default rejected entities from BING setting to a
+postprocessor. Refactored constructors to fix bugs caused by mutable default
+values.

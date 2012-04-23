@@ -14,45 +14,45 @@ class Bing(GeocodeService):
     Class to geocode using Bing services:
      * `Find a Location by Query <http://msdn.microsoft.com/en-us/library/ff701711.aspx>`_
      . * `Find a Location by Address <http://msdn.microsoft.com/en-us/library/ff701714.aspx>`_
-    """
-    
-    ATTR_MAP = {
-        'locator':{
-            'Rooftop': 'rooftop',
-            'Parcel': 'parcel',
-            'ParcelCentroid': 'parcel',
-            'Interpolation': 'interpolation',
-            'InterpolationOffset': 'interpolation_offset',
-        }
-    }
 
-    _endpoint = 'http://dev.virtualearth.net/REST/v1/Locations'
-
-    _settings = {'inclnb': 1, 'rejected_entities': ['AdminDivision1', 'AdminDivision2', 'AdminDivision3', 'CountryRegion', 'DisputedArea', 'MountainRange', 'Ocean', 'Peninsula', 'Planet', 'Plate', 'Postcode', 'Postcode1', 'Postcode2', 'Postcode3', 'Postcode4', 'Sea']}
-
-    _preprocessors = []
-    """Preprocessors to use with this geocoder service, in order of desired execution."""
-    _preprocessors.append(ReplaceRangeWithNumber()) # 766-68 Any St. -> 766 Any St. 
-    
-    _postprocessors = []
-    """Postprocessors to use with this geocoder service, in order of desired execution."""
-    _postprocessors.append(AttrExclude(_settings['rejected_entities'], 'entity'))
-    _postprocessors.append(AttrRename('locator', ATTR_MAP['locator']))
-    _postprocessors.append(AttrSorter(['rooftop', 'parcel', 'interpolation_offset', 'interpolation'], 'locator'))
-    _postprocessors.append(AttrSorter(['Address'], 'entity')) # Address first, then the rest
-    _postprocessors.append(AttrMigrator('confidence', 'score', {'High':100, 'Medium':85, 'Low':50}))
-    _postprocessors.append(ScoreSorter())
-    _postprocessors.append(GroupBy('match_addr'))
-    
-    # TODO: make scores
-    """
     Settings used by the Bing GeocodeService object may include:
     ============================================================
     api_key --  The API key used to access Bing services.
-    inclnb  --  One of the following values:
-                 * 0: Do not include neighborhood information.
-                 * 1: Include neighborhood information when available.
     """
+
+    _endpoint = 'http://dev.virtualearth.net/REST/v1/Locations'
+    
+    LOCATOR_MAP = {
+        'Rooftop': 'rooftop',
+        'Parcel': 'parcel',
+        'ParcelCentroid': 'parcel',
+        'Interpolation': 'interpolation',
+        'InterpolationOffset': 'interpolation_offset',
+    }
+
+    DEFAULT_REJECTS = ['AdminDivision1', 'AdminDivision2', 'AdminDivision3', 'CountryRegion', 'DisputedArea', 'MountainRange', 'Ocean', 'Peninsula', 'Planet', 'Plate', 'Postcode', 'Postcode1', 'Postcode2', 'Postcode3', 'Postcode4', 'Sea']
+
+    DEFAULT_PREPROCESSORS = [
+        ReplaceRangeWithNumber()
+    ]
+    
+    DEFAULT_POSTPROCESSORS = [
+        AttrExclude(DEFAULT_REJECTS, 'entity'),
+        AttrRename('locator', LOCATOR_MAP),
+        AttrSorter(['rooftop', 'parcel', 'interpolation_offset', 'interpolation'], 'locator'),
+        AttrSorter(['Address'], 'entity'),
+        AttrMigrator('confidence', 'score', {'High':100, 'Medium':85, 'Low':50}),
+        ScoreSorter(),
+        GroupBy('match_addr')
+    ]
+    
+    def __init__(self, preprocessors=None, postprocessors=None, settings=None):
+
+        preprocessors = Bing.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
+        postprocessors = Bing.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
+
+        GeocodeService.__init__(self, preprocessors, postprocessors, settings)
+
     def _geocode(self, pq):
         if pq.query.strip() == '':
             # No single line query string; use address elements:
@@ -75,7 +75,6 @@ class Bing(GeocodeService):
             query = dict(query, **{'ul':'%f,%f' % (pq.user_lat, pq.user_lon)})
 
         addl_settings = {
-                'inclnb':self._settings['inclnb'],
                 'key':self._settings['api_key']}
         query = dict(query, **addl_settings)
         
@@ -107,7 +106,7 @@ class EsriGeocodeService(GeocodeService):
                 premium tasks.
     """
 
-    def __init__(self, preprocessors=None, postprocessors=None, settings={}):
+    def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         """
         ESRI services can be used as free services or "premium tasks".  If an
         ESRI service is created with an api_key in the settings, we'll set this
@@ -127,22 +126,22 @@ class EsriGeocodeService(GeocodeService):
             query_dict.update({'token': self._settings['api_key']})
         return query_dict
 
-class EsriSoapGeocoder(EsriGeocodeService):
-    # Our suds client
-    _client = None
-
-    # The CandidateFields returned by an ESRI geocoder. The result rows are
-    # ordered just as they are - there are no 'keys' in the results
-    _fields = None
-
-    # Used to map the returned results' fields to a Candidate's fields
-    _mapping = {}
-
-    def __init__(self, preprocessors=None, postprocessors=None, settings={}):
+class EsriSoapGeocodeService(EsriGeocodeService):
+    def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         # First, initialize the usual geocoder stuff like settings and
         # processors
         EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
         
+        # Our suds client
+        self._client = None
+
+        # The CandidateFields returned by an ESRI geocoder. The result rows are
+        # ordered just as they are - there are no 'keys' in the results
+        self._fields = None
+
+        # Used to map the returned results' fields to a Candidate's fields
+        self._mapping = {}
+
         # Set up the URLs necessary to get soap and create a suds clients
         if 'api_key' in self._settings:
             self._endpoint = self._endpoint + "?token=" + self._settings['api_key']
@@ -186,7 +185,7 @@ class EsriSoapGeocoder(EsriGeocodeService):
             candidates.append(candidate)
         return candidates
 
-class EsriEuGeocoder():
+class EsriEUGeocodeService():
     """
     Class to geocode using the ESRI TA_Address_EU locator service.
 
@@ -228,31 +227,37 @@ class EsriEuGeocoder():
         }
     """Map of FIPS to ISO-2 codes, if they are different."""
 
-    _preprocessors = []
-    """Preprocessors to use with this geocoder service, in order of desired execution."""
-    # Valid inputs for the ESRI EU geocoder are ISO alpha-2 or -3 country codes.
-    _preprocessors.append(CountryPreProcessor(_supported_countries_iso2, _map_fips_to_iso2))
-    _preprocessors.append(ParseSingleLine())
-    _preprocessors.append(RequireCountry('GB'))
-    
-    _postprocessors = []
-    """Postprocessors to use with this geocoder service, in order of desired execution."""
-    _postprocessors.append(AttrFilter(['EU_Street_Addr'], 'locator', False))
-    _postprocessors.append(AttrRename('locator', ATTR_MAP['locator']))
-    _postprocessors.append(UseHighScoreIfAtLeast(100))
-    _postprocessors.append(GroupBy('match_addr'))
-    _postprocessors.append(ScoreSorter())
+    def __init__(self):
+        """Preprocessors to use with this geocoder service, in order of desired execution."""
+        # Valid inputs for the ESRI EU geocoder are ISO alpha-2 or -3 country codes.
+        self._preprocessors.append(CountryPreProcessor(
+            EsriEUGeocodeService._supported_countries_iso2,
+            EsriEUGeocodeService._map_fips_to_iso2))
+        self._preprocessors.append(ParseSingleLine())
+        self._preprocessors.append(RequireCountry('GB'))
+        
+        """Postprocessors to use with this geocoder service, in order of desired execution."""
+        self._postprocessors.append(AttrFilter(['EU_Street_Addr'], 'locator', False))
+        self._postprocessors.append(AttrRename('locator', 
+            EsriEUGeocodeService.ATTR_MAP['locator']))
+        self._postprocessors.append(UseHighScoreIfAtLeast(100))
+        self._postprocessors.append(GroupBy('match_addr'))
+        self._postprocessors.append(ScoreSorter())
 
-class EsriEUSoap(EsriEuGeocoder, EsriSoapGeocoder):
+class EsriEUSoap(EsriSoapGeocodeService, EsriEUGeocodeService):
     _task_endpoint = '/services/Locators/TA_Address_EU/GeocodeServer'
 
-    _mapping = {
-        'Loc_name': 'locator',
-        'Match_addr': 'match_addr',
-        'Score': 'score',
-        'X': 'x',
-        'Y': 'y',
-    }
+    def __init__(self, preprocessors=None, postprocessors=None, settings=None):
+        EsriSoapGeocodeService.__init__(self, preprocessors, postprocessors, settings)
+        EsriEUGeocodeService.__init__(self)
+        
+        self._mapping = {
+            'Loc_name': 'locator',
+            'Match_addr': 'match_addr',
+            'Score': 'score',
+            'X': 'x',
+            'Y': 'y',
+        }
 
     def _geocode(self, location):
         address = self._client.factory.create('PropertySet')
@@ -278,9 +283,13 @@ class EsriEUSoap(EsriEuGeocoder, EsriSoapGeocoder):
 
         return candidates
 
-class EsriEU(EsriGeocodeService, EsriEuGeocoder):
+class EsriEU(EsriGeocodeService, EsriEUGeocodeService):
     _task_endpoint = '/rest/services/Locators/TA_Address_EU/GeocodeServer/findAddressCandidates'
             
+    def __init__(self, preprocessors=None, postprocessors=None, settings=None):
+        EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
+        EsriEUGeocodeService.__init__(self)
+
     def _geocode(self, location):
         query = {
             'Address':location.address,
@@ -313,29 +322,54 @@ class EsriEU(EsriGeocodeService, EsriEuGeocoder):
             return []
         return returned_candidates
 
-class EsriNASoap(EsriSoapGeocoder):
+class EsriNAGeocodeService():
+    """
+    Class to geocode using the ESRI TA_Address_NA_10 locator service.
+    """
+
+    ATTR_MAP = {
+        'locator':{
+            'RoofTop': 'rooftop',
+            'Streets': 'interpolation',
+        },
+    }
+
+    def __init__(self):
+        """
+        ESRI services can be used as free services or "premium tasks".  If an
+        ESRI service is created with an api_key in the settings, we'll set this
+        service up with the premium task URL.
+        """
+        """Preprocessors to use with this geocoder service, in order of desired execution."""
+        self._preprocessors.append(CountryPreProcessor(['US', 'CA']))
+        
+        """Postprocessors to use with this geocoder service, in order of desired execution."""
+        self._postprocessors.append(AttrRename('locator',
+            EsriNAGeocodeService.ATTR_MAP['locator']))
+        self._postprocessors.append(AttrFilter(['rooftop', 'interpolation'], 'locator'))
+        self._postprocessors.append(AttrSorter(['rooftop', 'interpolation'], 'locator'))
+        self._postprocessors.append(UseHighScoreIfAtLeast(99.8))
+        self._postprocessors.append(GroupBy('match_addr'))
+        self._postprocessors.append(ScoreSorter())
+
+class EsriNASoap(EsriSoapGeocodeService, EsriNAGeocodeService):
     """
     Use the SOAP version of the ArcGIS-10-style Geocoder for North America
     """
-
-    _preprocessors = []
-    _preprocessors.append(CountryPreProcessor(['US', 'CA']))
-    
-    _postprocessors = []
-    _postprocessors.append(UseHighScoreIfAtLeast(99.8))
-    _postprocessors.append(GroupBy('match_addr'))
-    _postprocessors.append(ScoreSorter())
-
     _task_endpoint = '/services/Locators/TA_Address_NA_10/GeocodeServer'
     _wkid = 4326
     
-    _mapping = {
-        'Loc_name': 'locator',
-        'Match_addr': 'match_addr',
-        'Score': 'score',
-        'X': 'x',
-        'Y': 'y',
-    }
+    def __init__(self, preprocessors=None, postprocessors=None, settings=None):
+        EsriSoapGeocodeService.__init__(self, preprocessors, postprocessors, settings)
+        EsriNAGeocodeService.__init__(self)
+
+        self._mapping = {
+            'Loc_name': 'locator',
+            'Match_addr': 'match_addr',
+            'Score': 'score',
+            'X': 'x',
+            'Y': 'y',
+        }
 
     def _geocode(self, location):
         address = self._client.factory.create('PropertySet')
@@ -373,39 +407,10 @@ class EsriNASoap(EsriSoapGeocoder):
         return candidates
         
         
-class EsriNAGeocodeService():
-    """
-    Class to geocode using the ESRI TA_Address_NA_10 locator service.
-    """
-
-    ATTR_MAP = {
-        'locator':{
-            'RoofTop': 'rooftop',
-            'Streets': 'interpolation',
-        },
-    }
-
-    def __init__(self, preprocessors=None, postprocessors=None, settings={}):
-        """
-        ESRI services can be used as free services or "premium tasks".  If an
-        ESRI service is created with an api_key in the settings, we'll set this
-        service up with the premium task URL.
-        """
-        """Preprocessors to use with this geocoder service, in order of desired execution."""
-        self._preprocessors.append(CountryPreProcessor(['US', 'CA']))
-        
-        """Postprocessors to use with this geocoder service, in order of desired execution."""
-        self._postprocessors.append(AttrRename('locator', self.ATTR_MAP['locator']))
-        self._postprocessors.append(AttrFilter(['rooftop', 'interpolation'], 'locator'))
-        self._postprocessors.append(AttrSorter(['rooftop', 'interpolation'], 'locator'))
-        self._postprocessors.append(UseHighScoreIfAtLeast(99.8))
-        self._postprocessors.append(GroupBy('match_addr'))
-        self._postprocessors.append(ScoreSorter())
-
 class EsriNA(EsriGeocodeService, EsriNAGeocodeService):
     _task_endpoint = '/rest/services/Locators/TA_Address_NA_10/GeocodeServer/findAddressCandidates'
             
-    def __init__(self, preprocessors=None, postprocessors=None, settings={}):
+    def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
         EsriNAGeocodeService.__init__(self)
 
@@ -454,21 +459,27 @@ class Nominatim(GeocodeService):
 
     _endpoint = 'http://open.mapquestapi.com/nominatim/v1/search'
 
-    _settings = {
-        'accepted_entities':['building.', 'historic.castle', 'leisure.ice_rink', 'leisure.miniature_golf', 'leisure.sports_centre', 'lesiure.stadium', 'leisure.track', 'lesiure.water_park', 'man_made.lighthouse', 'man_made.works', 'military.barracks', 'military.bunker', 'office.', 'place.house', 'amenity.',  'power.generator', 'railway.station', 'shop.', 'tourism.'],
-        'rejected_entities':['amenity.drinking_water', 'amentity.bicycle_parking', 'amentity.ev_charging', 'amentity.grit_bin', 'amentity.atm', 'amentity.hunting_stand', 'amentity.post_box'],
-        }
+    DEFAULT_ACCEPTED_ENTITIES = ['building.', 'historic.castle', 'leisure.ice_rink', 'leisure.miniature_golf', 'leisure.sports_centre', 'lesiure.stadium', 'leisure.track', 'lesiure.water_park', 'man_made.lighthouse', 'man_made.works', 'military.barracks', 'military.bunker', 'office.', 'place.house', 'amenity.',  'power.generator', 'railway.station', 'shop.', 'tourism.']
 
-    _preprocessors = []
+    DEFAULT_REJECTED_ENTITIES = ['amenity.drinking_water',
+'amentity.bicycle_parking', 'amentity.ev_charging', 'amentity.grit_bin',
+'amentity.atm', 'amentity.hunting_stand', 'amentity.post_box']
+
     """Preprocessors to use with this geocoder service, in order of desired execution."""
-    _preprocessors.append(ReplaceRangeWithNumber()) # 766-68 Any St. -> 766 Any St. 
+    DEFAULT_PREPROCESSORS=ReplaceRangeWithNumber() # 766-68 Any St. -> 766 Any St. 
     
-    _postprocessors = []
     """Postprocessors to use with this geocoder service, in order of desired execution."""
 
-    _postprocessors.append(AttrFilter(_settings['accepted_entities'], 'entity', exact_match=False))
-    _postprocessors.append(AttrExclude(_settings['rejected_entities'], 'entity'))
+    DEFAULT_POSTPROCESSORS = [
+        AttrFilter(DEFAULT_ACCEPTED_ENTITIES, 'entity', exact_match=False),
+        AttrExclude(DEFAULT_REJECTED_ENTITIES, 'entity')
+    ]
     
+    def __init__(self, preprocessors=None, postprocessors=None, settings=None):
+        preprocessors = Bing.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
+        postprocessors = Bing.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
+        GeocodeService.__init__(self, preprocessors, postprocessors, settings)
+
     def _geocode(self, pq):
         query = {
             'q':pq.query,

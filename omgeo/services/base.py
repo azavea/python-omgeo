@@ -13,38 +13,41 @@ class GeocodeService():
     A tuple of classes representing the geocoders that will be used
     to find addresses for the given locations
     """
-    _preprocessors = []
-    """
-    Preprocessor classes to apply to the given PlaceQuery
-    """
-    _postprocessors = []
-    """
-    Postprocessor classes to apply to the list of Candidates obtained
-    """
-    _settings = {}
-    """
-    Settings for this geocoder
-    """
+
     _endpoint = ''
     """
     API endpoint URL to use
     """
 
-    def _init_helper(self, preprocessors, postprocessors, settings):
+    def __init__(self, preprocessors=None, postprocessors=None,
+            settings=None):
         """
         Overwrite _preprocessors, _postprocessors, and _settings
-        if they are set. The default for processors is None, because [] would
-        indicate that no pre- or post-processors should be used. Settings
-        overwrite default/existing _settings dictionary pairs if they are already set.
+        if they are set.
         """
+
+        self._preprocessors = []
+        """
+        Preprocessor classes to apply to the given PlaceQuery
+        """
+        self._postprocessors = []
+        """
+        Postprocessor classes to apply to the list of Candidates obtained
+        """
+        self._settings = {}
+        """
+        Settings for this geocoder
+        """
+        # self._endpoint = ''
         if preprocessors is not None:
             self._preprocessors = preprocessors
         if postprocessors is not None:
             self._postprocessors = postprocessors
-        for key in settings:
-            self._settings[key] = settings[key]   
+        if settings is not None:
+            for key in settings:
+                self._settings[key] = settings[key]   
 
-    def _settings_checker(self, required_settings=[], accept_none=True):
+    def _settings_checker(self, required_settings=None, accept_none=True):
         """
         Take a list of required _settings dictionary keys
         and make sure they are set. This can be added to a custom
@@ -62,20 +65,14 @@ class GeocodeService():
          * bool ``True`` if all required settings exist, OR
          * str ``keyname`` for the first key that is not found in _settings.
         """
-        for keyname in required_settings:
-            if keyname not in self._settings:
-                return keyname
-            if accept_none is False and self._settings[keyname] is None:
-                return keyname
+        if required_settings is not None:
+            for keyname in required_settings:
+                if keyname not in self._settings:
+                    return keyname
+                if accept_none is False and self._settings[keyname] is None:
+                    return keyname
         return True
             
-
-    def __init__(self, preprocessors=None, postprocessors=None, settings={}):
-        """
-        Constructor for GeocodeService objects.
-        """
-        self._init_helper(preprocessors, postprocessors, settings)
-
     def _get_json_obj(self, endpoint, query):
         """
         Return False if connection could not be made.

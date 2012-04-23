@@ -18,23 +18,6 @@ class Geocoder():
     preprocessors   -- list of universal preprocessors to use
     postprocessors  -- list of universal postprocessors to use
     """
-    _sources = []
-    """
-    A list of classes representing the geocode services that will be used
-    to find addresses for the given locations
-    """
-    _preprocessors = []
-    """
-    Preprocessor instances to apply to each address requested
-    """
-    _postprocessors = []
-    """
-    Postprocessor instances to apply to each result obtained from the geocoders
-    """
-    _settings = {}
-    """
-    Reserved for future use.
-    """
 
     DEFAULT_SOURCES = [['omgeo.services.EsriNA', {}],
                         ['omgeo.services.EsriEU', {}],
@@ -43,8 +26,6 @@ class Geocoder():
     DEFAULT_POSTPROCESSORS = [
         DupePicker('match_addr', 'locator', ['rooftop', 'parcel', 'interpolation_offset', 'interpolation']),
     ]
-
-    
     def _get_service_by_name(self, service_name):
         try:
             module, separator, class_name = service_name.rpartition('.')
@@ -80,16 +61,20 @@ class Geocoder():
             self.add_source(source)
 
 
-    def __init__(self,
-        sources=DEFAULT_SOURCES,
-        preprocessors=DEFAULT_PREPROCESSORS,
-        postprocessors=DEFAULT_POSTPROCESSORS):
+    def __init__(self, sources=None, preprocessors=None, postprocessors=None):
+        self._preprocessors = Geocoder.DEFAULT_PREPROCESSORS \
+            if preprocessors is None else preprocessors
+        
+        self._postprocessors = Geocoder.DEFAULT_POSTPROCESSORS \
+            if postprocessors is None else postprocessors
 
+        # Reserved for future use
+        self._settings = {}
+    
+        sources = Geocoder.DEFAULT_SOURCES if sources is None else sources
         self.set_sources(sources)
-        self._preprocessors = preprocessors
-        self._postprocessors = postprocessors
 
-    def geocode(self, pq, waterfall=_settings.get('waterfall', False)):
+    def geocode(self, pq, waterfall=None):
         """
         Returns a list of Candidate objects
 
@@ -101,6 +86,7 @@ class Geocoder():
                         the first geocoding service with valid candidates
                         (default False).
         """
+        waterfall = self._settings.get('waterfall', False)
         processed_pq = copy.copy(pq)
         for p in self._preprocessors: # apply universal address preprocessing
             processed_pq = p.process(processed_pq)

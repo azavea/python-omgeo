@@ -59,14 +59,7 @@ class GeocoderTest(OmgeoTestCase):
         self.pq['karori'] = PlaceQuery('102 Karori Road Karori Wellington', country='NZ')
 
         # Geocoder objects
-        self.g = Geocoder([
-            ['omgeo.services.Nominatim',{}],
-            ['omgeo.services.CitizenAtlas', {}],
-            ['omgeo.services.EsriNASoap', {}],
-            ['omgeo.services.EsriEUSoap', {}],
-            ['omgeo.services.EsriNA', {}],
-            ['omgeo.services.EsriEU', {}]
-        ])
+        self.g = Geocoder()
 
         if ESRI_MAPS_API_KEY is not None:
             self.g_esri_na = Geocoder([['omgeo.services.EsriNA',
@@ -131,7 +124,7 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g.geocode(self.pq['ambiguous_azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
-    def _test_geocode_results_all(self, verbosity=2, geocoder=Geocoder(),
+    def _test_geocode_results_all(self, verbosity=0, geocoder=Geocoder(),
             expected_results=15):
         """
         Geocode a list of addresses.  Some of these only work with Bing so 
@@ -142,15 +135,15 @@ class GeocoderTest(OmgeoTestCase):
 
         queries_with_results = 0
         for place in self.pq:
-            logging.info(place)
-            logging.info(len(place) * '-')
+            logger.info(place)
+            logger.info(len(place) * '-')
             candidates = geocoder.geocode(self.pq[place])
             if len(candidates) == 0:
-                logging.info('Input: %s\n(no results)' % self.pq[place].query)
+                logger.info('Input: %s\n(no results)' % self.pq[place].query)
             else:
                 queries_with_results += 1
-                logging.info('Input:  %s' % self.pq[place].query)
-                logging.info(map(lambda c: 'Output: %r (%s %s)\n' %
+                logger.info('Input:  %s' % self.pq[place].query)
+                logger.info(map(lambda c: 'Output: %r (%s %s)\n' %
                     (c.match_addr, 
                     c.geoservice, 
                     [c.locator, c.score, c.confidence, c.entity]),
