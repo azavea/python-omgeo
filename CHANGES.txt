@@ -5,3 +5,5 @@ v1.3, 2012-04-20 -- Add ESRI SOAP locators as supported geocoders. Added suds
 dependency. Removed default rejected entities from BING setting to a
 postprocessor. Refactored constructors to fix bugs caused by mutable default
 values.
+v1.3.1, 2012-04-23 -- Refactor test runner.  Support multiple fields in GroupBy
+processor
