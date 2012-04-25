@@ -7,3 +7,5 @@ postprocessor. Refactored constructors to fix bugs caused by mutable default
 values.
 v1.3.1, 2012-04-23 -- Refactor test runner.  Support multiple fields in GroupBy
 processor
+v1.3.2, 2012-04-25 -- Fix bug in ESRI geocoders in which defaults were appended
+rather than overwritten

@@ -159,6 +159,38 @@ class GeocoderTest(OmgeoTestCase):
 
         self._test_geocode_results_all(geocoder=self.g, expected_results=21)
 
+    def test_esri_geocoder_na_default_override(self):
+        # Bug in 3.1 - the EsriNA and EsriEU append processors rather than
+        # replace
+        geocoder = Geocoder([['omgeo.services.EsriNA',
+                            {'postprocessors': [AttrFilter([
+                                'rooftop',
+                                'interpolation',
+                                'postal_specific'],
+                                'locator')]}]])
+
+        self.assertEqual(1, len(geocoder._sources[0]._postprocessors),
+            'EsriNA geocoder incorrectly processed defaults')
+        self.assertEqual('AttrFilter',
+            geocoder._sources[0]._postprocessors[0].__class__.__name__,
+            'EsriNA geocoder incorrectly processed defaults')
+
+    def test_esri_geocoder_eu_default_override(self):
+        # Bug in 3.1 - the EsriNA and EsriEU append processors rather than
+        # replace
+        geocoder = Geocoder([['omgeo.services.EsriEU',
+                            {'postprocessors': [AttrFilter([
+                                'rooftop',
+                                'interpolation',
+                                'postal_specific'],
+                                'locator')]}]])
+
+        self.assertEqual(1, len(geocoder._sources[0]._postprocessors),
+            'EsriEU geocoder incorrectly processed defaults')
+        self.assertEqual('AttrFilter',
+            geocoder._sources[0]._postprocessors[0].__class__.__name__,
+            'EsriEU geocoder incorrectly processed defaults')
+
 class GeocoderProcessorTest(OmgeoTestCase):
     def setUp(self):
         # places
