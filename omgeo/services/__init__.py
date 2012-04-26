@@ -162,7 +162,6 @@ class EsriSoapGeocodeService(EsriGeocodeService):
             ps.Value = v
             props.append(ps)
         return props
-
     
     def _get_candidates_from_record_set(self, record_set):
         """
@@ -392,11 +391,6 @@ class EsriNASoap(EsriSoapGeocodeService, EsriNAGeocodeService):
                 'Zip': location.postal
             }
 
-            # Check for full postal codes
-            if location.country.lower == 'us' and len(location.postal > 9):
-                location_dict['Zip'] = location.postal[:5]
-                location_dict['Zip4'] = location.postal[-4:]
-
         address.PropertyArray.PropertySetProperty.append(
                 self._get_property_set_properties(location_dict))
 
@@ -412,6 +406,7 @@ class EsriNASoap(EsriSoapGeocodeService, EsriNAGeocodeService):
         
         
 class EsriNA(EsriGeocodeService, EsriNAGeocodeService):
+    """Esri REST Geocoder for North America"""
     _task_endpoint = '/rest/services/Locators/TA_Address_NA_10/GeocodeServer/findAddressCandidates'
             
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
