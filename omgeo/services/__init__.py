@@ -30,7 +30,10 @@ class Bing(GeocodeService):
         'InterpolationOffset': 'interpolation_offset',
     }
 
-    DEFAULT_REJECTS = ['AdminDivision1', 'AdminDivision2', 'AdminDivision3', 'CountryRegion', 'DisputedArea', 'MountainRange', 'Ocean', 'Peninsula', 'Planet', 'Plate', 'Postcode', 'Postcode1', 'Postcode2', 'Postcode3', 'Postcode4', 'Sea']
+    DEFAULT_REJECTS = ['AdminDivision1', 'AdminDivision2', 'AdminDivision3', 'CountryRegion',
+                       'DisputedArea', 'MountainRange', 'Ocean', 'Peninsula', 'Planet',
+                       'Plate', 'Postcode', 'Postcode1', 'Postcode2', 'Postcode3', 'Postcode4',
+                       'Sea']
 
     DEFAULT_PREPROCESSORS = [
         ReplaceRangeWithNumber()
@@ -47,24 +50,20 @@ class Bing(GeocodeService):
     ]
     
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
-
         preprocessors = Bing.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
         postprocessors = Bing.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
-
         GeocodeService.__init__(self, preprocessors, postprocessors, settings)
 
     def _geocode(self, pq):
         if pq.query.strip() == '':
             # No single line query string; use address elements:
-            query = {
-                'addressLine':pq.address,
-                'locality':pq.city,
-                'adminDistrict':pq.state,
-                'postalCode':pq.postal,
-                'countryRegion':pq.country}
+            query = {'addressLine':pq.address,
+                     'locality':pq.city,
+                     'adminDistrict':pq.state,
+                     'postalCode':pq.postal,
+                     'countryRegion':pq.country}
         else:
-            query = {
-                'query':pq.query}
+            query = {'query':pq.query}
         
         if pq.viewbox is not None:
             query = dict(query, **{'umv':pq.viewbox.to_bing_str()})
@@ -74,8 +73,7 @@ class Bing(GeocodeService):
         if hasattr(pq, 'user_lat') and hasattr(pq, 'user_lon'):
             query = dict(query, **{'ul':'%f,%f' % (pq.user_lat, pq.user_lon)})
 
-        addl_settings = {
-                'key':self._settings['api_key']}
+        addl_settings = {'key':self._settings['api_key']}
         query = dict(query, **addl_settings)
         
         response_obj = self._get_json_obj(self._endpoint, query)

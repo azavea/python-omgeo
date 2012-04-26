@@ -28,15 +28,17 @@ class GeocodeService():
 
         self._preprocessors = []
         """
-        Preprocessor classes to apply to the given PlaceQuery
+        Preprocessor classes to apply to the given PlaceQuery, usually
+        overwritten in subclass.
         """
         self._postprocessors = []
         """
-        Postprocessor classes to apply to the list of Candidates obtained
+        Postprocessor classes to apply to the list of Candidates obtained, 
+        usually overwritten in subclass.
         """
         self._settings = {}
         """
-        Settings for this geocoder
+        Settings for this geocoder, usually overwritten in subclass
         """
         # self._endpoint = ''
         if preprocessors is not None:
@@ -45,7 +47,7 @@ class GeocodeService():
             self._postprocessors = postprocessors
         if settings is not None:
             for key in settings:
-                self._settings[key] = settings[key]   
+                self._settings[key] = settings[key]
 
     def _settings_checker(self, required_settings=None, accept_none=True):
         """

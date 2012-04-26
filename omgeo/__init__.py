@@ -11,10 +11,10 @@ class Geocoder():
     sources         -- a dictionary of GeocodeServiceConfig() parameters,
                        keyed by module name for the GeocodeService to use
                        ex: {'esri_na':{}, 
-                            'bing': {
-                             'settings': {},
-                             'preprocessors': [],
-                             'postprocessors': []}, ...}
+                            'bing': {'settings': {},
+                                     'preprocessors': [],
+                                     'postprocessors': []},
+                            ...}
     preprocessors   -- list of universal preprocessors to use
     postprocessors  -- list of universal postprocessors to use
     """
@@ -23,9 +23,11 @@ class Geocoder():
                         ['omgeo.services.EsriEU', {}],
                         ['omgeo.services.Nominatim', {}]]
     DEFAULT_PREPROCESSORS = []
-    DEFAULT_POSTPROCESSORS = [
-        DupePicker('match_addr', 'locator', ['rooftop', 'parcel', 'interpolation_offset', 'interpolation']),
-    ]
+    DEFAULT_POSTPROCESSORS = [DupePicker('match_addr', 'locator',
+                                         ['rooftop',
+                                          'parcel',
+                                          'interpolation_offset',
+                                          'interpolation'])]
     def _get_service_by_name(self, service_name):
         try:
             module, separator, class_name = service_name.rpartition('.')
