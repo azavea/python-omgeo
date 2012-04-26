@@ -193,15 +193,15 @@ class EsriEUGeocodeService():
     """
     _wkid = 4326
 
-    _SUPPORTED_COUNTRIES_FIPS = ['AN', 'AU', 'BE', 'DA', 'FI', 'FR', 'GM', 'GI', 'EI', 
+    SUPPORTED_COUNTRIES_FIPS = ['AN', 'AU', 'BE', 'DA', 'FI', 'FR', 'GM', 'GI', 'EI', 
         'IT', 'LS', 'LU', 'MN', 'NL', 'NO', 'PO', 'SM', 'SP', 'SW', 'SZ', 'UK', 'VT']
     """FIPS codes of supported countries"""
 
-    _SUPPORTED_COUNTRIES_ISO2 = ['AD', 'AT', 'BE', 'DK', 'FI', 'FR', 'DE', 'GI', 'IE', 
+    SUPPORTED_COUNTRIES_ISO2 = ['AD', 'AT', 'BE', 'DK', 'FI', 'FR', 'DE', 'GI', 'IE', 
         'IT', 'LI', 'LU', 'MC', 'NL', 'NO', 'PT', 'SM', 'ES', 'SE', 'CH', 'GB', 'VC']
     """ISO-2 codes of supported countries"""
 
-    _MAP_FIPS_TO_ISO2 = {
+    MAP_FIPS_TO_ISO2 = {
         'AN':'AD',
         'AU':'AT',
         'DA':'DK',
@@ -224,8 +224,8 @@ class EsriEUGeocodeService():
 
     DEFAULT_PREPROCESSORS = [
         CountryPreProcessor(
-            _SUPPORTED_COUNTRIES_ISO2,
-            _MAP_FIPS_TO_ISO2),
+            SUPPORTED_COUNTRIES_ISO2,
+            MAP_FIPS_TO_ISO2),
         ParseSingleLine(),
         RequireCountry('GB'),
     ]

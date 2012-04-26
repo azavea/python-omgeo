@@ -1,5 +1,8 @@
 import copy
+import logging
 from omgeo.processors.postprocessors import DupePicker
+
+logger = logging.logger = logging.getLogger(__name__)
 
 class Geocoder():
     """
@@ -88,6 +91,7 @@ class Geocoder():
                         the first geocoding service with valid candidates
                         (default False).
         """
+        start_time = time.time()
         waterfall = self._settings.get('waterfall', False)
         processed_pq = copy.copy(pq)
         for p in self._preprocessors: # apply universal address preprocessing
@@ -96,12 +100,14 @@ class Geocoder():
 
         processed_candidates = []
         for gs in self._sources: # iterate through each GeocodeService
+            logger.debug('%s: Geocoding using %s...' % ((time.time() - start_time), gs))
             candidates = gs.geocode(processed_pq)
             processed_candidates += candidates # merge lists
             if waterfall is False and len(processed_candidates) > 0:
                 break # if >= 1 good candidate, don't go to next geocoder
 
         for p in self._postprocessors: # apply univ. candidate postprocessing
+            logger.debug('%s: Applying universal postprocessor %s...' % ((time.time() - start_time), p))
             processed_candidates = p.process(processed_candidates) 
-
+        logger.debug()
         return processed_candidates
