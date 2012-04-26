@@ -20,14 +20,15 @@ class Geocoder():
     """
 
     DEFAULT_SOURCES = [['omgeo.services.EsriNA', {}],
-                        ['omgeo.services.EsriEU', {}],
-                        ['omgeo.services.Nominatim', {}]]
+                       ['omgeo.services.EsriEU', {}],
+                       ['omgeo.services.Nominatim', {}]]
     DEFAULT_PREPROCESSORS = []
     DEFAULT_POSTPROCESSORS = [DupePicker('match_addr', 'locator',
                                          ['rooftop',
                                           'parcel',
                                           'interpolation_offset',
                                           'interpolation'])]
+    
     def _get_service_by_name(self, service_name):
         try:
             module, separator, class_name = service_name.rpartition('.')
@@ -61,7 +62,6 @@ class Geocoder():
         self._sources = []
         for source in sources: # iterate through a list of sources
             self.add_source(source)
-
 
     def __init__(self, sources=None, preprocessors=None, postprocessors=None):
         self._preprocessors = Geocoder.DEFAULT_PREPROCESSORS \
@@ -99,9 +99,9 @@ class Geocoder():
             candidates = gs.geocode(processed_pq)
             processed_candidates += candidates # merge lists
             if waterfall is False and len(processed_candidates) > 0:
-                break # if we have >= 1 good candidate, don't go to next geocoder
+                break # if >= 1 good candidate, don't go to next geocoder
 
-        for p in self._postprocessors: # apply universal candidate postprocessing
+        for p in self._postprocessors: # apply univ. candidate postprocessing
             processed_candidates = p.process(processed_candidates) 
 
         return processed_candidates

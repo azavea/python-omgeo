@@ -378,7 +378,7 @@ class EsriNASoap(EsriSoapGeocodeService, EsriNAGeocodeService):
         if location.query:
             # Single line geocoding
             location_dict = {
-                'Single Line Input': location.query
+                'SingleLine': location.query
             }
         else:
             # Split address
