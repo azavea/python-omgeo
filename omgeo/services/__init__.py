@@ -113,11 +113,11 @@ class EsriGeocodeService(GeocodeService):
         service up with the premium task URL.
         """
         GeocodeService.__init__(self, preprocessors, postprocessors, settings)
-
-        service_url = 'http://tasks.arcgisonline.com/ArcGIS'
         
         if 'api_key' in self._settings:
             service_url = 'http://premiumtasks.arcgisonline.com/server'
+        else:
+            service_url = 'http://tasks.arcgisonline.com/ArcGIS'
 
         self._endpoint = service_url + self._task_endpoint
 
