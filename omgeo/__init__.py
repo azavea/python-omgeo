@@ -1,6 +1,7 @@
 import copy
 import logging
 from omgeo.processors.postprocessors import DupePicker
+import time
 
 logger = logging.logger = logging.getLogger(__name__)
 
@@ -109,5 +110,4 @@ class Geocoder():
         for p in self._postprocessors: # apply univ. candidate postprocessing
             logger.debug('%s: Applying universal postprocessor %s...' % ((time.time() - start_time), p))
             processed_candidates = p.process(processed_candidates) 
-        logger.debug()
         return processed_candidates

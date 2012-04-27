@@ -104,7 +104,7 @@ class Candidate():
     x           -- X-coordinate (longitude for lat-lon SRS) (default None)
     y           -- Y-coordinate (latitude for lat-lon SRS) (default None)
     wkid        -- Well-known ID for spatial reference system (default 4326)
-    entity      -- Used by Bing (default '')
+    entity      -- Used by Bing, Nominatim (default '')
     confidence  -- Used by Bing (default '')
     geoservice  -- GeocodeService used for geocoding (default '')
 

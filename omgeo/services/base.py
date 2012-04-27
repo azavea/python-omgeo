@@ -1,10 +1,11 @@
 import copy
-from urllib import urlencode, urlopen
-from json import loads
-from xml.dom import minidom
 from datetime import datetime
-from traceback import format_exc
+from json import loads
 import logging
+import time
+from traceback import format_exc
+from urllib import urlencode, urlopen
+from xml.dom import minidom
 
 logger = logging.getLogger(__name__)
 
@@ -126,9 +127,11 @@ class GeocodeService():
         list of Candidate objects.
         """
         processed_pq = copy.copy(pq)
-
+        start_time = time.time()
+        logger.debug('%s: BEGINNING PREPROCESSING FOR %s' % (time.time() - start_time, self.get_service_name()))
         for p in self._preprocessors:
             processed_pq = p.process(processed_pq)
+            logger.debug('%s: Preprocessed through %s' % (time.time() - start_time, p))
             if processed_pq == False: return []
         
     
@@ -143,8 +146,10 @@ class GeocodeService():
                 (self.__class__.__name__, format_exc()))
             candidates = []
 
+        logger.debug('%s: BEGINNING POSTPROCESSING FOR %s' % (time.time() - start_time, self.get_service_name()))
         for p in self._postprocessors: # apply universal candidate postprocessing
             candidates = p.process(candidates) # merge lists
+            logger.debug('%s: Postprocessed through %s' % (time.time() - start_time, p))
 
         return candidates
     

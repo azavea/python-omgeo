@@ -1,11 +1,10 @@
 from base import GeocodeService
+import logging
 from omgeo.places import Candidate
 from omgeo.processors.preprocessors import CountryPreProcessor, RequireCountry, ParseSingleLine, ReplaceRangeWithNumber
 from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename, AttrSorter, AttrMigrator, UseHighScoreIfAtLeast, GroupBy, ScoreSorter
-
 from suds.client import Client
-
-import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +12,7 @@ class Bing(GeocodeService):
     """
     Class to geocode using Bing services:
      * `Find a Location by Query <http://msdn.microsoft.com/en-us/library/ff701711.aspx>`_
-     . * `Find a Location by Address <http://msdn.microsoft.com/en-us/library/ff701714.aspx>`_
+     * `Find a Location by Address <http://msdn.microsoft.com/en-us/library/ff701714.aspx>`_
 
     Settings used by the Bing GeocodeService object may include:
     ============================================================
@@ -21,33 +20,47 @@ class Bing(GeocodeService):
     """
 
     _endpoint = 'http://dev.virtualearth.net/REST/v1/Locations'
-    
-    LOCATOR_MAP = {
-        'Rooftop': 'rooftop',
-        'Parcel': 'parcel',
-        'ParcelCentroid': 'parcel',
-        'Interpolation': 'interpolation',
-        'InterpolationOffset': 'interpolation_offset',
-    }
-
-    DEFAULT_REJECTS = ['AdminDivision1', 'AdminDivision2', 'AdminDivision3', 'CountryRegion',
-                       'DisputedArea', 'MountainRange', 'Ocean', 'Peninsula', 'Planet',
-                       'Plate', 'Postcode', 'Postcode1', 'Postcode2', 'Postcode3', 'Postcode4',
-                       'Sea']
 
     DEFAULT_PREPROCESSORS = [
         ReplaceRangeWithNumber()
     ]
     
     DEFAULT_POSTPROCESSORS = [
-        AttrExclude(DEFAULT_REJECTS, 'entity'),
-        AttrRename('locator', LOCATOR_MAP),
-        AttrSorter(['rooftop', 'parcel', 'interpolation_offset', 'interpolation'], 'locator'),
-        AttrSorter(['Address'], 'entity'),
-        AttrMigrator('confidence', 'score', {'High':100, 'Medium':85, 'Low':50}),
-        ScoreSorter(),
-        GroupBy('match_addr')
-    ]
+       AttrMigrator('confidence', 'score',
+                    {'High':100, 'Medium':85, 'Low':50}),
+       UseHighScoreIfAtLeast(100),
+       AttrFilter(['Address', 'AdministrativeBuilding', 
+                   'AgriculturalStructure',
+                   'BusinessName', 'BusinessStructure',
+                   'BusStation', 'Camp', 'Church', 'CityHall',
+                   'CommunityCenter', 'ConventionCenter',
+                   'Courthouse', 'Factory', 'FerryTerminal',
+                   'FishHatchery', 'Fort', 'Garden', 'Geyser',
+                   'Heliport', 'IndustrialStructure',
+                   'InformationCenter', 'Junction',
+                   'LandmarkBuilding', 'Library', 'Lighthouse',
+                   'Marina', 'MedicalStructure', 'MetroStation',
+                   'Mine', 'Mission', 'Monument', 'Mosque', 
+                   'Museum', 'NauticalStructure', 'NavigationalStructure',
+                   'OfficeBuilding', 'ParkAndRide', 'PlayingField',
+                   'PoliceStation', 'PostOffice', 'PowerStation',
+                   'Prison', 'RaceTrack', 'ReligiousStructure',
+                   'RestArea', 'Ruin', 'ShoppingCenter', 'Site',
+                   'SkiArea', 'Spring', 'Stadium', 'Temple',
+                   'TouristStructure'], 'entity'),
+       AttrRename('locator', dict(Rooftop='rooftop',
+                                  Parcel='parcel',
+                                  ParcelCentroid='parcel',
+                                  Interpolation='interpolation',
+                                  InterpolationOffset='interpolation_offset')),
+       AttrSorter(['rooftop', 'parcel', 
+                   'interpolation_offset', 'interpolation'],
+                   'locator'),
+       AttrSorter(['Address'], 'entity'),
+       ScoreSorter(),
+       GroupBy(('x', 'y')),
+       GroupBy('match_addr')]
+    DEFAULT_POSTPROCESSORS = []
     
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         preprocessors = Bing.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
@@ -67,7 +80,6 @@ class Bing(GeocodeService):
         
         if pq.viewbox is not None:
             query = dict(query, **{'umv':pq.viewbox.to_bing_str()})
-
         if hasattr(pq, 'culture'): query = dict(query, c=pq.culture)
         if hasattr(pq, 'user_ip'): query = dict(query, uip=pq.user_ip)
         if hasattr(pq, 'user_lat') and hasattr(pq, 'user_lon'):
@@ -75,7 +87,7 @@ class Bing(GeocodeService):
 
         addl_settings = {'key':self._settings['api_key']}
         query = dict(query, **addl_settings)
-        
+        logger.debug(query)
         response_obj = self._get_json_obj(self._endpoint, query)
         if response_obj is False: return []
   
