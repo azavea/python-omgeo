@@ -1,6 +1,6 @@
 import copy
 import logging
-from omgeo.processors.postprocessors import DupePicker
+from omgeo.processors.postprocessors import DupePicker, SnapPoints
 import time
 
 logger = logging.logger = logging.getLogger(__name__)
