@@ -66,7 +66,7 @@ class GeocoderTest(OmgeoTestCase):
         if ESRI_MAPS_API_KEY is None:
             esri_settings = {}
         else:
-            esri_settings = {}
+            esri_settings = dict(api_key=ESRI_MAPS_API_KEY)
         self.service_esri_na = ['omgeo.services.EsriNA', dict(settings=esri_settings)]
         self.service_esri_eu = ['omgeo.services.EsriEU', dict(settings=esri_settings)]
         g_sources = [self.service_esri_na, self.service_esri_eu]
@@ -77,7 +77,7 @@ class GeocoderTest(OmgeoTestCase):
             self.service_bing = ['omgeo.services.Bing', dict(settings=bing_settings)]
             g_sources.append(self.service_bing)
             self.g_bing = Geocoder([self.service_bing])
-        self.service_nom = ['omgeo.services.Nominatim',{}]
+        self.service_nom = ['omgeo.services.Nominatim', {}]
         g_sources.append(self.service_nom)
         self.g_nom = Geocoder([self.service_nom])
         self.g = Geocoder(sources=g_sources) # main geocoder used for tests
