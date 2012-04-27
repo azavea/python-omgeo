@@ -94,13 +94,13 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
         
-    @unittest.skip('SnapPoints postprocessor not implemented yet.')
+    #@unittest.skip('SnapPoints postprocessor not implemented yet.')
     def test_geocode_snap_points_1(self):
         candidates = self.g.geocode(self.pq['8_kirkbride'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
         
-    @unittest.skip('SnapPoints postprocessor not implemented yet.')
+    #@unittest.skip('SnapPoints postprocessor not implemented yet.')
     def test_geocode_snap_points_2(self):
         candidates = self.g.geocode(self.pq['alpha_774_W_Central_Ave_Rear'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')

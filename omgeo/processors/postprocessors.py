@@ -436,7 +436,7 @@ class SnapPoints(PostProcessor):
                    (default 1).
     """
     
-    def __init__(self, distance=1):
+    def __init__(self, distance=50):
         self._init_helper(vars())
         
     def _get_distance(self, pnt1, pnt2):

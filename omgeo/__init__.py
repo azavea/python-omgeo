@@ -27,7 +27,8 @@ class Geocoder():
                        ['omgeo.services.EsriEU', {}],
                        ['omgeo.services.Nominatim', {}]]
     DEFAULT_PREPROCESSORS = []
-    DEFAULT_POSTPROCESSORS = [DupePicker('match_addr', 'locator',
+    DEFAULT_POSTPROCESSORS = [SnapPoints(),
+                              DupePicker('match_addr', 'locator',
                                          ['rooftop',
                                           'parcel',
                                           'interpolation_offset',
