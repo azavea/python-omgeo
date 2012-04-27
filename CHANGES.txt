@@ -1,13 +1,36 @@
-v1.0, 2012-03-13 -- Initial Release
-v1.1, 2012-03-22 -- Add ability to use ESRI premium tasks.
-v1.2, 2012-04-04 -- Add Citizen Atlas (Washington DC) as a supported geocoder.
-v1.3, 2012-04-20 -- Add ESRI SOAP locators as supported geocoders. Added suds
-dependency. Removed default rejected entities from BING setting to a
-postprocessor. Refactored constructors to fix bugs caused by mutable default
+v1.0, 2012-03-13
+----------------
+Initial Release
+
+v1.1, 2012-03-22
+----------------
+Add ability to use ESRI premium tasks.
+
+v1.2, 2012-04-04
+----------------
+Add Citizen Atlas (Washington DC) as a supported geocoder.
+
+v1.3, 2012-04-20
+----------------
+Add ESRI SOAP locators as supported geocoders. Added suds
+dependency. Remove default rejected entities from BING setting to a
+postprocessor. Refactor constructors to fix bugs caused by mutable default
 values.
-v1.3.1, 2012-04-23 -- Refactor test runner.  Support multiple fields in GroupBy
-processor
-v1.3.2, 2012-04-25 -- Fix bug in ESRI geocoders in which defaults were appended
-rather than overwritten
-v1.3.3, 2012-04-27 -- Add SnapPoints postprocessor, fix bug in tests where Bing
-was not being used even if the environment variable BING_MAPS_API_KEY was set.
+
+v1.3.1, 2012-04-23
+------------------
+Refactor test runner. Support multiple fields in GroupBy
+processor.
+
+v1.3.2, 2012-04-25
+------------------
+Fix bug in ESRI geocoders in which defaults were appended
+rather than overwritten.
+
+v1.3.3, 2012-04-27
+------------------
+ * Add SnapPoints postprocessor.
+ * Fix bug in tests (Bing was not being used even if the environment
+   variable BING_MAPS_API_KEY was set.
+ * Simplify ESRI ZIP processing
+ * Improve logging
