@@ -9,3 +9,5 @@ v1.3.1, 2012-04-23 -- Refactor test runner.  Support multiple fields in GroupBy
 processor
 v1.3.2, 2012-04-25 -- Fix bug in ESRI geocoders in which defaults were appended
 rather than overwritten
+v1.3.3, 2012-04-27 -- Add SnapPoints postprocessor, fix bug in tests where Bing
+was not being used even if the environment variable BING_MAPS_API_KEY was set.

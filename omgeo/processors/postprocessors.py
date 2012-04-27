@@ -1,4 +1,4 @@
-from math import asin, cos, fabs, sin, sqrt
+import math
 from omgeo.processors import PostProcessor
 from operator import attrgetter
 
@@ -441,26 +441,27 @@ class SnapPoints(PostProcessor):
         
     def _get_distance(self, pnt1, pnt2):
         """Get distance in meters between two lat/long points"""
-        lon1, lat1 = pnt1
-        lon2, lat2 = pnt2
-        dlon = fabs(lon2 - lon1)
-        dlat = fabs(lat2 - lat1)
-        a = (sin(dlat / 2))**2 + cos(lat1) * cos(lat2) * (sin(dlong / 2))**2
-        radians = 2 * asin(min(1, sqrt(a)))
-        margin_of_error = 0.005
-        dist_in_m = (1 + margin_of_error)**-1 * 6356752 * radians
-        return dist_in_m
+        lat1, lon1 = pnt1
+        lat2, lon2 = pnt2
+        radius = 6356752 # km
+        dlat = math.radians(lat2-lat1)
+        dlon = math.radians(lon2-lon1)
+        a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
+            * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        d = radius * c
+        return d
         
-    def _points_within_distance(self, pnt1, pnt2, distance):
+    def _points_within_distance(self, pnt1, pnt2):
         """Returns true if lat/lon points are within given distance in metres."""
-        if self._get_distance(pnt1, pnt2) <= distance:
+        if self._get_distance(pnt1, pnt2) <= self.distance:
             return True
         return False
         
     def process(self, candidates):
         keepers = []
         for c_from_all in candidates[:]:
-            matches = [c for c in candidates if self._points_within_distance((c_from_all.x, c_from_all.y), (c.x, c.y), self.distance)]
+            matches = [c for c in candidates if self._points_within_distance((c_from_all.x, c_from_all.y), (c.x, c.y))]
             if matches != []:
                 keepers.append(matches[0])
                 for m in matches:
