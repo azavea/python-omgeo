@@ -518,8 +518,8 @@ class Nominatim(GeocodeService):
             c.locator = 'parcel' # we don't have one but this is the closes match
             c.entity = '%s.%s' % (r['class'], r['type']) # ex.: "place.house"
             c.match_addr = r['display_name'] # ex. "Wolf Building, 340, N 12th St, Philadelphia, Philadelphia County, Pennsylvania, 19107, United States of America" #TODO: shorten w/ pieces
-            c.x = r['lon'] # long, ex. -122.13
-            c.y = r['lat'] # lat, ex. 47.64
+            c.x = float(r['lon']) # long, ex. -122.13 # cast to float in 1.3.4
+            c.y = float(r['lat']) # lat, ex. 47.64 # cast to float in 1.3.4
             c.wkid = self._wkid
             c.geoservice = self.__class__.__name__
             returned_candidates.append(c)
