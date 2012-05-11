@@ -121,10 +121,23 @@ class Candidate():
             setattr(self, k, kwargs[k])
 
     def __unicode__(self):
-        return '%s - (%s, %s) via %s' % (getattr(self, 'match_addr', '[No address]'),
-                                         getattr(self, 'x', '[No x coord]'),
-                                         getattr(self, 'y', '[No y coord]'),
-                                         getattr(self, 'locator', '[No locator]'))
+        if self.match_addr == '':
+            match_addr = '(no address specified)'
+        else:
+            match_addr = self.match_addr
+
+        if self.x is None:
+            x = '(no x coord specified)'
+        else:
+            x = self.x
+
+        if self.y is None:
+            y = '(no y coord specified)'
+        else:
+            y = self.y
+
+        geoservice = 'via %s' % getattr(self, 'geoservice', '(no geoservice specfied')
+        return '%s - (%s, %s) %s' % (match_addr, x, y, geoservice)
 
     def __str__(self):
         return unicode(self).encode('utf-8')

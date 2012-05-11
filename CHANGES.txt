@@ -34,3 +34,15 @@ v1.3.3, 2012-04-27
    variable BING_MAPS_API_KEY was set.
  * Simplify ESRI ZIP processing
  * Improve logging
+
+v1.3.4, 2012-05-11
+------------------
+ * Cast Nominatim coordinates returned in JSON from string to float.
+   This was causing an error in the SnapPoints postprocessor added
+   in v1.3.3, as the processor was attempting to evaluate mathematical
+   equations using strings instead of numbers. A test was added to
+   check that the types of the coordinates are successfully converted
+   to floats.
+ * Add test for SnapPoints postprocessor.
+ * Change __unicode__() method for places.Candidate to display info
+   indicating null or empty values, instead of just displaying "None".
