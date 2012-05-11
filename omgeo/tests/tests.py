@@ -6,10 +6,11 @@ import sys
 import unittest
 from omgeo import Geocoder
 from omgeo.places import Viewbox, PlaceQuery, Candidate
-from omgeo.processors.preprocessors import CountryPreProcessor, RequireCountry, ParseSingleLine, ReplaceRangeWithNumber
+from omgeo.processors.preprocessors import CountryPreProcessor, RequireCountry, ParseSingleLine,\
+                                           ReplaceRangeWithNumber
 from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename,\
                                             AttrSorter, AttrReverseSorter, UseHighScoreIfAtLeast,\
-                                            GroupBy, GroupByMultiple, ScoreSorter
+                                            GroupBy, GroupByMultiple, ScoreSorter, SnapPoints
 
 # Required to run the tests for BING
 BING_MAPS_API_KEY = os.getenv("BING_MAPS_API_KEY")
@@ -94,13 +95,12 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
         
-    #@unittest.skip('SnapPoints postprocessor not implemented yet.')
     def test_geocode_snap_points_1(self):
         candidates = self.g.geocode(self.pq['8_kirkbride'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
         
-    #@unittest.skip('SnapPoints postprocessor not implemented yet.')
+    @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_snap_points_2(self):
         candidates = self.g.geocode(self.pq['alpha_774_W_Central_Ave_Rear'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
@@ -129,7 +129,15 @@ class GeocoderTest(OmgeoTestCase):
     def test_geocode_bing(self):
         candidates = self.g_bing.geocode(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
-
+        
+    def test_geocode_nom(self):
+        candidates = self.g_nom.geocode(PlaceQuery('1200 Callowhill St, Philadelphia, PA, 19123'))
+        x_type = type(candidates[0].x)
+        y_type = type(candidates[0].y)
+        self.assertEqual(x_type == float, True, 'x coord is of type %s instead of float' % x_type)
+        self.assertEqual(y_type == float, True, 'y coord is of type %s instead of float' % y_type)
+        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
+    
     def test_geocode_dc_address(self):
         candidates = self.g_dc.geocode(PlaceQuery('1600 pennsylvania'))
         self.assertTrue(len(candidates) > 0, 'No candidates returned.')
@@ -366,7 +374,17 @@ class GeocoderProcessorTest(OmgeoTestCase):
         place_out = ReplaceRangeWithNumber().process(place_in)
         query_exp = '4452 Main Street, Philadelphia'
         self.assertEqual_(place_out.query, query_exp)
-
+        
+    def test_pro_SnapPoints(self):
+        """This test should take two candidates within 50 metres and eliminate one."""
+        candidates_in = [Candidate(match_addr='340 N 12th St, Philadelphia, PA, 19107',
+                                   x=-75.158433167, y=39.958727992),
+                         Candidate(match_addr='1200 Callowhill St, Philadelphia, PA, 19123',
+                                   x=-75.158303781, y=39.959040684)] # about 40m away
+        candidates_exp = [candidates_in[0]] # should just keep the first one.
+        candidates_out = SnapPoints(distance=50).process(candidates_in)
+        self.assertEqual_(candidates_out, candidates_exp)
+        
 
 if __name__ == '__main__':
     logging.basicConfig(stream=sys.stdout)

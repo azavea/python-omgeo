@@ -121,7 +121,10 @@ class Candidate():
             setattr(self, k, kwargs[k])
 
     def __unicode__(self):
-        return '%s - (%s, %s) via %s' % (self.match_addr, self.x, self.y, self.locator)
+        return '%s - (%s, %s) via %s' % (getattr(self, 'match_addr', '[No address]'),
+                                         getattr(self, 'x', '[No x coord]'),
+                                         getattr(self, 'y', '[No y coord]'),
+                                         getattr(self, 'locator', '[No locator]'))
 
     def __str__(self):
         return unicode(self).encode('utf-8')
