@@ -46,3 +46,10 @@ v1.3.4, 2012-05-11
  * Add test for SnapPoints postprocessor.
  * Change __unicode__() method for places.Candidate to display info
    indicating null or empty values, instead of just displaying "None".
+   
+v1.3.5, 2012-05-21
+------------------
+ * Geocoder().geocode() method can take one-line string OR PlaceQuery instance.
+ * Improve speed by avoiding postprocessing of empty list
+ * Add support for MapQuest licensed geocoding API using NAVTEQ data
+ 

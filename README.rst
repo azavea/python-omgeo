@@ -4,16 +4,14 @@
 supported geocoders:
 
 * Bing
-* ESRI's North American locator
-* ESRI's European address locator
-* Nominatim
 * Citizen Atlas (Washington DC)
-
+* ESRI North American locator (REST & SOAP)
+* ESRI European address locator (REST & SOAP)
+* MapQuest Licensed Data API
+* MapQuest-hosted Nominatim Open Data API
 
 See the source for more info.  Here's a quick example.
 
 >>> from omgeo import Geocoder 
->>> from omgeo.places import PlaceQuery  
 >>> g = Geocoder() 
->>> you_are_here = PlaceQuery('340 N 12th St Philadelphia PA') 
->>> candidates = g.geocode(you_are_here)
+>>> candidates = g.geocode('340 N 12th St, Philadelphia PA')

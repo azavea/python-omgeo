@@ -12,9 +12,9 @@ from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename,
                                             AttrSorter, AttrReverseSorter, UseHighScoreIfAtLeast,\
                                             GroupBy, GroupByMultiple, ScoreSorter, SnapPoints
 
-# Required to run the tests for BING
 BING_MAPS_API_KEY = os.getenv("BING_MAPS_API_KEY")
 ESRI_MAPS_API_KEY = os.getenv("ESRI_MAPS_API_KEY")
+MAPQUEST_API_KEY = os.getenv("MAPQUEST_API_KEY")
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,9 @@ class OmgeoTestCase(unittest.TestCase):
 
 class GeocoderTest(OmgeoTestCase):
     g = None # not set until set up
-    BING_KEY_REQUIRED_MSG = 'Enter a Bing Maps API key to run the bing tests'
+    BING_KEY_REQUIRED_MSG = 'Enter a Bing Maps API key to run the Bing tests.'
+    MAPQUEST_KEY_REQUIRED_MSG = 'Enter a MapQuest API key to run the MapQuest tests. '\
+                                'Keys can be obtained at http://developer.mapquest.com/.'
     
     def setUp(self):
         # Viewbox objects
@@ -78,6 +80,12 @@ class GeocoderTest(OmgeoTestCase):
             self.service_bing = ['omgeo.services.Bing', dict(settings=bing_settings)]
             g_sources.append(self.service_bing)
             self.g_bing = Geocoder([self.service_bing])
+        if MAPQUEST_API_KEY is not None:
+            mapquest_settings = dict(api_key=MAPQUEST_API_KEY)
+            self.service_mapquest = ['omgeo.services.MapQuest', dict(settings=mapquest_settings)]
+            self.g_mapquest = Geocoder([self.service_mapquest])
+            self.service_mapquest_ssl = ['omgeo.services.MapQuestSSL', dict(settings=mapquest_settings)]
+            self.g_mapquest_ssl = Geocoder([self.service_mapquest_ssl])            
         self.service_nom = ['omgeo.services.Nominatim', {}]
         g_sources.append(self.service_nom)
         self.g_nom = Geocoder([self.service_nom])
@@ -129,6 +137,17 @@ class GeocoderTest(OmgeoTestCase):
     def test_geocode_bing(self):
         candidates = self.g_bing.geocode(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
+        
+    @unittest.skipIf(MAPQUEST_API_KEY is None, MAPQUEST_KEY_REQUIRED_MSG)
+    def test_geocode_mapquest(self):
+        candidates = self.g_mapquest.geocode(self.pq['azavea'])
+        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
+
+    @unittest.skipIf(MAPQUEST_API_KEY is None, MAPQUEST_KEY_REQUIRED_MSG)
+    def test_geocode_mapquest(self):
+        candidates = self.g_mapquest_ssl.geocode(self.pq['azavea'])
+        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
+        
         
     def test_geocode_nom(self):
         candidates = self.g_nom.geocode(PlaceQuery('1200 Callowhill St, Philadelphia, PA, 19123'))

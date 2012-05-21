@@ -1,10 +1,12 @@
 from base import GeocodeService
+import json
 import logging
 from omgeo.places import Candidate
 from omgeo.processors.preprocessors import CountryPreProcessor, RequireCountry, ParseSingleLine, ReplaceRangeWithNumber
 from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename, AttrSorter, AttrMigrator, UseHighScoreIfAtLeast, GroupBy, ScoreSorter
 from suds.client import Client
 import time
+from urllib import unquote
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +108,81 @@ class Bing(GeocodeService):
             c.geoservice = self.__class__.__name__
             returned_candidates.append(c)
         return returned_candidates
+    
+class CitizenAtlas(GeocodeService):
+    '''
+    Class to geocode using the Washington DC CitizenAtlas <http://citizenatlas.dc.gov/newwebservices>
+    '''
+
+    _endpoint = 'http://citizenatlas.dc.gov/newwebservices/locationverifier.asmx/findLocation'
+
+    def _geocode(self, place_query):
+
+        # Define helper functions
+
+        def _get_text_from_nodelist(nodelist):
+            rc = []
+            for node in nodelist:
+                if node.nodeType == node.TEXT_NODE:
+                    rc.append(node.data)
+            return ''.join(rc)
+
+        def _create_candidate_from_intersection_element(intersection_element, source_operation):
+            c = Candidate()
+            c.locator = source_operation
+            c.match_addr = _get_text_from_nodelist(
+                intersection_element.getElementsByTagName("FULLINTERSECTION")[0].childNodes) + ", WASHINGTON, DC"
+            c.y = float(_get_text_from_nodelist(intersection_element.getElementsByTagName("LATITUDE")[0].childNodes))
+            c.x = float(_get_text_from_nodelist(intersection_element.getElementsByTagName("LONGITUDE")[0].childNodes))
+            confidence_level_elements = intersection_element.getElementsByTagName("ConfidenceLevel")
+            c.score = float(_get_text_from_nodelist(confidence_level_elements[0].childNodes))
+            c.geoservice = self.__class__.__name__
+            return c
+
+        def _create_candidate_from_address_element(match, source_operation):
+            if match.getElementsByTagName("FULLADDRESS").length > 0:
+                full_address = _get_text_from_nodelist(match.getElementsByTagName("FULLADDRESS")[0].childNodes)
+            else:
+                full_address = _get_text_from_nodelist(
+                    match.getElementsByTagName("STNAME")[0].childNodes) + " " + _get_text_from_nodelist(match.getElementsByTagName("STREET_TYPE")[0].childNodes)
+            city = _get_text_from_nodelist(match.getElementsByTagName("CITY")[0].childNodes)
+            state = _get_text_from_nodelist(match.getElementsByTagName("STATE")[0].childNodes)
+            zipcode = _get_text_from_nodelist(match.getElementsByTagName("ZIPCODE")[0].childNodes)
+            c = Candidate()
+            c.match_addr = full_address + ", " + city + ", " + state + ", " + zipcode
+            confidence_level_elements = match.getElementsByTagName("ConfidenceLevel")
+            c.score = float(_get_text_from_nodelist(confidence_level_elements[0].childNodes))
+            c.y = float(_get_text_from_nodelist(match.getElementsByTagName("LATITUDE")[0].childNodes))
+            c.x = float(_get_text_from_nodelist(match.getElementsByTagName("LONGITUDE")[0].childNodes))
+            c.locator = source_operation
+            c.geoservice = self.__class__.__name__
+            return c
+
+        # Geocode
+
+        query = { 'str': place_query.query }
+
+        response_doc = self._get_xml_doc(self._endpoint, query)
+        if response_doc is False: return []
+
+        address_matches = response_doc.getElementsByTagName("Table1")
+        if address_matches.length == 0: return []
+
+        if response_doc.getElementsByTagName("sourceOperation").length > 0:
+            source_operation = _get_text_from_nodelist(
+                response_doc.getElementsByTagName("sourceOperation")[0].childNodes)
+        else:
+            source_operation = ""
+
+        candidates = [] # this will be the list returned
+
+        for match in address_matches:
+            if source_operation == "DC Intersection":
+                candidates.append(_create_candidate_from_intersection_element(match, source_operation))
+            elif source_operation == "DC Address" or source_operation == "DC Place":
+                candidates.append(_create_candidate_from_address_element(match, source_operation))
+
+        return candidates
 
 class EsriGeocodeService(GeocodeService):
     """
@@ -465,13 +542,61 @@ class EsriNA(EsriGeocodeService, EsriNAGeocodeService):
             except KeyError:
                 pass
         return returned_candidates
+    
+class MapQuest(GeocodeService):
+    """
+    Class to geocode using MapQuest licensed services.
+    """
+    _endpoint = 'http://www.mapquestapi.com/geocoding/v1/address'
+    
+    def _geocode(self, pq):
+        def get_appended_location(location, **kwargs):
+            """Add key/value pair to given dict only if value is not empty string."""
+            for kw in kwargs:
+                if kwargs[kw] != '':
+                    location = dict(location, **{kw: kwargs[kw]})
+            return location
+        location = {}
+        location = get_appended_location(location, street=pq.query)
+        if location == {}:
+            location = get_appended_location(location, street=pq.address)
+        location = get_appended_location(location, city=pq.city, state=pq.state,
+                                         postal=pq.postal, country=pq.country)
+        json_ = dict(location=location)
+        json_ = json.dumps(json_)
+        logger.debug('MQ json: %s', json_)
+        query = dict(key=unquote(self._settings['api_key']),
+                     json=json_)
+        if pq.viewbox is not None:
+            query = dict(query, viewbox=pq.viewbox.to_mapquest_str())        
+        response_obj = self._get_json_obj(self._endpoint, query)
+        logger.debug('MQ RESPONSE: %s', response_obj)
+        if response_obj is False:
+            return []
+        returned_candidates = [] # this will be the list returned
+        for r in response_obj['results'][0]['locations']:
+            c = Candidate()
+            c.locator=r['geocodeQuality']
+            c.confidence=r['geocodeQualityCode'] #http://www.mapquestapi.com/geocoding/geocodequality.html
+            match_addr_elements = ['street', 'adminArea5', 'adminArea3',
+                                   'adminArea2', 'postalCode'] # similar to ESRI
+            c.match_addr = ', '.join([r[k] for k in match_addr_elements if k in r])
+            c.x = r['latLng']['lng']
+            c.y = r['latLng']['lat']
+            c.wkid = 4326
+            c.geoservice = self.__class__.__name__
+            returned_candidates.append(c)
+        return returned_candidates
+    
+class MapQuestSSL(MapQuest):
+    _endpoint = 'https://www.mapquestapi.com/geocoding/v1/address'
 
 class Nominatim(GeocodeService):
     """
-    Class to geocode using `Nominatim services <http://open.mapquestapi.com/nominatim/>`_.
+    Class to geocode using `Nominatim services hosted 
+    by MapQuest <http://open.mapquestapi.com/nominatim/>`_.
     """
     _wkid = 4326
-
     _endpoint = 'http://open.mapquestapi.com/nominatim/v1/search'
 
     DEFAULT_ACCEPTED_ENTITIES = ['building.', 'historic.castle', 'leisure.ice_rink', 
@@ -515,7 +640,7 @@ class Nominatim(GeocodeService):
         returned_candidates = [] # this will be the list returned
         for r in response_obj:    
             c = Candidate()
-            c.locator = 'parcel' # we don't have one but this is the closes match
+            c.locator = 'parcel' # we don't have one but this is the closest match
             c.entity = '%s.%s' % (r['class'], r['type']) # ex.: "place.house"
             c.match_addr = r['display_name'] # ex. "Wolf Building, 340, N 12th St, Philadelphia, Philadelphia County, Pennsylvania, 19107, United States of America" #TODO: shorten w/ pieces
             c.x = float(r['lon']) # long, ex. -122.13 # cast to float in 1.3.4
@@ -524,78 +649,3 @@ class Nominatim(GeocodeService):
             c.geoservice = self.__class__.__name__
             returned_candidates.append(c)
         return returned_candidates
-
-class CitizenAtlas(GeocodeService):
-    '''
-    Class to geocode using the Washington DC CitizenAtlas <http://citizenatlas.dc.gov/newwebservices>
-    '''
-
-    _endpoint = 'http://citizenatlas.dc.gov/newwebservices/locationverifier.asmx/findLocation'
-
-    def _geocode(self, place_query):
-
-        # Define helper functions
-
-        def _get_text_from_nodelist(nodelist):
-            rc = []
-            for node in nodelist:
-                if node.nodeType == node.TEXT_NODE:
-                    rc.append(node.data)
-            return ''.join(rc)
-
-        def _create_candidate_from_intersection_element(intersection_element, source_operation):
-            c = Candidate()
-            c.locator = source_operation
-            c.match_addr = _get_text_from_nodelist(
-                intersection_element.getElementsByTagName("FULLINTERSECTION")[0].childNodes) + ", WASHINGTON, DC"
-            c.y = float(_get_text_from_nodelist(intersection_element.getElementsByTagName("LATITUDE")[0].childNodes))
-            c.x = float(_get_text_from_nodelist(intersection_element.getElementsByTagName("LONGITUDE")[0].childNodes))
-            confidence_level_elements = intersection_element.getElementsByTagName("ConfidenceLevel")
-            c.score = float(_get_text_from_nodelist(confidence_level_elements[0].childNodes))
-            c.geoservice = self.__class__.__name__
-            return c
-
-        def _create_candidate_from_address_element(match, source_operation):
-            if match.getElementsByTagName("FULLADDRESS").length > 0:
-                full_address = _get_text_from_nodelist(match.getElementsByTagName("FULLADDRESS")[0].childNodes)
-            else:
-                full_address = _get_text_from_nodelist(
-                    match.getElementsByTagName("STNAME")[0].childNodes) + " " + _get_text_from_nodelist(match.getElementsByTagName("STREET_TYPE")[0].childNodes)
-            city = _get_text_from_nodelist(match.getElementsByTagName("CITY")[0].childNodes)
-            state = _get_text_from_nodelist(match.getElementsByTagName("STATE")[0].childNodes)
-            zipcode = _get_text_from_nodelist(match.getElementsByTagName("ZIPCODE")[0].childNodes)
-            c = Candidate()
-            c.match_addr = full_address + ", " + city + ", " + state + ", " + zipcode
-            confidence_level_elements = match.getElementsByTagName("ConfidenceLevel")
-            c.score = float(_get_text_from_nodelist(confidence_level_elements[0].childNodes))
-            c.y = float(_get_text_from_nodelist(match.getElementsByTagName("LATITUDE")[0].childNodes))
-            c.x = float(_get_text_from_nodelist(match.getElementsByTagName("LONGITUDE")[0].childNodes))
-            c.locator = source_operation
-            c.geoservice = self.__class__.__name__
-            return c
-
-        # Geocode
-
-        query = { 'str': place_query.query }
-
-        response_doc = self._get_xml_doc(self._endpoint, query)
-        if response_doc is False: return []
-
-        address_matches = response_doc.getElementsByTagName("Table1")
-        if address_matches.length == 0: return []
-
-        if response_doc.getElementsByTagName("sourceOperation").length > 0:
-            source_operation = _get_text_from_nodelist(
-                response_doc.getElementsByTagName("sourceOperation")[0].childNodes)
-        else:
-            source_operation = ""
-
-        candidates = [] # this will be the list returned
-
-        for match in address_matches:
-            if source_operation == "DC Intersection":
-                candidates.append(_create_candidate_from_intersection_element(match, source_operation))
-            elif source_operation == "DC Address" or source_operation == "DC Place":
-                candidates.append(_create_candidate_from_address_element(match, source_operation))
-
-        return candidates

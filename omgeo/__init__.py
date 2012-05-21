@@ -1,5 +1,6 @@
 import copy
 import logging
+from omgeo.places import PlaceQuery
 from omgeo.processors.postprocessors import DupePicker, SnapPoints
 import time
 
@@ -95,10 +96,13 @@ class Geocoder():
         """
         start_time = time.time()
         waterfall = self._settings.get('waterfall', False)
+        if type(pq) in (str, unicode):
+            pq = PlaceQuery(pq)
         processed_pq = copy.copy(pq)
         for p in self._preprocessors: # apply universal address preprocessing
             processed_pq = p.process(processed_pq)
-            if processed_pq == False: return []
+            if processed_pq == False:
+                return []
 
         processed_candidates = []
         for gs in self._sources: # iterate through each GeocodeService
@@ -109,6 +113,8 @@ class Geocoder():
                 break # if >= 1 good candidate, don't go to next geocoder
 
         for p in self._postprocessors: # apply univ. candidate postprocessing
+            if processed_candidates == []:
+                return [] # avoid post-processing empty list
             logger.debug('%s: Applying universal postprocessor %s...' % ((time.time() - start_time), p))
-            processed_candidates = p.process(processed_candidates) 
+            processed_candidates = p.process(processed_candidates)
         return processed_candidates
