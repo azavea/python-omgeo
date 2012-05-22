@@ -3,6 +3,7 @@ import logging
 from omgeo.places import PlaceQuery
 from omgeo.processors.postprocessors import DupePicker, SnapPoints
 import time
+import timeout
 
 logger = logging.logger = logging.getLogger(__name__)
 
@@ -22,6 +23,10 @@ class Geocoder():
                             ...}
     preprocessors   -- list of universal preprocessors to use
     postprocessors  -- list of universal postprocessors to use
+    timeout_secs    -- seconds to wait for a geocoding source before moving
+                       on to the next one (default 5)
+    waterfall       -- sets default for waterfall on geocode() method
+                       (default False)
     """
 
     DEFAULT_SOURCES = [['omgeo.services.EsriNA', {}],
@@ -69,20 +74,18 @@ class Geocoder():
         for source in sources: # iterate through a list of sources
             self.add_source(source)
 
-    def __init__(self, sources=None, preprocessors=None, postprocessors=None):
+    def __init__(self, sources=None, preprocessors=None, postprocessors=None,
+                 timeout_secs=5, waterfall=False):
         self._preprocessors = Geocoder.DEFAULT_PREPROCESSORS \
             if preprocessors is None else preprocessors
-        
         self._postprocessors = Geocoder.DEFAULT_POSTPROCESSORS \
             if postprocessors is None else postprocessors
-
-        # Reserved for future use
-        self._settings = {}
-    
         sources = Geocoder.DEFAULT_SOURCES if sources is None else sources
         self.set_sources(sources)
-
-    def geocode(self, pq, waterfall=None):
+        self.timeout_secs = timeout_secs
+        self.waterfall = waterfall
+        
+    def geocode(self, pq, timeout_secs=None, waterfall=None):
         """
         Returns a list of Candidate objects
 
@@ -92,29 +95,35 @@ class Geocoder():
         waterfall   --  Boolean set to True if all geocoders listed should
                         be used to find results, instead of stopping after
                         the first geocoding service with valid candidates
-                        (default False).
+                        (defaults to <Geocoder instance>.waterfall).
         """
         start_time = time.time()
-        waterfall = self._settings.get('waterfall', False)
+        timeout_secs = self.timeout_secs if timeout_secs is None else timeout_secs
+        waterfall = self.waterfall if waterfall is None else waterfall
         if type(pq) in (str, unicode):
             pq = PlaceQuery(pq)
         processed_pq = copy.copy(pq)
+        
         for p in self._preprocessors: # apply universal address preprocessing
             processed_pq = p.process(processed_pq)
             if processed_pq == False:
                 return []
-
+            
         processed_candidates = []
         for gs in self._sources: # iterate through each GeocodeService
             logger.debug('%s: Geocoding using %s...' % ((time.time() - start_time), gs))
-            candidates = gs.geocode(processed_pq)
-            processed_candidates += candidates # merge lists
-            if waterfall is False and len(processed_candidates) > 0:
-                break # if >= 1 good candidate, don't go to next geocoder
+            try:
+                candidates = timeout.call_with_timeout(gs.geocode, timeout_secs)(processed_pq)
+                processed_candidates += candidates # merge lists
+                if waterfall is False and len(processed_candidates) > 0:
+                    break # if >= 1 good candidate, don't go to next geocoder
+            except timeout.TimeoutException:
+                pass # time's up, on to the next one!
 
         for p in self._postprocessors: # apply univ. candidate postprocessing
             if processed_candidates == []:
                 return [] # avoid post-processing empty list
             logger.debug('%s: Applying universal postprocessor %s...' % ((time.time() - start_time), p))
             processed_candidates = p.process(processed_candidates)
+            
         return processed_candidates

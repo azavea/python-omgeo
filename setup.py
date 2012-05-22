@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name="python-omgeo",
-    version="1.3.5",
+    version="1.3.6",
     description="A Python Geocoding Library",
     author="Azavea, Inc.",
     author_email="info@azavea.com",
@@ -24,7 +24,8 @@ setup(
         'Programming Language :: Python :: 2.6'
     ],
     install_requires=[
-        'suds==0.4'
+        'suds==0.4',
+        'timeout==0.1.2'
     ],
     test_suite = 'omgeo.tests.tests',
 )
