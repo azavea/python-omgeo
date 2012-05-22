@@ -24,8 +24,7 @@ setup(
         'Programming Language :: Python :: 2.6'
     ],
     install_requires=[
-        'suds==0.4',
-        'timeout==0.1.2'
+        'suds==0.4'
     ],
     test_suite = 'omgeo.tests.tests',
 )

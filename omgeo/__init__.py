@@ -3,7 +3,6 @@ import logging
 from omgeo.places import PlaceQuery
 from omgeo.processors.postprocessors import DupePicker, SnapPoints
 import time
-import timeout
 
 logger = logging.logger = logging.getLogger(__name__)
 
