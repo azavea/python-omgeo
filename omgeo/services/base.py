@@ -2,9 +2,11 @@ import copy
 from datetime import datetime
 from json import loads
 import logging
+import socket
 import time
 from traceback import format_exc
-from urllib import urlencode, urlopen
+from urllib import urlencode
+from urllib2 import HTTPError, urlopen, URLError
 from xml.dom import minidom
 
 logger = logging.getLogger(__name__)
@@ -21,7 +23,7 @@ class GeocodeService():
     """
 
     def __init__(self, preprocessors=None, postprocessors=None,
-            settings=None):
+                 settings=None):
         """
         Overwrite _preprocessors, _postprocessors, and _settings
         if they are set.
@@ -41,7 +43,6 @@ class GeocodeService():
         """
         Settings for this geocoder, usually overwritten in subclass
         """
-        # self._endpoint = ''
         if preprocessors is not None:
             self._preprocessors = preprocessors
         if postprocessors is not None:
@@ -75,27 +76,38 @@ class GeocodeService():
                 if accept_none is False and self._settings[keyname] is None:
                     return keyname
         return True
-            
+    
+    def _get_response(self, endpoint, query):
+        """Returns response or False in event of failure"""
+        timeout_secs = self._settings.get('timeout', 10)
+        try:
+            response = urlopen('%s?%s' % (endpoint, urlencode(query)),
+                               timeout=timeout_secs)
+        except Exception as ex:
+            if type(ex) == socket.timeout:
+                logger.info("GEOCODER: %s; EXCEPTION: timed out after %s seconds." % (self.__class__.__name__, timeout_secs))
+                return False
+            else:
+                raise ex
+        if response.code != 200:
+            raise Exception('Received status code %s for %s. Content is:\n%s'
+                            % (self.get_service_name(), response.read()))
+        return response
+    
     def _get_json_obj(self, endpoint, query):
         """
         Return False if connection could not be made.
         Otherwise, return a response object from JSON.
         """
-        try:
-            response = urlopen('%s?%s' % (endpoint, urlencode(query)))
-        except:
-            logger.error("%s couldn't connect to server" %
-                self.get_service_name())
-            logger.error(format_exc())
+        response = self._get_response(endpoint, query)
+        if response == False:
             return False
-        if response.code != 200: return False
         content = response.read()  
         try:  
             return loads(content)
         except ValueError:
-            logger.error("%s couldn't decode JSON: %s" % 
-                self.get_service_name, content)
-            logger.error(format_exc())
+            logger.error("GEOCODER: %s; EXCEPTION: couldn't decode JSON: %s" % 
+                self.__class__.__name__, content)
             return False
 
     def _get_xml_doc(self, endpoint, query):
@@ -103,14 +115,9 @@ class GeocodeService():
         Return False if connection could not be made.
         Otherwise, return a minidom Document.
         """
-        try:
-            response = urlopen('%s?%s' % (endpoint, urlencode(query)))
-        except:
-            logger.error("%s couldn't connect to server" %
-                self.get_service_name())
-            logger.error(format_exc())
+        response = self._get_response(endpoint, query)
+        if response == False:
             return False
-        if response.code != 200: return False
         return minidom.parse(response)
 
     def _geocode(self, place_query):
@@ -133,19 +140,16 @@ class GeocodeService():
             processed_pq = p.process(processed_pq)
             logger.debug('%s: Preprocessed through %s' % (time.time() - start_time, p))
             if processed_pq == False: return []
-        
-    
         try:
             start = datetime.now()
             candidates = self._geocode(processed_pq)
             end = datetime.now()
             logger.info('GEOCODER: %s; results %d; time %s;' %
-                (self.__class__.__name__, len(candidates), end-start))
+                (self.get_service_name(), len(candidates), end-start))
         except:
-            logger.info('GEOCODER: %s; Exception when attempting to geocode %s' %
-                (self.__class__.__name__, format_exc()))
+            logger.info('GEOCODER: %s; EXCEPTION:\n%s' %
+                (self.get_service_name(), format_exc()))
             candidates = []
-
         logger.debug('%s: BEGINNING POSTPROCESSING FOR %s' % (time.time() - start_time, self.get_service_name()))
         for p in self._postprocessors: # apply universal candidate postprocessing
             candidates = p.process(candidates) # merge lists

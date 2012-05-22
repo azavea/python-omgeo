@@ -89,9 +89,8 @@ class ParseSingleLine(PreProcessor):
             if pq.city == '': pq.city = city
 
         return pq
-
-class CountryPreProcessor(PreProcessor):
     
+class CountryPreProcessor(PreProcessor):
     acceptable_countries = []
     """
     A list of acceptable countries.
@@ -127,6 +126,44 @@ class CountryPreProcessor(PreProcessor):
            pq.country not in self.acceptable_countries:
             return False
         return pq
+    
+    
+class CancelIfRegexInAttr(PreProcessor):
+    """
+    Return False if given regex is found in ANY of the given
+    PlaceQuery attributes, otherwise return original PlaceQuery instance.
+    In the event that a given attribute does not exist in the given
+    PlaceQuery, no exception will be raised.
+    
+    Arguments
+    =========
+    regex         -- a regex string to match (represents what you do NOT want)
+    attrs         -- a list or tuple of strings of attribute names to look through
+    ignorecase    -- set to False for a case-sensitive match (default True)
+    """
+    def __init__(self, regex, attrs, ignorecase=True):
+        regex_type = type(regex)
+        if type(regex) not in (str, unicode):
+            raise Exception('First param "regex" must be a regex of type'\
+                            ' str or unicode, not %s.' % regex_type)
+        attrs_type = type(attrs)
+        if attrs_type not in (list, tuple):
+            raise Exception('Second param "attrs" must be a list or tuple'\
+                            ' of PlaceQuery attributes, not %s.' % attrs_type)
+        if any(type(attr) not in (str, unicode) for attr in attrs):
+            raise Exception('All given PlaceQuery attributes must be strings.')
+        self.attrs = attrs
+        if ignorecase:
+            self.regex = re.compile(regex, re.IGNORECASE)
+        else:
+            self.regex = re.compile(regex)
+        
+    def process(self, pq):
+        attrs = [getattr(pq, attr) for attr in self.attrs if hasattr(pq, attr)]
+        if any([self.regex.match(attr) is not None for attr in attrs]):
+            return False # if a match is found
+        return pq
+    
 
 class RequireCountry(PreProcessor):
     """

@@ -48,8 +48,8 @@ class Geocoder():
             for p in path:
                 m = getattr(m, p)
             return m
-        except:
-            raise Exception("No geocoder with the name %s" % service_name)
+        except Exception as ex:
+            raise Exception("%s" % (ex))
 
     def add_source(self, source):
         geocode_service = self._get_service_by_name(source[0])
@@ -75,17 +75,16 @@ class Geocoder():
             self.add_source(source)
 
     def __init__(self, sources=None, preprocessors=None, postprocessors=None,
-                 timeout_secs=5, waterfall=False):
+                 waterfall=False):
         self._preprocessors = Geocoder.DEFAULT_PREPROCESSORS \
             if preprocessors is None else preprocessors
         self._postprocessors = Geocoder.DEFAULT_POSTPROCESSORS \
             if postprocessors is None else postprocessors
         sources = Geocoder.DEFAULT_SOURCES if sources is None else sources
         self.set_sources(sources)
-        self.timeout_secs = timeout_secs
         self.waterfall = waterfall
         
-    def geocode(self, pq, timeout_secs=None, waterfall=None):
+    def geocode(self, pq, waterfall=None):
         """
         Returns a list of Candidate objects
 
@@ -98,7 +97,6 @@ class Geocoder():
                         (defaults to <Geocoder instance>.waterfall).
         """
         start_time = time.time()
-        timeout_secs = self.timeout_secs if timeout_secs is None else timeout_secs
         waterfall = self.waterfall if waterfall is None else waterfall
         if type(pq) in (str, unicode):
             pq = PlaceQuery(pq)
@@ -112,13 +110,10 @@ class Geocoder():
         processed_candidates = []
         for gs in self._sources: # iterate through each GeocodeService
             logger.debug('%s: Geocoding using %s...' % ((time.time() - start_time), gs))
-            try:
-                candidates = timeout.call_with_timeout(gs.geocode, timeout_secs)(processed_pq)
-                processed_candidates += candidates # merge lists
-                if waterfall is False and len(processed_candidates) > 0:
-                    break # if >= 1 good candidate, don't go to next geocoder
-            except timeout.TimeoutException:
-                pass # time's up, on to the next one!
+            candidates = gs.geocode(processed_pq)
+            processed_candidates += candidates # merge lists
+            if waterfall is False and len(processed_candidates) > 0:
+                break # if >= 1 good candidate, don't go to next geocoder
 
         for p in self._postprocessors: # apply univ. candidate postprocessing
             if processed_candidates == []:

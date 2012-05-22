@@ -6,8 +6,8 @@ import sys
 import unittest
 from omgeo import Geocoder
 from omgeo.places import Viewbox, PlaceQuery, Candidate
-from omgeo.processors.preprocessors import CountryPreProcessor, RequireCountry, ParseSingleLine,\
-                                           ReplaceRangeWithNumber
+from omgeo.processors.preprocessors import CancelIfRegexInAttr, CountryPreProcessor, RequireCountry,\
+                                           ParseSingleLine, ReplaceRangeWithNumber
 from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename,\
                                             AttrSorter, AttrReverseSorter, UseHighScoreIfAtLeast,\
                                             GroupBy, GroupByMultiple, ScoreSorter, SnapPoints
@@ -17,6 +17,9 @@ ESRI_MAPS_API_KEY = os.getenv("ESRI_MAPS_API_KEY")
 MAPQUEST_API_KEY = os.getenv("MAPQUEST_API_KEY")
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level='INFO')
+#logging.basicConfig(level='DEBUG')
+
 
 class OmgeoTestCase(unittest.TestCase):
     def assertEqual_(self, output, expected):
@@ -94,6 +97,7 @@ class GeocoderTest(OmgeoTestCase):
         self.g_dc = Geocoder([['omgeo.services.CitizenAtlas', {}]])
         self.g_esri_na_soap = Geocoder([['omgeo.services.EsriNASoap', {}]])
         self.g_esri_eu_soap = Geocoder([['omgeo.services.EsriEUSoap', {}]])
+        self.impatient_geocoder = Geocoder([['omgeo.services.EsriNA', dict(settings=dict(timeout=0.01))]])
         
     def tearDown(self):
         pass
@@ -102,6 +106,10 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g.geocode(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
+        
+    def test_impatiently_geocode_azavea(self):
+        candidates = self.impatient_geocoder.geocode(self.pq['azavea'])
+        self.assertEqual(len(candidates) == 0, True, 'Candidates were unexpectedly returned in under 10ms.')
         
     def test_geocode_snap_points_1(self):
         candidates = self.g.geocode(self.pq['8_kirkbride'])
@@ -293,6 +301,18 @@ class GeocoderProcessorTest(OmgeoTestCase):
         place_in = self.pq_us
         place_out = RequireCountry().process(place_in)
         place_exp = False
+        self.assertEqual_(place_out, place_exp)
+        
+    def test_pro_CancelIfRegexInAttr(self):
+        place_in = PlaceQuery('PO Box 123, Philadelphia, PA')
+        place_out = CancelIfRegexInAttr(regex="po box", attrs=('query',)).process(place_in)
+        place_exp = False
+        self.assertEqual_(place_out, place_exp)
+        
+    def test_pro_CancelIfRegexInAttr_case_sensitive(self):
+        place_in = PlaceQuery('PO Box 123, Philadelphia, PA')
+        place_out = CancelIfRegexInAttr(regex="PO BOX", attrs=('query',), ignorecase=False).process(place_in)
+        place_exp = place_in # we should still have it because PO BOX does not match exactly
         self.assertEqual_(place_out, place_exp)
 
     def test_pro_filter_AttrFilter_exact(self):
