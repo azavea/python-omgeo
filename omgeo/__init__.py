@@ -22,8 +22,6 @@ class Geocoder():
                             ...}
     preprocessors   -- list of universal preprocessors to use
     postprocessors  -- list of universal postprocessors to use
-    timeout_secs    -- seconds to wait for a geocoding source before moving
-                       on to the next one (default 5)
     waterfall       -- sets default for waterfall on geocode() method
                        (default False)
     """
