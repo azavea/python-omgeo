@@ -6,8 +6,8 @@ import sys
 import unittest
 from omgeo import Geocoder
 from omgeo.places import Viewbox, PlaceQuery, Candidate
-from omgeo.processors.preprocessors import CancelIfRegexInAttr, CountryPreProcessor, RequireCountry,\
-                                           ParseSingleLine, ReplaceRangeWithNumber
+from omgeo.processors.preprocessors import CancelIfPOBox, CancelIfRegexInAttr, CountryPreProcessor,\
+                                           RequireCountry, ParseSingleLine, ReplaceRangeWithNumber
 from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename,\
                                             AttrSorter, AttrReverseSorter, UseHighScoreIfAtLeast,\
                                             GroupBy, GroupByMultiple, ScoreSorter, SnapPoints
@@ -314,6 +314,55 @@ class GeocoderProcessorTest(OmgeoTestCase):
         place_out = CancelIfRegexInAttr(regex="PO BOX", attrs=('query',), ignorecase=False).process(place_in)
         place_exp = place_in # we should still have it because PO BOX does not match exactly
         self.assertEqual_(place_out, place_exp)
+        
+    def test_pro_CancelIfPOBox(self):
+        place_in = PlaceQuery('PO Box 123, Philadelphia, PA')
+        place_out = CancelIfPOBox().process(place_in)
+        self.assertEqual_(place_out, False)
+        
+        place_in = PlaceQuery(address='PO Box 123', city='Philadelphia', state='PA')
+        place_out = CancelIfPOBox().process(place_in)
+        self.assertEqual_(place_out, False)
+        
+        place_in = PlaceQuery(address='P.O Box 123', city='Philadelphia', state='PA')
+        place_out = CancelIfPOBox().process(place_in)
+        self.assertEqual_(place_out, False)  
+        
+        place_in = PlaceQuery(address='P  O  box 123', city='Philadelphia', state='PA')
+        place_out = CancelIfPOBox().process(place_in)
+        self.assertEqual_(place_out, False)
+        
+        place_in = PlaceQuery(address='P.O. Box 123', city='Philadelphia', state='PA')
+        place_out = CancelIfPOBox().process(place_in)
+        self.assertEqual_(place_out, False)  
+        
+        place_in = PlaceQuery(address='P.O. Box K', city='New Stanton', state='PA')
+        place_out = CancelIfPOBox().process(place_in)
+        self.assertEqual_(place_out, False)
+        
+        place_in = PlaceQuery(address='PO. Box K', city='New Stanton', state='PA')
+        place_out = CancelIfPOBox().process(place_in)
+        self.assertEqual_(place_out, False)
+        
+        place_in = PlaceQuery(address='P.O.B. 123', city='Philadelphia', state='PA')
+        place_out = CancelIfPOBox().process(place_in)
+        self.assertEqual_(place_out, False)      
+        
+        place_in = PlaceQuery(address='P.O. BX123', city='Philadelphia', state='PA')
+        place_out = CancelIfPOBox().process(place_in)
+        self.assertEqual_(place_out, False)
+        
+        place_in = PlaceQuery(address='POB 123', city='Philadelphia', state='PA')
+        place_out = CancelIfPOBox().process(place_in)
+        self.assertEqual_(place_out, False)
+        
+        place_in = PlaceQuery('POBOX 123, Philadelphia, PA')
+        place_out = CancelIfPOBox().process(place_in)
+        self.assertEqual_(place_out, False)  
+        
+        place_in = PlaceQuery('1200 Callowhill St, PO Box 466, Philadelphia, PA')
+        place_out = CancelIfPOBox().process(place_in)
+        self.assertEqual_(place_out, place_in) # should still geocode because we a physical address
 
     def test_pro_filter_AttrFilter_exact(self):
         good_values = ['roof', 'parcel']
