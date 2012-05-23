@@ -55,9 +55,10 @@ v1.3.5, 2012-05-21
 
 v1.3.6, 2012-05-22
 ------------------
- * Added CancelIfRegexInAttr preprocessor to avoid geocoding attempts if
+ * Add SSH support for MapQuest
+ * Add CancelIfRegexInAttr preprocessor to avoid geocoding attempts if
    a PlaceQuery instance attribute matches the given regex (such as a 
    PO Box)
- * Added timeout option that can be included in the GeocodeService settings
+ * Add timeout option that can be included in the GeocodeService settings
    parameter. There is now a default timeout of 10 seconds.
  
