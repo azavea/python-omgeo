@@ -64,4 +64,5 @@ v1.3.6, 2012-05-22
  
 v1.3.7, 2012-05-23
 ------------------
- * Add CancelIfPOBox preprocessor
+ * Add CancelIfPOBox preprocessor and tests
+ * Add __unicode__() / __str__() method to PlaceQuery for string representation
