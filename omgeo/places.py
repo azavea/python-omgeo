@@ -90,6 +90,10 @@ class PlaceQuery():
             raise Exception('Must provide query or one or more of address, city, state, and postal.')
         for k in kwargs:
             setattr(self, k, kwargs[k])
+            
+    def __unicode__(self):
+        return '%s%s' % (self.query, self.address)
+    __str__ = __unicode__
 
 class Candidate():
     """
