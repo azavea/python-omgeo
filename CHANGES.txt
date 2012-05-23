@@ -62,3 +62,6 @@ v1.3.6, 2012-05-22
  * Add timeout option that can be included in the GeocodeService settings
    parameter. There is now a default timeout of 10 seconds.
  
+v1.3.7, 2012-05-23
+------------------
+ * Add CancelIfPOBox preprocessor
