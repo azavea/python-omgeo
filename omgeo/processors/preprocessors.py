@@ -91,26 +91,24 @@ class ParseSingleLine(PreProcessor):
         return pq
     
 class CountryPreProcessor(PreProcessor):
-    acceptable_countries = []
     """
-    A list of acceptable countries.
-    [] is used to indicate that all countries are acceptable.
+    Arguments
+    =========
+    acceptable_countries -- A list of acceptable countries.
+                            [] is used to indicate that all countries are acceptable.
 
-    An empty string is also an acceptable country. To require
-    a country, use the `RequireCountry` preprocessor.
-    """
+                            An empty string is also an acceptable country. To require
+                            a country, use the `RequireCountry` preprocessor.
 
-    country_map = {}
-    """
-    A map of the input PlaceQuery.country property
-    to the country value accepted by the geocoding service.
 
-    Example:
-    ========
-    Suppose that the geocoding service recognizes 'GB', but not 'UK',
-    and 'US', but not 'USA':
-    
-        country_map = {'UK':'GB', 'USA':'US'}
+    country_map          -- A map of the input PlaceQuery.country property
+                            to the country value accepted by the geocoding service.
+
+                            Example:
+                            ========
+                            Suppose that the geocoding service recognizes 'GB', but not 'UK',
+                            and 'US', but not 'USA':
+                                country_map = {'UK':'GB', 'USA':'US'}
     """
 
     def __init__(self, acceptable_countries=[], country_map={}):
@@ -163,6 +161,15 @@ class CancelIfRegexInAttr(PreProcessor):
         if any([self.regex.match(attr) is not None for attr in attrs]):
             return False # if a match is found
         return pq
+    
+
+class CancelIfPOBox(PreProcessor):
+    """
+    Return False if the address is starts with any variation of "PO Box".
+    Otherwise, return original PlaceQuery.
+    """
+    def process(self, pq):
+        return preprocessors.CancelIfRegexInAttr(r'^ .PO BOX', ('address', 'query')).process(pq)
     
 
 class RequireCountry(PreProcessor):
