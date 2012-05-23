@@ -169,7 +169,8 @@ class CancelIfPOBox(PreProcessor):
     Otherwise, return original PlaceQuery.
     """
     def process(self, pq):
-        return preprocessors.CancelIfRegexInAttr(r'^ .PO BOX', ('address', 'query')).process(pq)
+        regex = r'^\s*P\.?\s*O\.?\s*B\.?O?X?[\s\d]'
+        return CancelIfRegexInAttr(regex, ('address', 'query')).process(pq)
     
 
 class RequireCountry(PreProcessor):
