@@ -83,7 +83,9 @@ class Geocoder():
         
     def geocode(self, pq, waterfall=None):
         """
-        Returns a list of Candidate objects
+        Returns a dictionary including:
+         * candidates - list of Candidate objects
+         * upstream_response_info - list of UpstreamResponseInfo objects
 
         Arguments:
         ==========
@@ -93,6 +95,11 @@ class Geocoder():
                         the first geocoding service with valid candidates
                         (defaults to <Geocoder instance>.waterfall).
         """
+        def get_result(candidates=[], upstream_response_info=[]):
+            #TODO: validate
+            return dict(candidates=candidates,
+                        upstream_response_info=upstream_response_info_list)
+            
         start_time = time.time()
         waterfall = self.waterfall if waterfall is None else waterfall
         if type(pq) in (str, unicode):
@@ -102,20 +109,28 @@ class Geocoder():
         for p in self._preprocessors: # apply universal address preprocessing
             processed_pq = p.process(processed_pq)
             if processed_pq == False:
-                return []
+                return get_result() # universal preprocessor rejects PlaceQuery
             
+        upstream_response_info_list = []
         processed_candidates = []
         for gs in self._sources: # iterate through each GeocodeService
             logger.debug('%s: Geocoding using %s...' % ((time.time() - start_time), gs))
-            candidates = gs.geocode(processed_pq)
+            candidates, upstream_response_info = gs.geocode(processed_pq)
+            if upstream_response_info is not None:
+                upstream_response_info_list.append(upstream_response_info)
             processed_candidates += candidates # merge lists
             if waterfall is False and len(processed_candidates) > 0:
                 break # if >= 1 good candidate, don't go to next geocoder
 
         for p in self._postprocessors: # apply univ. candidate postprocessing
             if processed_candidates == []:
-                return [] # avoid post-processing empty list
+                break; # avoid post-processing empty list
             logger.debug('%s: Applying universal postprocessor %s...' % ((time.time() - start_time), p))
             processed_candidates = p.process(processed_candidates)
             
-        return processed_candidates
+        result = get_result(candidates=processed_candidates,
+                            upstream_response_info=upstream_response_info_list)
+        return result
+    
+    def get_candidates(self, pq, waterfall=None):
+        return self.geocode(pq, waterfall)['candidates']

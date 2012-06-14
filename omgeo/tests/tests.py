@@ -103,62 +103,62 @@ class GeocoderTest(OmgeoTestCase):
         pass
 
     def test_geocode_azavea(self):
-        candidates = self.g.geocode(self.pq['azavea'])
+        candidates = self.g.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
         
     def test_impatiently_geocode_azavea(self):
-        candidates = self.impatient_geocoder.geocode(self.pq['azavea'])
+        candidates = self.impatient_geocoder.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) == 0, True, 'Candidates were unexpectedly returned in under 10ms.')
         
     def test_geocode_snap_points_1(self):
-        candidates = self.g.geocode(self.pq['8_kirkbride'])
+        candidates = self.g.get_candidates(self.pq['8_kirkbride'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
         
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_snap_points_2(self):
-        candidates = self.g.geocode(self.pq['alpha_774_W_Central_Ave_Rear'])
+        candidates = self.g.get_candidates(self.pq['alpha_774_W_Central_Ave_Rear'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
 
     def test_geocode_esri_na_us_soap(self):
-        candidates = self.g_esri_na_soap.geocode(PlaceQuery('340 N 12th St., Philadelphia, PA, US'))
+        candidates = self.g_esri_na_soap.get_candidates(PlaceQuery('340 N 12th St., Philadelphia, PA, US'))
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     def test_geocode_esri_na_us(self):
-        candidates = self.g_esri_na.geocode(self.pq['alpha_774_W_Central_Ave_Rear'])
+        candidates = self.g_esri_na.get_candidates(self.pq['alpha_774_W_Central_Ave_Rear'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     def test_geocode_esri_eu_soap(self):
-        candidates = self.g_esri_eu_soap.geocode(PlaceQuery(
+        candidates = self.g_esri_eu_soap.get_candidates(PlaceQuery(
             address='31 Maiden Lane', city='London', country='UK'))
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     def test_geocode_esri_na_nz(self):
-        candidates = self.g_esri_na.geocode(self.pq['karori'])
+        candidates = self.g_esri_na.get_candidates(self.pq['karori'])
         self.assertEqual(len(candidates) > 0, False,
                          'Found New Zealand address when this should only'
                          'be using the North American ESRI geocoder.')
 
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_bing(self):
-        candidates = self.g_bing.geocode(self.pq['azavea'])
+        candidates = self.g_bing.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         
     @unittest.skipIf(MAPQUEST_API_KEY is None, MAPQUEST_KEY_REQUIRED_MSG)
     def test_geocode_mapquest(self):
-        candidates = self.g_mapquest.geocode(self.pq['azavea'])
+        candidates = self.g_mapquest.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     @unittest.skipIf(MAPQUEST_API_KEY is None, MAPQUEST_KEY_REQUIRED_MSG)
     def test_geocode_mapquest(self):
-        candidates = self.g_mapquest_ssl.geocode(self.pq['azavea'])
+        candidates = self.g_mapquest_ssl.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         
         
     def test_geocode_nom(self):
-        candidates = self.g_nom.geocode(PlaceQuery('1200 Callowhill St, Philadelphia, PA, 19123'))
+        candidates = self.g_nom.get_candidates(PlaceQuery('1200 Callowhill St, Philadelphia, PA, 19123'))
         x_type = type(candidates[0].x)
         y_type = type(candidates[0].y)
         self.assertEqual(x_type == float, True, 'x coord is of type %s instead of float' % x_type)
@@ -166,26 +166,26 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
     
     def test_geocode_dc_address(self):
-        candidates = self.g_dc.geocode(PlaceQuery('1600 pennsylvania'))
+        candidates = self.g_dc.get_candidates(PlaceQuery('1600 pennsylvania'))
         self.assertTrue(len(candidates) > 0, 'No candidates returned.')
         self.assertTrue(candidates[0].locator == 'DC Address',
                         'Expected 1600 pennsylvania to be an address match')
 
     def test_geocode_dc_intersection(self):
-        candidates = self.g_dc.geocode(PlaceQuery('h and 15th'))
+        candidates = self.g_dc.get_candidates(PlaceQuery('h and 15th'))
         self.assertTrue(len(candidates) > 0, 'No candidates returned.')
         self.assertTrue(candidates[0].locator == 'DC Intersection',
                         'h and 15th to be an intersection match')
 
     def test_geocode_dupepicker(self):
-        candidates = self.g.geocode(self.pq['ambiguous_azavea'])
+        candidates = self.g.get_candidates(self.pq['ambiguous_azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_karori(self):
         def bldg_no_and_postal_in_addr(c):
             return ('102' in c.match_addr and '6012' in c.match_addr)
-        candidates = self.g.geocode(self.pq['karori'])
+        candidates = self.g.get_candidates(self.pq['karori'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(any([bldg_no_and_postal_in_addr(c) for c in candidates]), True,
                          'Could not find bldg. no. "102" and postcode "6012" in any address.')
@@ -203,7 +203,7 @@ class GeocoderTest(OmgeoTestCase):
         for place in self.pq:
             logger.info(place)
             logger.info(len(place) * '-')
-            candidates = geocoder.geocode(self.pq[place])
+            candidates = geocoder.get_candidates(self.pq[place])
             if len(candidates) == 0:
                 logger.info('Input: %s\n(no results)' % self.pq[place].query)
             else:

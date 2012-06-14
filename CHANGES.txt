@@ -66,3 +66,15 @@ v1.3.7, 2012-05-23
 ------------------
  * Add CancelIfPOBox preprocessor and tests
  * Add __unicode__() / __str__() method to PlaceQuery for string representation
+
+v1.4.0, 2012-06-13
+------------------
+ * IMPORTANT: the Geocoder.geocode() method now returns a dictionary instead
+   of a list of candidates. To just get a list of candidates, use
+   Geocoder.get_candidates(). This functions the same the Geocoder.geocode()
+   method in version 1.3.7.
+ * New dictionary return type includes a list of candidates as well as a
+   list of UpstreamResponseInfo objects, which include information about
+   the upstream API call, including response time and errors.
+ * Simplify error handling
+

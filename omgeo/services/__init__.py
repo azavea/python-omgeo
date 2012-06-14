@@ -20,7 +20,6 @@ class Bing(GeocodeService):
     ============================================================
     api_key --  The API key used to access Bing services.
     """
-
     _endpoint = 'http://dev.virtualearth.net/REST/v1/Locations'
 
     DEFAULT_PREPROCESSORS = [
@@ -91,10 +90,6 @@ class Bing(GeocodeService):
         query = dict(query, **addl_settings)
         logger.debug(query)
         response_obj = self._get_json_obj(self._endpoint, query)
-        if response_obj is False: return []
-  
-        wkid = 4326
-        
         returned_candidates = [] # this will be the list returned
         for r in response_obj['resourceSets'][0]['resources']:    
             c = Candidate()
@@ -104,7 +99,7 @@ class Bing(GeocodeService):
             c.match_addr = r['name'] # ex. "1 Microsoft Way, Redmond, WA 98052"
             c.x = r['geocodePoints'][0]['coordinates'][1] # long, ex. -122.13
             c.y = r['geocodePoints'][0]['coordinates'][0] # lat, ex. 47.64
-            c.wkid = wkid
+            c.wkid = 4326
             c.geoservice = self.__class__.__name__
             returned_candidates.append(c)
         return returned_candidates
@@ -159,14 +154,12 @@ class CitizenAtlas(GeocodeService):
             return c
 
         # Geocode
-
         query = { 'str': place_query.query }
-
         response_doc = self._get_xml_doc(self._endpoint, query)
-        if response_doc is False: return []
 
         address_matches = response_doc.getElementsByTagName("Table1")
-        if address_matches.length == 0: return []
+        if address_matches.length == 0:
+            return []
 
         if response_doc.getElementsByTagName("sourceOperation").length > 0:
             source_operation = _get_text_from_nodelist(
@@ -395,8 +388,6 @@ class EsriEU(EsriGeocodeService, EsriEUGeocodeService):
         query = self.append_token_if_needed(query)
 
         response_obj = self._get_json_obj(self._endpoint, query)
-        if response_obj is False: return []
-        
         returned_candidates = [] # this will be the list returned
         try:
             for rc in response_obj['candidates']: 
@@ -518,9 +509,7 @@ class EsriNA(EsriGeocodeService, EsriNAGeocodeService):
             'f':'json'}
 
         query = self.append_token_if_needed(query)
-
         response_obj = self._get_json_obj(self._endpoint, query)
-        if response_obj is False: return [] 
 
         try:
             wkid = response_obj['spatialReference']['wkid']
@@ -571,8 +560,6 @@ class MapQuest(GeocodeService):
             query = dict(query, viewbox=pq.viewbox.to_mapquest_str())        
         response_obj = self._get_json_obj(self._endpoint, query)
         logger.debug('MQ RESPONSE: %s', response_obj)
-        if response_obj is False:
-            return []
         returned_candidates = [] # this will be the list returned
         for r in response_obj['results'][0]['locations']:
             c = Candidate()
@@ -635,7 +622,6 @@ class Nominatim(GeocodeService):
             query = dict(query, **{'viewbox':pq.viewbox.to_mapquest_str(), 'bounded':pq.bounded})
 
         response_obj = self._get_json_obj(self._endpoint, query)
-        if response_obj is False: return []
   
         returned_candidates = [] # this will be the list returned
         for r in response_obj:    
