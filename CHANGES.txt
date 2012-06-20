@@ -78,3 +78,7 @@ v1.4.0, 2012-06-13
    the upstream API call, including response time and errors.
  * Simplify error handling
 
+v1.4.1, 2012-06-20
+------------------
+ * Wrap entire JSON result processing from geocoder in try/catch
+ * Add separate logger for stats from geocoder
