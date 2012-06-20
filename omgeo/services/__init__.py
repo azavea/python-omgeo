@@ -517,8 +517,8 @@ class EsriNA(EsriGeocodeService, EsriNAGeocodeService):
             pass
         
         returned_candidates = [] # this will be the list returned
-        for rc in response_obj['candidates']:         
-            try: 
+        try: 
+            for rc in response_obj['candidates']:         
                 c = Candidate()
                 c.locator = rc['attributes']['Loc_name']
                 c.score = rc['score']
@@ -528,8 +528,8 @@ class EsriNA(EsriGeocodeService, EsriNAGeocodeService):
                 c.wkid = wkid
                 c.geoservice = self.__class__.__name__
                 returned_candidates.append(c)
-            except KeyError:
-                pass
+        except KeyError:
+            pass
         return returned_candidates
     
 class MapQuest(GeocodeService):
