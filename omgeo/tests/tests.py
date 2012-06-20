@@ -17,8 +17,7 @@ ESRI_MAPS_API_KEY = os.getenv("ESRI_MAPS_API_KEY")
 MAPQUEST_API_KEY = os.getenv("MAPQUEST_API_KEY")
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level='INFO')
-#logging.basicConfig(level='DEBUG')
+logging.basicConfig(level='ERROR')
 
 
 class OmgeoTestCase(unittest.TestCase):

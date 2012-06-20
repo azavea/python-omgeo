@@ -10,6 +10,7 @@ from urllib2 import HTTPError, urlopen, URLError
 from xml.dom import minidom
 
 logger = logging.getLogger(__name__)
+stats_logger = logging.getLogger('omgeo.stats')
 
 class UpstreamResponseInfo():
     """
@@ -209,11 +210,21 @@ class GeocodeService():
             upstream_response_info.set_response_time(1000 * (end - start).total_seconds())
             logger.info('GEOCODER: %s; results %d; time %s;' %
                 (self.get_service_name(), len(candidates), upstream_response_info.response_time))
+            stats_logger.info({
+                'event': 'geocode',
+                'time': (end-start).total_seconds(),
+                'resultCount': len(candidates),
+                'service': self.get_service_name()
+            })
         except:
             upstream_response_info.set_success(False)
             upstream_response_info.errors.append(format_exc())
             logger.info('GEOCODER: %s; EXCEPTION:\n%s' %
                 (self.get_service_name(), format_exc()))
+            stats_logger.info({
+                'event': 'exception',
+                'service': self.get_service_name()
+            })
             return [], upstream_response_info
         if len(candidates) > 0:
             logger.debug('%s: BEGINNING POSTPROCESSING FOR %s' % (time.time() - start_time,
