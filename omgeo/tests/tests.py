@@ -48,7 +48,7 @@ class GeocoderTest(OmgeoTestCase):
         self.pq['wolf_philly'] = PlaceQuery('Wolf Building, Philadelphia PA')
         self.pq['wolf_bounded'] = PlaceQuery('Wolf Building', viewbox=vb['callowhill'])
         self.pq['alpha_774R_W_Central_Ave'] = PlaceQuery('774R W Central Ave Alpha NJ')
-        self.pq['alpha_774_W_Central_Ave_Rear'] = PlaceQuery('774 W Central Ave Rear Alpha NJ')
+        self.pq['alpha_774_W_Central_Ave_Rear'] = PlaceQuery('774 W Central Ave Rear, Alpha NJ')
         self.pq['8_kirkbride'] = PlaceQuery('8 Kirkbride Rd 08822')
         self.pq['george_washington'] = PlaceQuery('201 W Montmorency Blvd, George, Washington')
         self.pq['pine_needles_dr'] = PlaceQuery('11761 pine needles providence forge')
@@ -122,12 +122,14 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
 
     def test_geocode_esri_na_us_soap(self):
-        candidates = self.g_esri_na_soap.get_candidates(PlaceQuery('340 N 12th St., Philadelphia, PA, US'))
-        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
+        location = '340 N 12th St., Philadelphia, PA, US'
+        candidates = self.g_esri_na_soap.get_candidates(location)
+        self.assertEqual(len(candidates) > 0, True, 'No candidates returned for %s.' % location)
 
     def test_geocode_esri_na_us(self):
-        candidates = self.g_esri_na.get_candidates(self.pq['alpha_774_W_Central_Ave_Rear'])
-        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
+        location = '340 N 12th St., Philadelphia, PA, US'
+        candidates = self.g_esri_na.get_candidates(location)
+        self.assertEqual(len(candidates) > 0, True, 'No candidates returned for %s.' % location)
 
     def test_geocode_esri_eu_soap(self):
         candidates = self.g_esri_eu_soap.get_candidates(PlaceQuery(
