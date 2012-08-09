@@ -55,7 +55,9 @@ class UpstreamResponseInfo():
             self.success = success
     
     def __init__(self, geoservice, response_code=None, response_time=None, 
-                 success=True, errors=[]):
+                 success=True, errors=None):
+        if errors is None:
+            errors = []
         self.geoservice = geoservice
         self.set_response_code(response_code)
         self.set_response_time(response_time)
@@ -198,8 +200,8 @@ class GeocodeService():
         logger.debug('%s: BEGINNING PREPROCESSING FOR %s' % (time.time() - start_time,
                                                              self.get_service_name()))
         for p in self._preprocessors:
-            processed_pq = p.process(processed_pq)
-            logger.debug('%s: Preprocessed through %s' % (time.time() - start_time, p))
+            processed_pq = p.process(processed_pq
+)            logger.debug('%s: Preprocessed through %s' % (time.time() - start_time, p))
             if processed_pq == False:
                 return [], None
         upstream_response_info = UpstreamResponseInfo(self.get_service_name())
@@ -207,12 +209,15 @@ class GeocodeService():
             start = datetime.now()
             candidates = self._geocode(processed_pq)
             end = datetime.now()
-            upstream_response_info.set_response_time(1000 * (end - start).total_seconds())
+            response_time_sec = (end - start).total_seconds()
+            upstream_response_info.set_response_time(1000 * response_time_sec)
             logger.info('GEOCODER: %s; results %d; time %s;' %
                 (self.get_service_name(), len(candidates), upstream_response_info.response_time))
             stats_logger.info({
+                'original_pq': pq,
+                'processed_pq': processed_pq,
                 'event': 'geocode',
-                'time': (end-start).total_seconds(),
+                'time': response_time_sec,
                 'resultCount': len(candidates),
                 'service': self.get_service_name()
             })
