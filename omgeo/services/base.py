@@ -139,12 +139,14 @@ class GeocodeService():
                                timeout=timeout_secs)
         except Exception as ex:
             if type(ex) == socket.timeout:
-                raise Exception('API request timed out after %s seconds.') % timeout_secs
+                raise Exception('API request timed out after %s seconds.' % timeout_secs)
             else:
                 raise ex
         if response.code != 200:
-            raise Exception('Received status code %s for %s. Content is:\n%s'
-                            % (self.get_service_name(), response.read()))
+            raise Exception('Received status code %s from %s. Content is:\n%s'
+                            % (response.code,
+                               self.get_service_name(),
+                               response.read()))
         return response
     
     def _get_json_obj(self, endpoint, query):
@@ -157,7 +159,8 @@ class GeocodeService():
         try:  
             return loads(content)
         except ValueError:
-            raise Exception('Could not decode content to JSON:\n%s' % self.__class__.__name__, content)
+            raise Exception('Could not decode content to JSON:\n%s'
+                            % self.__class__.__name__, content)
 
     def _get_xml_doc(self, endpoint, query):
         """
