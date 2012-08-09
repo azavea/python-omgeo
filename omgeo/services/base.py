@@ -200,8 +200,8 @@ class GeocodeService():
         logger.debug('%s: BEGINNING PREPROCESSING FOR %s' % (time.time() - start_time,
                                                              self.get_service_name()))
         for p in self._preprocessors:
-            processed_pq = p.process(processed_pq
-)            logger.debug('%s: Preprocessed through %s' % (time.time() - start_time, p))
+            processed_pq = p.process(processed_pq)
+            logger.debug('%s: Preprocessed through %s' % (time.time() - start_time, p))
             if processed_pq == False:
                 return [], None
         upstream_response_info = UpstreamResponseInfo(self.get_service_name())
