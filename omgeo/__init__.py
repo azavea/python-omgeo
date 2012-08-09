@@ -5,6 +5,7 @@ from omgeo.processors.postprocessors import DupePicker, SnapPoints
 import time
 
 logger = logging.logger = logging.getLogger(__name__)
+stats_logger = logging.getLogger('omgeo.stats')
 
 class Geocoder():
     """
@@ -94,12 +95,7 @@ class Geocoder():
                         be used to find results, instead of stopping after
                         the first geocoding service with valid candidates
                         (defaults to <Geocoder instance>.waterfall).
-        """
-        def get_result(candidates=[], upstream_response_info=[]):
-            #TODO: validate
-            return dict(candidates=candidates,
-                        upstream_response_info=upstream_response_info_list)
-            
+        """          
         start_time = time.time()
         waterfall = self.waterfall if waterfall is None else waterfall
         if type(pq) in (str, unicode):
@@ -114,7 +110,6 @@ class Geocoder():
         upstream_response_info_list = []
         processed_candidates = []
         for gs in self._sources: # iterate through each GeocodeService
-            logger.debug('%s: Geocoding using %s...' % ((time.time() - start_time), gs))
             candidates, upstream_response_info = gs.geocode(processed_pq)
             if upstream_response_info is not None:
                 upstream_response_info_list.append(upstream_response_info)
@@ -125,11 +120,11 @@ class Geocoder():
         for p in self._postprocessors: # apply univ. candidate postprocessing
             if processed_candidates == []:
                 break; # avoid post-processing empty list
-            logger.debug('%s: Applying universal postprocessor %s...' % ((time.time() - start_time), p))
             processed_candidates = p.process(processed_candidates)
             
-        result = get_result(candidates=processed_candidates,
-                            upstream_response_info=upstream_response_info_list)
+        result = dict(candidates=processed_candidates,
+                      upstream_response_info=upstream_response_info_list)
+        stats_logger.info(result)
         return result
     
     def get_candidates(self, pq, waterfall=None):

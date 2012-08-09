@@ -10,7 +10,6 @@ from urllib2 import HTTPError, urlopen, URLError
 from xml.dom import minidom
 
 logger = logging.getLogger(__name__)
-stats_logger = logging.getLogger('omgeo.stats')
 
 class UpstreamResponseInfo():
     """
@@ -20,6 +19,7 @@ class UpstreamResponseInfo():
     Required arguments:
     ===================
     geoservice       -- name of the upstream provider used
+    processed_pq     -- Processed PlaceQuery object
     
     Optional arguments:
     ===================
@@ -31,6 +31,7 @@ class UpstreamResponseInfo():
                         (default True)
     errors           -- a list of human-readable error descriptions
     """
+
     def set_response_code(self, response_code):
         if response_code is not None and type(response_code) is not int:
             raise Exception('response_code must be an integer.')
@@ -54,11 +55,12 @@ class UpstreamResponseInfo():
         else:
             self.success = success
     
-    def __init__(self, geoservice, response_code=None, response_time=None, 
+    def __init__(self, geoservice, processed_pq, response_code=None, response_time=None, 
                  success=True, errors=None):
         if errors is None:
             errors = []
         self.geoservice = geoservice
+        self.processed_pq = processed_pq
         self.set_response_code(response_code)
         self.set_response_time(response_time)
         self.set_success(success)
@@ -200,46 +202,25 @@ class GeocodeService():
         """
         processed_pq = copy.copy(pq)
         start_time = time.time()
-        logger.debug('%s: BEGINNING PREPROCESSING FOR %s' % (time.time() - start_time,
-                                                             self.get_service_name()))
         for p in self._preprocessors:
             processed_pq = p.process(processed_pq)
-            logger.debug('%s: Preprocessed through %s' % (time.time() - start_time, p))
             if processed_pq == False:
                 return [], None
-        upstream_response_info = UpstreamResponseInfo(self.get_service_name())
+        upstream_response_info = UpstreamResponseInfo(self.get_service_name(),
+                                                      processed_pq)
         try:
             start = datetime.now()
             candidates = self._geocode(processed_pq)
             end = datetime.now()
             response_time_sec = (end - start).total_seconds()
             upstream_response_info.set_response_time(1000 * response_time_sec)
-            logger.info('GEOCODER: %s; results %d; time %s;' %
-                (self.get_service_name(), len(candidates), upstream_response_info.response_time))
-            stats_logger.info({
-                'original_pq': pq,
-                'processed_pq': processed_pq,
-                'event': 'geocode',
-                'time': response_time_sec,
-                'resultCount': len(candidates),
-                'service': self.get_service_name()
-            })
         except:
             upstream_response_info.set_success(False)
             upstream_response_info.errors.append(format_exc())
-            logger.info('GEOCODER: %s; EXCEPTION:\n%s' %
-                (self.get_service_name(), format_exc()))
-            stats_logger.info({
-                'event': 'exception',
-                'service': self.get_service_name()
-            })
             return [], upstream_response_info
         if len(candidates) > 0:
-            logger.debug('%s: BEGINNING POSTPROCESSING FOR %s' % (time.time() - start_time,
-                                                                  self.get_service_name()))
             for p in self._postprocessors: # apply universal candidate postprocessing
                 candidates = p.process(candidates) # merge lists
-                logger.debug('%s: Postprocessed through %s' % (time.time() - start_time, p))
         return candidates, upstream_response_info
     
     def get_service_name(self):
