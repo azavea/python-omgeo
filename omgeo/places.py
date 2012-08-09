@@ -141,7 +141,7 @@ class Candidate():
             y = self.y
 
         geoservice = 'via %s' % getattr(self, 'geoservice', '(no geoservice specfied')
-        return '%s - (%s, %s) %s' % (match_addr, x, y, geoservice)
+        return '%s (%s, %s) %s' % (match_addr, x, y, geoservice)
 
     def __str__(self):
         return unicode(self).encode('utf-8')

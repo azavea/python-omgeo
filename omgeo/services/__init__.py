@@ -88,7 +88,6 @@ class Bing(GeocodeService):
 
         addl_settings = {'key':self._settings['api_key']}
         query = dict(query, **addl_settings)
-        logger.debug(query)
         response_obj = self._get_json_obj(self._endpoint, query)
         returned_candidates = [] # this will be the list returned
         for r in response_obj['resourceSets'][0]['resources']:    

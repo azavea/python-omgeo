@@ -4,7 +4,6 @@ from omgeo.places import PlaceQuery
 from omgeo.processors.postprocessors import DupePicker, SnapPoints
 import time
 
-logger = logging.logger = logging.getLogger(__name__)
 stats_logger = logging.getLogger('omgeo.stats')
 
 class Geocoder():
