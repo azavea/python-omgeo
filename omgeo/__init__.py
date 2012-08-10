@@ -123,8 +123,13 @@ class Geocoder():
             
         result = dict(candidates=processed_candidates,
                       upstream_response_info=upstream_response_info_list)
-        stats_logger.info(result)
+        stats_logger.info(self.convert_geocode_result_to_nested_dicts(result))
         return result
     
     def get_candidates(self, pq, waterfall=None):
         return self.geocode(pq, waterfall)['candidates']
+    
+    def convert_geocode_result_to_nested_dicts(self, result):
+        return dict(candidates=[candidate.__dict__ for candidate in result['candidates']]
+                    upstream_response_info=[uri.__dict__ for uri in result['upstream_response_info']])
+        
