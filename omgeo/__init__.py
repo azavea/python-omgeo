@@ -130,6 +130,6 @@ class Geocoder():
         return self.geocode(pq, waterfall)['candidates']
     
     def convert_geocode_result_to_nested_dicts(self, result):
-        return dict(candidates=[candidate.__dict__ for candidate in result['candidates']]
+        return dict(candidates=[candidate.__dict__ for candidate in result['candidates']],
                     upstream_response_info=[uri.__dict__ for uri in result['upstream_response_info']])
         
