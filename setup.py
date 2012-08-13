@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name="python-omgeo",
-    version="1.4.2",
+    version="1.4.3",
     description="A Python Geocoding Library",
     author="Azavea, Inc.",
     author_email="info@azavea.com",

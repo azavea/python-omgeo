@@ -8,6 +8,7 @@ stats_logger = logging.getLogger('omgeo.stats')
 
 class Geocoder():
     """
+    17h11
     The base geocode class.  This class can be initialized with settings
     for each geocoder and/or settings for the geocoder itself.
 
@@ -130,6 +131,11 @@ class Geocoder():
         return self.geocode(pq, waterfall)['candidates']
     
     def convert_geocode_result_to_nested_dicts(self, result):
+        def get_uri_dict(uri_item):
+            uri_dict = uri_item.__dict__
+            uri_dict['processed_pq'] = uri_dict['processed_pq'].__dict__
+            return uri_dict
+        uri_set = [get_uri_dict(uri_item) for uri_item in result['upstream_response_info']]
         return dict(candidates=[candidate.__dict__ for candidate in result['candidates']],
-                    upstream_response_info=[uri.__dict__ for uri in result['upstream_response_info']])
+                    upstream_response_info=uri_set)
         
