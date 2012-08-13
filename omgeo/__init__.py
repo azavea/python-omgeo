@@ -132,7 +132,7 @@ class Geocoder():
     
     def convert_geocode_result_to_nested_dicts(self, result):
         def get_uri_dict(uri_item):
-            uri_dict = uri_item.__dict__
+            uri_dict = copy.copy(uri_item).__dict__
             uri_dict['processed_pq'] = uri_dict['processed_pq'].__dict__
             return uri_dict
         uri_set = [get_uri_dict(uri_item) for uri_item in result['upstream_response_info']]
