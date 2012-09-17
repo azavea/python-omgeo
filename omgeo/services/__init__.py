@@ -544,6 +544,8 @@ class EsriWGS(GeocodeService):
         #TODO: allow postal if ZIP+4
     }
 
+    DEFAULT_PREPROCESSORS = []
+
     DEFAULT_POSTPROCESSORS = [
         AttrFilter(['PointAddress', 'StreetAddress'], 'locator'),
         AttrSorter(['PointAddress', 'StreetAddress'], 'locator'),
@@ -647,6 +649,11 @@ class EsriWGS(GeocodeService):
             pass
         return returned_candidates   
 
+    def __init__(self, preprocessors=None, postprocessors=None, settings=None):
+        preprocessors = EsriWGS.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
+        postprocessors = EsriWGS.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
+        GeocodeService.__init__(self, preprocessors, postprocessors, settings)
+
 class EsriWGSSSL(EsriWGS):
     """ 
     Class to geocode using the ESRI World Geocoding service over SSL
@@ -731,8 +738,8 @@ class Nominatim(GeocodeService):
     """Postprocessors to use with this geocoder service, in order of desired execution."""
     
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
-        preprocessors = Bing.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
-        postprocessors = Bing.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
+        preprocessors = Nominatim.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
+        postprocessors = Nominatim.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
         GeocodeService.__init__(self, preprocessors, postprocessors, settings)
 
     def _geocode(self, pq):
