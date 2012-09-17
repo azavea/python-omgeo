@@ -547,8 +547,8 @@ class EsriWGS(GeocodeService):
     DEFAULT_PREPROCESSORS = []
 
     DEFAULT_POSTPROCESSORS = [
-        AttrFilter(['PointAddress', 'StreetAddress'], 'locator'),
-        AttrSorter(['PointAddress', 'StreetAddress'], 'locator'),
+        AttrFilter(['PointAddress', 'StreetAddress', 'PostalExt'], 'locator'),
+        AttrSorter(['PointAddress', 'StreetAddress', 'PostalExt'], 'locator'),
         AttrRename('locator', LOCATOR_MAP), # after filter to avoid searching things we toss out
         UseHighScoreIfAtLeast(99.8),
         GroupBy('match_addr'),
