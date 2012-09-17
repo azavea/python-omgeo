@@ -599,7 +599,7 @@ class EsriWGS(GeocodeService):
                          #PostalExt=
                          CountryCode=pq.country, # full country name or ISO 3166-1 2- or 3-digit country code
                          )
-            if pq.viewbox not None:
+            if pq.viewbox is not None:
                 query = dict(query, searchExtent=pq.viewbox.to_esri_wgs_json())            
         else: # single-line
             multipart = False
@@ -607,7 +607,7 @@ class EsriWGS(GeocodeService):
                          text=pq.query, # This can be a street address, place name, postal code, or POI.
                          sourceCountry=pq.country, # full country name or ISO 3166-1 2- or 3-digit country code
                          )
-            if pq.viewbox not None:
+            if pq.viewbox is not None:
                 query = dict(query, bbox=pq.viewbox.to_esri_wgs_json())
 
         response_obj = self._get_json_obj(self._endpoint, query)
