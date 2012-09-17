@@ -11,19 +11,19 @@ class Geocoder():
     The base geocode class.  This class can be initialized with settings
     for each geocoder and/or settings for the geocoder itself.
 
-    Arguments:
-    ==========
-    sources         -- a dictionary of GeocodeServiceConfig() parameters,
-                       keyed by module name for the GeocodeService to use
-                       ex: {'esri_wgs':{}, 
-                            'bing': {'settings': {},
-                                     'preprocessors': [],
-                                     'postprocessors': []},
-                            ...}
-    preprocessors   -- list of universal preprocessors to use
-    postprocessors  -- list of universal postprocessors to use
-    waterfall       -- sets default for waterfall on geocode() method
-                       (default False)
+    Args:
+        sources (dict): a dictionary of GeocodeServiceConfig() parameters,
+                           keyed by module name for the GeocodeService to use
+                           ex: {'esri_wgs':{}, 
+                                'bing': {'settings': {},
+                                         'preprocessors': [],
+                                         'postprocessors': []},
+                                ...}
+
+        preprocessors   -- list of universal preprocessors to use
+        postprocessors  -- list of universal postprocessors to use
+        waterfall       -- sets default for waterfall on geocode() method
+                           (default False)
     """
 
     DEFAULT_SOURCES = [['omgeo.services.EsriWGS', {}],

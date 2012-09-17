@@ -10,7 +10,9 @@ class Viewbox():
     right   -- Maximum X value (default 180)
     bottom  -- Minimum Y value (default -90)
     wkid    -- Well-known ID for spatial reference system (default 4326)
+    
     """
+
     def _validate(self):
         """
         Make sure numbers are actually numbers
@@ -18,12 +20,12 @@ class Viewbox():
         Return True if WKID is not found.
         Otherwise raise error.
         """
+
         return True #TODO: Find max bounds from WKID in PostGIS database
 
     def convert_srs(self, new_wkid):
-        """
-        Return a new Viewbox object with the specified SRS.
-        """
+        """Return a new Viewbox object with the specified SRS."""
+
         return self # TODO: convert SRS
 
     def __init__(self, left=-180, top=90, right=180, bottom=-90, wkid=4326):
@@ -36,6 +38,7 @@ class Viewbox():
         Convert Viewbox object to a string that can be used by Bing
         as a query parameter.
         """
+
         vb = self.convert_srs(4326)
         return '%s,%s,%s,%s' % (vb.bottom, vb.left, vb.top, vb.right)
 
@@ -125,22 +128,27 @@ class Candidate():
     Arguments:
     ==========
     locator     -- Locator used for geocoding (default '')
+                   We try to standardize this to 'rooftop', 'interpolated',
+                   'postal_specific', and 'postal'.
     score       -- Standardized score (default 0)
     match_addr  -- Address returned by geocoder (default '')
     x           -- X-coordinate (longitude for lat-lon SRS) (default None)
     y           -- Y-coordinate (latitude for lat-lon SRS) (default None)
     wkid        -- Well-known ID for spatial reference system (default 4326)
-    entity      -- Used by Bing, Nominatim (default '')
-    confidence  -- Used by Bing (default '')
-    geoservice  -- GeocodeService used for geocoding (default '')
+
+    Keyword Arguments:
+    ==================
+    Keyword arguments can be added in order to be able to use postprocessors
+    with API output fields are not well-fitting for one of the definitions
+    above
 
     Usage Example:
     ==============
     c = Candidate('US_RoofTop', 91.5, '340 N 12th St, Philadelphia, PA, 19107',
-        '-75.16', '39.95', some_extra_data='yellow')
+        '-75.16', '39.95', some_key_foo='bar')
     """
     def __init__(self, locator='', score=0, match_addr='', x=None, y=None,
-        wkid=4326, entity='', confidence='', **kwargs):
+        wkid=4326, **kwargs):
         for k in locals().keys():
             if k not in ['self', 'kwargs']: setattr(self, k, locals()[k])
         for k in kwargs:

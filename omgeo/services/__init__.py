@@ -2,8 +2,10 @@ from base import GeocodeService
 import json
 import logging
 from omgeo.places import Candidate
-from omgeo.processors.preprocessors import CountryPreProcessor, RequireCountry, ParseSingleLine, ReplaceRangeWithNumber
-from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename, AttrSorter, AttrMigrator, UseHighScoreIfAtLeast, GroupBy, ScoreSorter
+from omgeo.processors.preprocessors import CancelIfPOBox, CountryPreProcessor, RequireCountry, \
+    ParseSingleLine, ReplaceRangeWithNumber
+from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename, AttrSorter, \
+    AttrMigrator, UseHighScoreIfAtLeast, GroupBy, ScoreSorter
 from suds.client import Client
 import time
 from urllib import unquote
@@ -541,16 +543,19 @@ class EsriWGS(GeocodeService):
     LOCATOR_MAP = {
         'PointAddress': 'rooftop',
         'StreetAddress': 'interpolation',
-        'PostalExt': 'postal_specific' # accept ZIP+4
+        'PostalExt': 'postal_specific', # accept ZIP+4
+        'Postal': 'postal'
     }
 
-    DEFAULT_PREPROCESSORS = []
+    DEFAULT_PREPROCESSORS = [CancelIfPOBox()]
 
     DEFAULT_POSTPROCESSORS = [
-        AttrFilter(['PointAddress', 'StreetAddress', 'PostalExt'], 'locator'),
-        AttrSorter(['PointAddress', 'StreetAddress', 'PostalExt'], 'locator'),
+        AttrFilter(['PointAddress', 'StreetAddress', 'PostalExt', 'Postal'], 'locator_type'),
+        AttrExclude(['USA_Postal'], 'locator'), #accept postal from everywhere but US (need PostalExt)
+        AttrSorter(['PointAddress', 'StreetAddress', 'PostalExt', 'Postal'], 'locator_type'),
         AttrRename('locator', LOCATOR_MAP), # after filter to avoid searching things we toss out
         UseHighScoreIfAtLeast(99.8),
+        GroupBy(('x', 'y')),
         GroupBy('match_addr'),
         ScoreSorter(),
         #TODO: closeness filter
@@ -562,7 +567,7 @@ class EsriWGS(GeocodeService):
         """Return a list of Candidates given a PlaceQuery instance."""
         #: List of desired output fields
         #: See `ESRI docs <http://geocode.arcgis.com/arcgis/geocoding.html#output>_` for details
-        outFields = (#'Loc_name',
+        outFields = ('Loc_name',
                      #'Shape',
                      'Score',
                      #'Match_Addr', #based on address standards for the country
@@ -635,7 +640,8 @@ class EsriWGS(GeocodeService):
             for location in response_obj['locations']:         
                 c = Candidate()
                 attributes = location['feature']['attributes']
-                c.locator = attributes['Addr_Type']
+                c.locator = attributes['Loc_name']
+                c.locator_type = attributes['Addr_Type']
                 c.score = attributes['Score']
                 c.match_addr = location['name']
                 #: "represents the actual location of the address. It differs from the X value"
