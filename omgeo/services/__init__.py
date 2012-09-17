@@ -541,7 +541,7 @@ class EsriWGS(GeocodeService):
     LOCATOR_MAP = {
         'PointAddress': 'rooftop',
         'StreetAddress': 'interpolation',
-        #TODO: allow postal if ZIP+4
+        'PostalExt': 'postal_specific' # accept ZIP+4
     }
 
     DEFAULT_PREPROCESSORS = []
