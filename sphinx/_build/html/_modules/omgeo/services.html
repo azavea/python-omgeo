@@ -1,0 +1,861 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>omgeo.services &mdash; python-omgeo 1.5.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.5.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="python-omgeo 1.5.0 documentation" href="../../index.html" />
+    <link rel="up" title="omgeo" href="../omgeo.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">python-omgeo 1.5.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../omgeo.html" accesskey="U">omgeo</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for omgeo.services</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">base</span> <span class="kn">import</span> <span class="n">GeocodeService</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">omgeo.places</span> <span class="kn">import</span> <span class="n">Candidate</span>
+<span class="kn">from</span> <span class="nn">omgeo.processors.preprocessors</span> <span class="kn">import</span> <span class="n">CountryPreProcessor</span><span class="p">,</span> <span class="n">RequireCountry</span><span class="p">,</span> <span class="n">ParseSingleLine</span><span class="p">,</span> <span class="n">ReplaceRangeWithNumber</span>
+<span class="kn">from</span> <span class="nn">omgeo.processors.postprocessors</span> <span class="kn">import</span> <span class="n">AttrFilter</span><span class="p">,</span> <span class="n">AttrExclude</span><span class="p">,</span> <span class="n">AttrRename</span><span class="p">,</span> <span class="n">AttrSorter</span><span class="p">,</span> <span class="n">AttrMigrator</span><span class="p">,</span> <span class="n">UseHighScoreIfAtLeast</span><span class="p">,</span> <span class="n">GroupBy</span><span class="p">,</span> <span class="n">ScoreSorter</span>
+<span class="kn">from</span> <span class="nn">suds.client</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">unquote</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Bing"><a class="viewcode-back" href="../../index.html#omgeo.services.Bing">[docs]</a><span class="k">class</span> <span class="nc">Bing</span><span class="p">(</span><span class="n">GeocodeService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to geocode using Bing services:</span>
+<span class="sd">     * `Find a Location by Query &lt;http://msdn.microsoft.com/en-us/library/ff701711.aspx&gt;`_</span>
+<span class="sd">     * `Find a Location by Address &lt;http://msdn.microsoft.com/en-us/library/ff701714.aspx&gt;`_</span>
+
+<span class="sd">    Settings used by the Bing GeocodeService object may include:</span>
+<span class="sd">    ============================================================</span>
+<span class="sd">    api_key --  The API key used to access Bing services.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_endpoint</span> <span class="o">=</span> <span class="s">&#39;http://dev.virtualearth.net/REST/v1/Locations&#39;</span>
+
+    <span class="n">DEFAULT_PREPROCESSORS</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">ReplaceRangeWithNumber</span><span class="p">()</span>
+    <span class="p">]</span>
+    
+    <span class="n">DEFAULT_POSTPROCESSORS</span> <span class="o">=</span> <span class="p">[</span>
+       <span class="n">AttrMigrator</span><span class="p">(</span><span class="s">&#39;confidence&#39;</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">,</span>
+                    <span class="p">{</span><span class="s">&#39;High&#39;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span> <span class="s">&#39;Medium&#39;</span><span class="p">:</span><span class="mi">85</span><span class="p">,</span> <span class="s">&#39;Low&#39;</span><span class="p">:</span><span class="mi">50</span><span class="p">}),</span>
+       <span class="n">UseHighScoreIfAtLeast</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span>
+       <span class="n">AttrFilter</span><span class="p">([</span><span class="s">&#39;Address&#39;</span><span class="p">,</span> <span class="s">&#39;AdministrativeBuilding&#39;</span><span class="p">,</span> 
+                   <span class="s">&#39;AgriculturalStructure&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;BusinessName&#39;</span><span class="p">,</span> <span class="s">&#39;BusinessStructure&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;BusStation&#39;</span><span class="p">,</span> <span class="s">&#39;Camp&#39;</span><span class="p">,</span> <span class="s">&#39;Church&#39;</span><span class="p">,</span> <span class="s">&#39;CityHall&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;CommunityCenter&#39;</span><span class="p">,</span> <span class="s">&#39;ConventionCenter&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;Courthouse&#39;</span><span class="p">,</span> <span class="s">&#39;Factory&#39;</span><span class="p">,</span> <span class="s">&#39;FerryTerminal&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;FishHatchery&#39;</span><span class="p">,</span> <span class="s">&#39;Fort&#39;</span><span class="p">,</span> <span class="s">&#39;Garden&#39;</span><span class="p">,</span> <span class="s">&#39;Geyser&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;Heliport&#39;</span><span class="p">,</span> <span class="s">&#39;IndustrialStructure&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;InformationCenter&#39;</span><span class="p">,</span> <span class="s">&#39;Junction&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;LandmarkBuilding&#39;</span><span class="p">,</span> <span class="s">&#39;Library&#39;</span><span class="p">,</span> <span class="s">&#39;Lighthouse&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;Marina&#39;</span><span class="p">,</span> <span class="s">&#39;MedicalStructure&#39;</span><span class="p">,</span> <span class="s">&#39;MetroStation&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;Mine&#39;</span><span class="p">,</span> <span class="s">&#39;Mission&#39;</span><span class="p">,</span> <span class="s">&#39;Monument&#39;</span><span class="p">,</span> <span class="s">&#39;Mosque&#39;</span><span class="p">,</span> 
+                   <span class="s">&#39;Museum&#39;</span><span class="p">,</span> <span class="s">&#39;NauticalStructure&#39;</span><span class="p">,</span> <span class="s">&#39;NavigationalStructure&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;OfficeBuilding&#39;</span><span class="p">,</span> <span class="s">&#39;ParkAndRide&#39;</span><span class="p">,</span> <span class="s">&#39;PlayingField&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;PoliceStation&#39;</span><span class="p">,</span> <span class="s">&#39;PostOffice&#39;</span><span class="p">,</span> <span class="s">&#39;PowerStation&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;Prison&#39;</span><span class="p">,</span> <span class="s">&#39;RaceTrack&#39;</span><span class="p">,</span> <span class="s">&#39;ReligiousStructure&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;RestArea&#39;</span><span class="p">,</span> <span class="s">&#39;Ruin&#39;</span><span class="p">,</span> <span class="s">&#39;ShoppingCenter&#39;</span><span class="p">,</span> <span class="s">&#39;Site&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;SkiArea&#39;</span><span class="p">,</span> <span class="s">&#39;Spring&#39;</span><span class="p">,</span> <span class="s">&#39;Stadium&#39;</span><span class="p">,</span> <span class="s">&#39;Temple&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;TouristStructure&#39;</span><span class="p">],</span> <span class="s">&#39;entity&#39;</span><span class="p">),</span>
+       <span class="n">AttrRename</span><span class="p">(</span><span class="s">&#39;locator&#39;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">Rooftop</span><span class="o">=</span><span class="s">&#39;rooftop&#39;</span><span class="p">,</span>
+                                  <span class="n">Parcel</span><span class="o">=</span><span class="s">&#39;parcel&#39;</span><span class="p">,</span>
+                                  <span class="n">ParcelCentroid</span><span class="o">=</span><span class="s">&#39;parcel&#39;</span><span class="p">,</span>
+                                  <span class="n">Interpolation</span><span class="o">=</span><span class="s">&#39;interpolation&#39;</span><span class="p">,</span>
+                                  <span class="n">InterpolationOffset</span><span class="o">=</span><span class="s">&#39;interpolation_offset&#39;</span><span class="p">)),</span>
+       <span class="n">AttrSorter</span><span class="p">([</span><span class="s">&#39;rooftop&#39;</span><span class="p">,</span> <span class="s">&#39;parcel&#39;</span><span class="p">,</span> 
+                   <span class="s">&#39;interpolation_offset&#39;</span><span class="p">,</span> <span class="s">&#39;interpolation&#39;</span><span class="p">],</span>
+                   <span class="s">&#39;locator&#39;</span><span class="p">),</span>
+       <span class="n">AttrSorter</span><span class="p">([</span><span class="s">&#39;Address&#39;</span><span class="p">],</span> <span class="s">&#39;entity&#39;</span><span class="p">),</span>
+       <span class="n">ScoreSorter</span><span class="p">(),</span>
+       <span class="n">GroupBy</span><span class="p">((</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">)),</span>
+       <span class="n">GroupBy</span><span class="p">(</span><span class="s">&#39;match_addr&#39;</span><span class="p">)]</span>
+    <span class="n">DEFAULT_POSTPROCESSORS</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">postprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">preprocessors</span> <span class="o">=</span> <span class="n">Bing</span><span class="o">.</span><span class="n">DEFAULT_PREPROCESSORS</span> <span class="k">if</span> <span class="n">preprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">preprocessors</span>
+        <span class="n">postprocessors</span> <span class="o">=</span> <span class="n">Bing</span><span class="o">.</span><span class="n">DEFAULT_POSTPROCESSORS</span> <span class="k">if</span> <span class="n">postprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">postprocessors</span>
+        <span class="n">GeocodeService</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_geocode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+            <span class="c"># No single line query string; use address elements:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;addressLine&#39;</span><span class="p">:</span><span class="n">pq</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                     <span class="s">&#39;locality&#39;</span><span class="p">:</span><span class="n">pq</span><span class="o">.</span><span class="n">city</span><span class="p">,</span>
+                     <span class="s">&#39;adminDistrict&#39;</span><span class="p">:</span><span class="n">pq</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+                     <span class="s">&#39;postalCode&#39;</span><span class="p">:</span><span class="n">pq</span><span class="o">.</span><span class="n">postal</span><span class="p">,</span>
+                     <span class="s">&#39;countryRegion&#39;</span><span class="p">:</span><span class="n">pq</span><span class="o">.</span><span class="n">country</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;query&#39;</span><span class="p">:</span><span class="n">pq</span><span class="o">.</span><span class="n">query</span><span class="p">}</span>
+        
+        <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s">&#39;umv&#39;</span><span class="p">:</span><span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span><span class="o">.</span><span class="n">to_bing_str</span><span class="p">()})</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pq</span><span class="p">,</span> <span class="s">&#39;culture&#39;</span><span class="p">):</span> <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">culture</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pq</span><span class="p">,</span> <span class="s">&#39;user_ip&#39;</span><span class="p">):</span> <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">uip</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">user_ip</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pq</span><span class="p">,</span> <span class="s">&#39;user_lat&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pq</span><span class="p">,</span> <span class="s">&#39;user_lon&#39;</span><span class="p">):</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s">&#39;ul&#39;</span><span class="p">:</span><span class="s">&#39;</span><span class="si">%f</span><span class="s">,</span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pq</span><span class="o">.</span><span class="n">user_lat</span><span class="p">,</span> <span class="n">pq</span><span class="o">.</span><span class="n">user_lon</span><span class="p">)})</span>
+
+        <span class="n">addl_settings</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;key&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="p">[</span><span class="s">&#39;api_key&#39;</span><span class="p">]}</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="n">addl_settings</span><span class="p">)</span>
+        <span class="n">response_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_json_obj</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+        <span class="n">returned_candidates</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># this will be the list returned</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">response_obj</span><span class="p">[</span><span class="s">&#39;resourceSets&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;resources&#39;</span><span class="p">]:</span>    
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">()</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">entity</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s">&#39;entityType&#39;</span><span class="p">]</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">locator</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s">&#39;geocodePoints&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;calculationMethod&#39;</span><span class="p">]</span> <span class="c"># ex. &quot;Parcel&quot;</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">confidence</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s">&#39;confidence&#39;</span><span class="p">]</span> <span class="c"># High|Medium|Low</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">match_addr</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="c"># ex. &quot;1 Microsoft Way, Redmond, WA 98052&quot;</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s">&#39;geocodePoints&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;coordinates&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="c"># long, ex. -122.13</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s">&#39;geocodePoints&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;coordinates&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="c"># lat, ex. 47.64</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">wkid</span> <span class="o">=</span> <span class="mi">4326</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">geoservice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+            <span class="n">returned_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">returned_candidates</span>
+    </div>
+<div class="viewcode-block" id="CitizenAtlas"><a class="viewcode-back" href="../../index.html#omgeo.services.CitizenAtlas">[docs]</a><span class="k">class</span> <span class="nc">CitizenAtlas</span><span class="p">(</span><span class="n">GeocodeService</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Class to geocode using the Washington DC CitizenAtlas &lt;http://citizenatlas.dc.gov/newwebservices&gt;</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">_endpoint</span> <span class="o">=</span> <span class="s">&#39;http://citizenatlas.dc.gov/newwebservices/locationverifier.asmx/findLocation&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_geocode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">place_query</span><span class="p">):</span>
+
+        <span class="c"># Define helper functions</span>
+
+        <span class="k">def</span> <span class="nf">_get_text_from_nodelist</span><span class="p">(</span><span class="n">nodelist</span><span class="p">):</span>
+            <span class="n">rc</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodelist</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">nodeType</span> <span class="o">==</span> <span class="n">node</span><span class="o">.</span><span class="n">TEXT_NODE</span><span class="p">:</span>
+                    <span class="n">rc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_create_candidate_from_intersection_element</span><span class="p">(</span><span class="n">intersection_element</span><span class="p">,</span> <span class="n">source_operation</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">()</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">locator</span> <span class="o">=</span> <span class="n">source_operation</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">match_addr</span> <span class="o">=</span> <span class="n">_get_text_from_nodelist</span><span class="p">(</span>
+                <span class="n">intersection_element</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;FULLINTERSECTION&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;, WASHINGTON, DC&quot;</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">_get_text_from_nodelist</span><span class="p">(</span><span class="n">intersection_element</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;LATITUDE&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">))</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">_get_text_from_nodelist</span><span class="p">(</span><span class="n">intersection_element</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;LONGITUDE&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">))</span>
+            <span class="n">confidence_level_elements</span> <span class="o">=</span> <span class="n">intersection_element</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;ConfidenceLevel&quot;</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">_get_text_from_nodelist</span><span class="p">(</span><span class="n">confidence_level_elements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">))</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">geoservice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+            <span class="k">return</span> <span class="n">c</span>
+
+        <span class="k">def</span> <span class="nf">_create_candidate_from_address_element</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="n">source_operation</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">match</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;FULLADDRESS&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">full_address</span> <span class="o">=</span> <span class="n">_get_text_from_nodelist</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;FULLADDRESS&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">full_address</span> <span class="o">=</span> <span class="n">_get_text_from_nodelist</span><span class="p">(</span>
+                    <span class="n">match</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;STNAME&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">_get_text_from_nodelist</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;STREET_TYPE&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">)</span>
+            <span class="n">city</span> <span class="o">=</span> <span class="n">_get_text_from_nodelist</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;CITY&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">)</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">_get_text_from_nodelist</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;STATE&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">)</span>
+            <span class="n">zipcode</span> <span class="o">=</span> <span class="n">_get_text_from_nodelist</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;ZIPCODE&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">)</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">()</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">match_addr</span> <span class="o">=</span> <span class="n">full_address</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span> <span class="o">+</span> <span class="n">city</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span> <span class="o">+</span> <span class="n">state</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span> <span class="o">+</span> <span class="n">zipcode</span>
+            <span class="n">confidence_level_elements</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;ConfidenceLevel&quot;</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">_get_text_from_nodelist</span><span class="p">(</span><span class="n">confidence_level_elements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">))</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">_get_text_from_nodelist</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;LATITUDE&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">))</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">_get_text_from_nodelist</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;LONGITUDE&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">))</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">locator</span> <span class="o">=</span> <span class="n">source_operation</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">geoservice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+            <span class="k">return</span> <span class="n">c</span>
+
+        <span class="c"># Geocode</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;str&#39;</span><span class="p">:</span> <span class="n">place_query</span><span class="o">.</span><span class="n">query</span> <span class="p">}</span>
+        <span class="n">response_doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xml_doc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+
+        <span class="n">address_matches</span> <span class="o">=</span> <span class="n">response_doc</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;Table1&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">address_matches</span><span class="o">.</span><span class="n">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">response_doc</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;sourceOperation&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">source_operation</span> <span class="o">=</span> <span class="n">_get_text_from_nodelist</span><span class="p">(</span>
+                <span class="n">response_doc</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&quot;sourceOperation&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">childNodes</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">source_operation</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+
+        <span class="n">candidates</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># this will be the list returned</span>
+
+        <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">address_matches</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">source_operation</span> <span class="o">==</span> <span class="s">&quot;DC Intersection&quot;</span><span class="p">:</span>
+                <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_create_candidate_from_intersection_element</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="n">source_operation</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">source_operation</span> <span class="o">==</span> <span class="s">&quot;DC Address&quot;</span> <span class="ow">or</span> <span class="n">source_operation</span> <span class="o">==</span> <span class="s">&quot;DC Place&quot;</span><span class="p">:</span>
+                <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_create_candidate_from_address_element</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="n">source_operation</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">candidates</span>
+</div>
+<div class="viewcode-block" id="EsriGeocodeService"><a class="viewcode-back" href="../../index.html#omgeo.services.EsriGeocodeService">[docs]</a><span class="k">class</span> <span class="nc">EsriGeocodeService</span><span class="p">(</span><span class="n">GeocodeService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Settings used by an EsriGeocodeService object may include:</span>
+<span class="sd">    ============================================================</span>
+<span class="sd">    api_key --  The API key used to access ESRI premium services.  If this</span>
+<span class="sd">                key is present, the object&#39;s endpoint will be set to use</span>
+<span class="sd">                premium tasks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">postprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        ESRI services can be used as free services or &quot;premium tasks&quot;.  If an</span>
+<span class="sd">        ESRI service is created with an api_key in the settings, we&#39;ll set this</span>
+<span class="sd">        service up with the premium task URL.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">GeocodeService</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="s">&#39;api_key&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="p">:</span>
+            <span class="n">service_url</span> <span class="o">=</span> <span class="s">&#39;http://premiumtasks.arcgisonline.com/server&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">service_url</span> <span class="o">=</span> <span class="s">&#39;http://tasks.arcgisonline.com/ArcGIS&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span> <span class="o">=</span> <span class="n">service_url</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_task_endpoint</span>
+
+    <span class="k">def</span> <span class="nf">append_token_if_needed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_dict</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s">&#39;api_key&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="p">:</span>
+            <span class="n">query_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;token&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="p">[</span><span class="s">&#39;api_key&#39;</span><span class="p">]})</span>
+        <span class="k">return</span> <span class="n">query_dict</span>
+</div>
+<span class="k">class</span> <span class="nc">EsriSoapGeocodeService</span><span class="p">(</span><span class="n">EsriGeocodeService</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">postprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c"># First, initialize the usual geocoder stuff like settings and</span>
+        <span class="c"># processors</span>
+        <span class="n">EsriGeocodeService</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+        
+        <span class="c"># Our suds client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="c"># The CandidateFields returned by an ESRI geocoder. The result rows are</span>
+        <span class="c"># ordered just as they are - there are no &#39;keys&#39; in the results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fields</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="c"># Used to map the returned results&#39; fields to a Candidate&#39;s fields</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c"># Set up the URLs necessary to get soap and create a suds clients</span>
+        <span class="k">if</span> <span class="s">&#39;api_key&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span> <span class="o">+</span> <span class="s">&quot;?token=&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="p">[</span><span class="s">&#39;api_key&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span> <span class="o">+</span> <span class="s">&#39;&amp;wsdl&#39;</span><span class="p">)</span>
+            <span class="c"># WSDL&#39;s url doesn&#39;t set your token so we have to do that, too.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">set_options</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span> <span class="o">+</span> <span class="s">&#39;?wsdl&#39;</span><span class="p">)</span>
+
+        <span class="c"># Grab the candidate fields for later - we&#39;ll use them in every call</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">GetCandidateFields</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_get_property_set_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location_dict</span><span class="p">):</span>
+        <span class="n">props</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">location_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">ps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s">&#39;PropertySetProperty&#39;</span><span class="p">)</span>
+            <span class="n">ps</span><span class="o">.</span><span class="n">Key</span> <span class="o">=</span> <span class="n">k</span>
+            <span class="n">ps</span><span class="o">.</span><span class="n">Value</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="n">props</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ps</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">props</span>
+    
+    <span class="k">def</span> <span class="nf">_get_candidates_from_record_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record_set</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Given a RecordSet, create a list of Candidate objects for processing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">record_set</span><span class="o">.</span><span class="n">Records</span><span class="o">.</span><span class="n">Record</span><span class="p">:</span>
+            
+            <span class="n">c_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">record_set</span><span class="o">.</span><span class="n">Fields</span><span class="o">.</span><span class="n">FieldArray</span><span class="o">.</span><span class="n">Field</span><span class="p">,</span>
+                        <span class="n">record</span><span class="o">.</span><span class="n">Values</span><span class="o">.</span><span class="n">Value</span><span class="p">):</span>
+                    
+                <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">Name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span><span class="p">:</span>
+                    <span class="n">c_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">Name</span><span class="p">]]</span> <span class="o">=</span> <span class="n">value</span>
+                
+            <span class="n">candidate</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">(</span><span class="o">**</span><span class="n">c_dict</span><span class="p">)</span>
+            <span class="n">candidate</span><span class="o">.</span><span class="n">wkid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wkid</span>
+            <span class="n">candidate</span><span class="o">.</span><span class="n">geoservice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+            <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">candidates</span>
+
+<div class="viewcode-block" id="EsriEUGeocodeService"><a class="viewcode-back" href="../../index.html#omgeo.services.EsriEUGeocodeService">[docs]</a><span class="k">class</span> <span class="nc">EsriEUGeocodeService</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defaults for Esri EU Geocoders</span>
+
+<span class="sd">    As of 29 Dec 2011, the ESRI website claims to support Andorra, Austria, </span>
+<span class="sd">    Belgium, Denmark, Finland, France, Germany, Gibraltar, Ireland, Italy,</span>
+<span class="sd">    Liechtenstein, Luxembourg, Monaco, The Netherlands, Norway, Portugal,</span>
+<span class="sd">    San Marino, Spain, Sweden, Switzerland, United Kingdom, and Vatican City.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_wkid</span> <span class="o">=</span> <span class="mi">4326</span>
+
+    <span class="n">SUPPORTED_COUNTRIES_FIPS</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;AN&#39;</span><span class="p">,</span> <span class="s">&#39;AU&#39;</span><span class="p">,</span> <span class="s">&#39;BE&#39;</span><span class="p">,</span> <span class="s">&#39;DA&#39;</span><span class="p">,</span> <span class="s">&#39;FI&#39;</span><span class="p">,</span> <span class="s">&#39;FR&#39;</span><span class="p">,</span> <span class="s">&#39;GM&#39;</span><span class="p">,</span> <span class="s">&#39;GI&#39;</span><span class="p">,</span> <span class="s">&#39;EI&#39;</span><span class="p">,</span> 
+        <span class="s">&#39;IT&#39;</span><span class="p">,</span> <span class="s">&#39;LS&#39;</span><span class="p">,</span> <span class="s">&#39;LU&#39;</span><span class="p">,</span> <span class="s">&#39;MN&#39;</span><span class="p">,</span> <span class="s">&#39;NL&#39;</span><span class="p">,</span> <span class="s">&#39;NO&#39;</span><span class="p">,</span> <span class="s">&#39;PO&#39;</span><span class="p">,</span> <span class="s">&#39;SM&#39;</span><span class="p">,</span> <span class="s">&#39;SP&#39;</span><span class="p">,</span> <span class="s">&#39;SW&#39;</span><span class="p">,</span> <span class="s">&#39;SZ&#39;</span><span class="p">,</span> <span class="s">&#39;UK&#39;</span><span class="p">,</span> <span class="s">&#39;VT&#39;</span><span class="p">]</span>
+    <span class="sd">&quot;&quot;&quot;FIPS codes of supported countries&quot;&quot;&quot;</span>
+
+    <span class="n">SUPPORTED_COUNTRIES_ISO2</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;AD&#39;</span><span class="p">,</span> <span class="s">&#39;AT&#39;</span><span class="p">,</span> <span class="s">&#39;BE&#39;</span><span class="p">,</span> <span class="s">&#39;DK&#39;</span><span class="p">,</span> <span class="s">&#39;FI&#39;</span><span class="p">,</span> <span class="s">&#39;FR&#39;</span><span class="p">,</span> <span class="s">&#39;DE&#39;</span><span class="p">,</span> <span class="s">&#39;GI&#39;</span><span class="p">,</span> <span class="s">&#39;IE&#39;</span><span class="p">,</span> 
+        <span class="s">&#39;IT&#39;</span><span class="p">,</span> <span class="s">&#39;LI&#39;</span><span class="p">,</span> <span class="s">&#39;LU&#39;</span><span class="p">,</span> <span class="s">&#39;MC&#39;</span><span class="p">,</span> <span class="s">&#39;NL&#39;</span><span class="p">,</span> <span class="s">&#39;NO&#39;</span><span class="p">,</span> <span class="s">&#39;PT&#39;</span><span class="p">,</span> <span class="s">&#39;SM&#39;</span><span class="p">,</span> <span class="s">&#39;ES&#39;</span><span class="p">,</span> <span class="s">&#39;SE&#39;</span><span class="p">,</span> <span class="s">&#39;CH&#39;</span><span class="p">,</span> <span class="s">&#39;GB&#39;</span><span class="p">,</span> <span class="s">&#39;VC&#39;</span><span class="p">]</span>
+    <span class="sd">&quot;&quot;&quot;ISO-2 codes of supported countries&quot;&quot;&quot;</span>
+
+    <span class="n">MAP_FIPS_TO_ISO2</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;AN&#39;</span><span class="p">:</span><span class="s">&#39;AD&#39;</span><span class="p">,</span>
+        <span class="s">&#39;AU&#39;</span><span class="p">:</span><span class="s">&#39;AT&#39;</span><span class="p">,</span>
+        <span class="s">&#39;DA&#39;</span><span class="p">:</span><span class="s">&#39;DK&#39;</span><span class="p">,</span>
+        <span class="s">&#39;GM&#39;</span><span class="p">:</span><span class="s">&#39;DE&#39;</span><span class="p">,</span>
+        <span class="s">&#39;EI&#39;</span><span class="p">:</span><span class="s">&#39;IE&#39;</span><span class="p">,</span>
+        <span class="s">&#39;LS&#39;</span><span class="p">:</span><span class="s">&#39;LI&#39;</span><span class="p">,</span>
+        <span class="s">&#39;MN&#39;</span><span class="p">:</span><span class="s">&#39;MC&#39;</span><span class="p">,</span>
+        <span class="s">&#39;PO&#39;</span><span class="p">:</span><span class="s">&#39;PT&#39;</span><span class="p">,</span>
+        <span class="s">&#39;SP&#39;</span><span class="p">:</span><span class="s">&#39;ES&#39;</span><span class="p">,</span>
+        <span class="s">&#39;SW&#39;</span><span class="p">:</span><span class="s">&#39;SE&#39;</span><span class="p">,</span>
+        <span class="s">&#39;SZ&#39;</span><span class="p">:</span><span class="s">&#39;CH&#39;</span><span class="p">,</span>
+        <span class="s">&#39;UK&#39;</span><span class="p">:</span><span class="s">&#39;GB&#39;</span><span class="p">,</span>
+        <span class="s">&#39;VT&#39;</span><span class="p">:</span><span class="s">&#39;VC&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="sd">&quot;&quot;&quot;Map of FIPS to ISO-2 codes, if they are different.&quot;&quot;&quot;</span>
+
+    <span class="n">LOCATOR_MAP</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;EU_Street_Addr&#39;</span><span class="p">:</span> <span class="s">&#39;interpolation&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">DEFAULT_PREPROCESSORS</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">CountryPreProcessor</span><span class="p">(</span>
+            <span class="n">SUPPORTED_COUNTRIES_ISO2</span><span class="p">,</span>
+            <span class="n">MAP_FIPS_TO_ISO2</span><span class="p">),</span>
+        <span class="n">ParseSingleLine</span><span class="p">(),</span>
+        <span class="n">RequireCountry</span><span class="p">(</span><span class="s">&#39;GB&#39;</span><span class="p">),</span>
+    <span class="p">]</span>
+        
+    <span class="n">DEFAULT_POSTPROCESSORS</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AttrFilter</span><span class="p">([</span><span class="s">&#39;EU_Street_Addr&#39;</span><span class="p">],</span> <span class="s">&#39;locator&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+        <span class="n">AttrRename</span><span class="p">(</span><span class="s">&#39;locator&#39;</span><span class="p">,</span> <span class="n">LOCATOR_MAP</span><span class="p">),</span>
+        <span class="n">UseHighScoreIfAtLeast</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span>
+        <span class="n">GroupBy</span><span class="p">(</span><span class="s">&#39;match_addr&#39;</span><span class="p">),</span>
+        <span class="n">ScoreSorter</span><span class="p">(),</span>
+    <span class="p">]</span>
+</div>
+<span class="k">class</span> <span class="nc">EsriEUSoap</span><span class="p">(</span><span class="n">EsriSoapGeocodeService</span><span class="p">,</span> <span class="n">EsriEUGeocodeService</span><span class="p">):</span>
+    <span class="n">_task_endpoint</span> <span class="o">=</span> <span class="s">&#39;/services/Locators/TA_Address_EU/GeocodeServer&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">postprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">preprocessors</span> <span class="o">=</span> <span class="n">EsriEUGeocodeService</span><span class="o">.</span><span class="n">DEFAULT_PREPROCESSORS</span> \
+            <span class="k">if</span> <span class="n">preprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">preprocessors</span>
+        
+        <span class="n">postprocessors</span> <span class="o">=</span> <span class="n">EsriEUGeocodeService</span><span class="o">.</span><span class="n">DEFAULT_POSTPROCESSORS</span> \
+            <span class="k">if</span> <span class="n">postprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">postprocessors</span>
+
+        <span class="n">EsriSoapGeocodeService</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;Loc_name&#39;</span><span class="p">:</span> <span class="s">&#39;locator&#39;</span><span class="p">,</span>
+            <span class="s">&#39;Match_addr&#39;</span><span class="p">:</span> <span class="s">&#39;match_addr&#39;</span><span class="p">,</span>
+            <span class="s">&#39;Score&#39;</span><span class="p">:</span> <span class="s">&#39;score&#39;</span><span class="p">,</span>
+            <span class="s">&#39;X&#39;</span><span class="p">:</span> <span class="s">&#39;x&#39;</span><span class="p">,</span>
+            <span class="s">&#39;Y&#39;</span><span class="p">:</span> <span class="s">&#39;y&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_geocode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+        <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s">&#39;PropertySet&#39;</span><span class="p">)</span>
+
+        <span class="c"># Split address</span>
+        <span class="n">location_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;Address&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+            <span class="s">&#39;City&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">city</span><span class="p">,</span>
+            <span class="s">&#39;Postcode&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">postal</span><span class="p">,</span>
+            <span class="s">&#39;Country&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">country</span>
+        <span class="p">}</span>
+
+        <span class="n">address</span><span class="o">.</span><span class="n">PropertyArray</span><span class="o">.</span><span class="n">PropertySetProperty</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_property_set_properties</span><span class="p">(</span><span class="n">location_dict</span><span class="p">))</span>
+
+        <span class="n">result_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">FindAddressCandidates</span><span class="p">(</span><span class="n">Address</span><span class="o">=</span><span class="n">address</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_candidates_from_record_set</span><span class="p">(</span><span class="n">result_set</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">result_set</span><span class="o">.</span><span class="n">Records</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">return</span> <span class="n">candidates</span>
+
+<span class="k">class</span> <span class="nc">EsriEU</span><span class="p">(</span><span class="n">EsriGeocodeService</span><span class="p">,</span> <span class="n">EsriEUGeocodeService</span><span class="p">):</span>
+    <span class="n">_task_endpoint</span> <span class="o">=</span> <span class="s">&#39;/rest/services/Locators/TA_Address_EU/GeocodeServer/findAddressCandidates&#39;</span>
+            
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">postprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">preprocessors</span> <span class="o">=</span> <span class="n">EsriEUGeocodeService</span><span class="o">.</span><span class="n">DEFAULT_PREPROCESSORS</span> \
+            <span class="k">if</span> <span class="n">preprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">preprocessors</span>
+        
+        <span class="n">postprocessors</span> <span class="o">=</span> <span class="n">EsriEUGeocodeService</span><span class="o">.</span><span class="n">DEFAULT_POSTPROCESSORS</span> \
+            <span class="k">if</span> <span class="n">postprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">postprocessors</span>
+
+        <span class="n">EsriGeocodeService</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_geocode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;Address&#39;</span><span class="p">:</span><span class="n">location</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+            <span class="s">&#39;City&#39;</span><span class="p">:</span><span class="n">location</span><span class="o">.</span><span class="n">city</span><span class="p">,</span>
+            <span class="s">&#39;Postcode&#39;</span><span class="p">:</span><span class="n">location</span><span class="o">.</span><span class="n">postal</span><span class="p">,</span>
+            <span class="s">&#39;Country&#39;</span><span class="p">:</span><span class="n">location</span><span class="o">.</span><span class="n">country</span><span class="p">,</span>
+            <span class="s">&#39;outfields&#39;</span><span class="p">:</span><span class="s">&#39;Loc_name&#39;</span><span class="p">,</span>
+            <span class="s">&#39;f&#39;</span><span class="p">:</span><span class="s">&#39;json&#39;</span><span class="p">}</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">append_token_if_needed</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="n">response_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_json_obj</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+        <span class="n">returned_candidates</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># this will be the list returned</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">rc</span> <span class="ow">in</span> <span class="n">response_obj</span><span class="p">[</span><span class="s">&#39;candidates&#39;</span><span class="p">]:</span> 
+                <span class="n">c</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">()</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">locator</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">][</span><span class="s">&#39;Loc_name&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">match_addr</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s">&#39;address&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s">&#39;location&#39;</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s">&#39;location&#39;</span><span class="p">][</span><span class="s">&#39;y&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">wkid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wkid</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">geoservice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+                <span class="n">returned_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;Received unusual JSON result from geocode: </span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span>
+                <span class="p">(</span><span class="n">response_obj</span><span class="p">,</span> <span class="n">ex</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">returned_candidates</span>
+
+<div class="viewcode-block" id="EsriNAGeocodeService"><a class="viewcode-back" href="../../index.html#omgeo.services.EsriNAGeocodeService">[docs]</a><span class="k">class</span> <span class="nc">EsriNAGeocodeService</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defaults for the EsriNAGeocodeService</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">LOCATOR_MAP</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;RoofTop&#39;</span><span class="p">:</span> <span class="s">&#39;rooftop&#39;</span><span class="p">,</span>
+        <span class="s">&#39;Streets&#39;</span><span class="p">:</span> <span class="s">&#39;interpolation&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">DEFAULT_PREPROCESSORS</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">CountryPreProcessor</span><span class="p">([</span><span class="s">&#39;US&#39;</span><span class="p">,</span> <span class="s">&#39;CA&#39;</span><span class="p">])</span>
+    <span class="p">]</span>
+
+    <span class="n">DEFAULT_POSTPROCESSORS</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AttrRename</span><span class="p">(</span><span class="s">&#39;locator&#39;</span><span class="p">,</span> <span class="n">LOCATOR_MAP</span><span class="p">),</span>
+        <span class="n">AttrFilter</span><span class="p">([</span><span class="s">&#39;rooftop&#39;</span><span class="p">,</span> <span class="s">&#39;interpolation&#39;</span><span class="p">],</span> <span class="s">&#39;locator&#39;</span><span class="p">),</span>
+        <span class="n">AttrSorter</span><span class="p">([</span><span class="s">&#39;rooftop&#39;</span><span class="p">,</span> <span class="s">&#39;interpolation&#39;</span><span class="p">],</span> <span class="s">&#39;locator&#39;</span><span class="p">),</span>
+        <span class="n">UseHighScoreIfAtLeast</span><span class="p">(</span><span class="mf">99.8</span><span class="p">),</span>
+        <span class="n">GroupBy</span><span class="p">(</span><span class="s">&#39;match_addr&#39;</span><span class="p">),</span>
+        <span class="n">ScoreSorter</span><span class="p">(),</span>
+    <span class="p">]</span>
+</div>
+<div class="viewcode-block" id="EsriNASoap"><a class="viewcode-back" href="../../index.html#omgeo.services.EsriNASoap">[docs]</a><span class="k">class</span> <span class="nc">EsriNASoap</span><span class="p">(</span><span class="n">EsriSoapGeocodeService</span><span class="p">,</span> <span class="n">EsriNAGeocodeService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use the SOAP version of the ArcGIS-10-style Geocoder for North America</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_task_endpoint</span> <span class="o">=</span> <span class="s">&#39;/services/Locators/TA_Address_NA_10/GeocodeServer&#39;</span>
+    <span class="n">_wkid</span> <span class="o">=</span> <span class="mi">4326</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">postprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">preprocessors</span> <span class="o">=</span> <span class="n">EsriNAGeocodeService</span><span class="o">.</span><span class="n">DEFAULT_PREPROCESSORS</span> \
+            <span class="k">if</span> <span class="n">preprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">preprocessors</span>
+        
+        <span class="n">postprocessors</span> <span class="o">=</span> <span class="n">EsriNAGeocodeService</span><span class="o">.</span><span class="n">DEFAULT_POSTPROCESSORS</span> \
+            <span class="k">if</span> <span class="n">postprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">postprocessors</span>
+        
+        <span class="n">EsriSoapGeocodeService</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;Loc_name&#39;</span><span class="p">:</span> <span class="s">&#39;locator&#39;</span><span class="p">,</span>
+            <span class="s">&#39;Match_addr&#39;</span><span class="p">:</span> <span class="s">&#39;match_addr&#39;</span><span class="p">,</span>
+            <span class="s">&#39;Score&#39;</span><span class="p">:</span> <span class="s">&#39;score&#39;</span><span class="p">,</span> <span class="s">&#39;X&#39;</span><span class="p">:</span> <span class="s">&#39;x&#39;</span><span class="p">,</span>
+            <span class="s">&#39;Y&#39;</span><span class="p">:</span> <span class="s">&#39;y&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_geocode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+        <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s">&#39;PropertySet&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">location</span><span class="o">.</span><span class="n">query</span><span class="p">:</span>
+            <span class="c"># Single line geocoding</span>
+            <span class="n">location_dict</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&#39;SingleLine&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">query</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># Split address</span>
+            <span class="n">location_dict</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&#39;Address&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                <span class="s">&#39;City&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">city</span><span class="p">,</span>
+                <span class="s">&#39;Country&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">country</span><span class="p">,</span>
+                <span class="s">&#39;Zip&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">postal</span>
+            <span class="p">}</span>
+
+        <span class="n">address</span><span class="o">.</span><span class="n">PropertyArray</span><span class="o">.</span><span class="n">PropertySetProperty</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_property_set_properties</span><span class="p">(</span><span class="n">location_dict</span><span class="p">))</span>
+
+        <span class="n">result_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">FindAddressCandidates</span><span class="p">(</span><span class="n">Address</span><span class="o">=</span><span class="n">address</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_candidates_from_record_set</span><span class="p">(</span><span class="n">result_set</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">result_set</span><span class="o">.</span><span class="n">Records</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">return</span> <span class="n">candidates</span>
+         </div>
+<div class="viewcode-block" id="EsriNA"><a class="viewcode-back" href="../../index.html#omgeo.services.EsriNA">[docs]</a><span class="k">class</span> <span class="nc">EsriNA</span><span class="p">(</span><span class="n">EsriGeocodeService</span><span class="p">,</span> <span class="n">EsriNAGeocodeService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Esri REST Geocoder for North America&quot;&quot;&quot;</span>
+    <span class="n">_task_endpoint</span> <span class="o">=</span> <span class="s">&#39;/rest/services/Locators/TA_Address_NA_10/GeocodeServer/findAddressCandidates&#39;</span>
+            
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">postprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">preprocessors</span> <span class="o">=</span> <span class="n">EsriNAGeocodeService</span><span class="o">.</span><span class="n">DEFAULT_PREPROCESSORS</span> \
+            <span class="k">if</span> <span class="n">preprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">preprocessors</span>
+        
+        <span class="n">postprocessors</span> <span class="o">=</span> <span class="n">EsriNAGeocodeService</span><span class="o">.</span><span class="n">DEFAULT_POSTPROCESSORS</span> \
+            <span class="k">if</span> <span class="n">postprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">postprocessors</span>
+        
+        <span class="n">EsriGeocodeService</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_geocode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;SingleLine&#39;</span><span class="p">:</span><span class="n">location</span><span class="o">.</span><span class="n">query</span><span class="p">,</span>
+            <span class="s">&#39;Address&#39;</span><span class="p">:</span><span class="n">location</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+            <span class="s">&#39;City&#39;</span><span class="p">:</span><span class="n">location</span><span class="o">.</span><span class="n">city</span><span class="p">,</span>
+            <span class="s">&#39;State&#39;</span><span class="p">:</span><span class="n">location</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+            <span class="s">&#39;Zip&#39;</span><span class="p">:</span><span class="n">location</span><span class="o">.</span><span class="n">postal</span><span class="p">,</span>
+            <span class="s">&#39;Country&#39;</span><span class="p">:</span><span class="n">location</span><span class="o">.</span><span class="n">country</span><span class="p">,</span>
+            <span class="s">&#39;outfields&#39;</span><span class="p">:</span><span class="s">&#39;Loc_name,Addr_Type,Zip4_Type&#39;</span><span class="p">,</span>
+            <span class="s">&#39;f&#39;</span><span class="p">:</span><span class="s">&#39;json&#39;</span><span class="p">}</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">append_token_if_needed</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">response_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_json_obj</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">wkid</span> <span class="o">=</span> <span class="n">response_obj</span><span class="p">[</span><span class="s">&#39;spatialReference&#39;</span><span class="p">][</span><span class="s">&#39;wkid&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        
+        <span class="n">returned_candidates</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># this will be the list returned</span>
+        <span class="k">try</span><span class="p">:</span> 
+            <span class="k">for</span> <span class="n">rc</span> <span class="ow">in</span> <span class="n">response_obj</span><span class="p">[</span><span class="s">&#39;candidates&#39;</span><span class="p">]:</span>         
+                <span class="n">c</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">()</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">locator</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">][</span><span class="s">&#39;Loc_name&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">match_addr</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s">&#39;address&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s">&#39;location&#39;</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s">&#39;location&#39;</span><span class="p">][</span><span class="s">&#39;y&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">wkid</span> <span class="o">=</span> <span class="n">wkid</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">geoservice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+                <span class="n">returned_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">returned_candidates</span>
+    </div>
+<div class="viewcode-block" id="EsriWGS"><a class="viewcode-back" href="../../index.html#omgeo.services.EsriWGS">[docs]</a><span class="k">class</span> <span class="nc">EsriWGS</span><span class="p">(</span><span class="n">GeocodeService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to geocode using the ESRI World Geocoding service</span>
+<span class="sd">    &lt;http://geocode.arcgis.com/arcgis/geocoding.html&gt;.</span>
+
+<span class="sd">    This uses two endpoints -- one for single-line addresses,</span>
+<span class="sd">    and one for multi-part addresses.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">LOCATOR_MAP</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;PointAddress&#39;</span><span class="p">:</span> <span class="s">&#39;rooftop&#39;</span><span class="p">,</span>
+        <span class="s">&#39;StreetAddress&#39;</span><span class="p">:</span> <span class="s">&#39;interpolation&#39;</span><span class="p">,</span>
+        <span class="s">&#39;PostalExt&#39;</span><span class="p">:</span> <span class="s">&#39;postal_specific&#39;</span> <span class="c"># accept ZIP+4</span>
+    <span class="p">}</span>
+
+    <span class="n">DEFAULT_PREPROCESSORS</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">DEFAULT_POSTPROCESSORS</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AttrFilter</span><span class="p">([</span><span class="s">&#39;PointAddress&#39;</span><span class="p">,</span> <span class="s">&#39;StreetAddress&#39;</span><span class="p">,</span> <span class="s">&#39;PostalExt&#39;</span><span class="p">],</span> <span class="s">&#39;locator&#39;</span><span class="p">),</span>
+        <span class="n">AttrSorter</span><span class="p">([</span><span class="s">&#39;PointAddress&#39;</span><span class="p">,</span> <span class="s">&#39;StreetAddress&#39;</span><span class="p">,</span> <span class="s">&#39;PostalExt&#39;</span><span class="p">],</span> <span class="s">&#39;locator&#39;</span><span class="p">),</span>
+        <span class="n">AttrRename</span><span class="p">(</span><span class="s">&#39;locator&#39;</span><span class="p">,</span> <span class="n">LOCATOR_MAP</span><span class="p">),</span> <span class="c"># after filter to avoid searching things we toss out</span>
+        <span class="n">UseHighScoreIfAtLeast</span><span class="p">(</span><span class="mf">99.8</span><span class="p">),</span>
+        <span class="n">GroupBy</span><span class="p">(</span><span class="s">&#39;match_addr&#39;</span><span class="p">),</span>
+        <span class="n">ScoreSorter</span><span class="p">(),</span>
+        <span class="c">#TODO: closeness filter</span>
+    <span class="p">]</span>
+
+    <span class="n">_endpoint</span> <span class="o">=</span> <span class="s">&#39;http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_geocode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of Candidates given a PlaceQuery instance.&quot;&quot;&quot;</span>
+        <span class="c">#: List of desired output fields</span>
+        <span class="c">#: See `ESRI docs &lt;http://geocode.arcgis.com/arcgis/geocoding.html#output&gt;_` for details</span>
+        <span class="n">outFields</span> <span class="o">=</span> <span class="p">(</span><span class="c">#&#39;Loc_name&#39;,</span>
+                     <span class="c">#&#39;Shape&#39;,</span>
+                     <span class="s">&#39;Score&#39;</span><span class="p">,</span>
+                     <span class="c">#&#39;Match_Addr&#39;, #based on address standards for the country</span>
+                     <span class="c">#&#39;Address&#39;, # returned by default</span>
+                     <span class="c">#&#39;Country&#39; # 3-digit ISO 3166-1 code for a country. Example: Canada = &quot;CAN&quot;</span>
+                     <span class="c">#&#39;Admin&#39;,</span>
+                     <span class="c">#&#39;DepAdmin&#39;,</span>
+                     <span class="c">#&#39;SubAdmin&#39;,</span>
+                     <span class="c">#&#39;Locality&#39;,</span>
+                     <span class="c">#&#39;Postal&#39;,</span>
+                     <span class="c">#&#39;PostalExt&#39;,</span>
+                     <span class="s">&#39;Addr_Type&#39;</span><span class="p">,</span>
+                     <span class="c">#&#39;Type&#39;,</span>
+                     <span class="c">#&#39;Rank&#39;,</span>
+                     <span class="c">#&#39;AddNum&#39;,</span>
+                     <span class="c">#&#39;StPreDir&#39;,</span>
+                     <span class="c">#&#39;StPreType&#39;,</span>
+                     <span class="c">#&#39;StName&#39;,</span>
+                     <span class="c">#&#39;StType&#39;,</span>
+                     <span class="c">#&#39;StDir&#39;,</span>
+                     <span class="c">#&#39;Side&#39;,</span>
+                     <span class="c">#&#39;AddNumFrom&#39;,</span>
+                     <span class="c">#&#39;AddNumTo&#39;,</span>
+                     <span class="c">#&#39;AddBldg&#39;,</span>
+                     <span class="c">#&#39;Ymax&#39;,</span>
+                     <span class="c">#&#39;Ymin&#39;,</span>
+                     <span class="c">#&#39;Xmin&#39;,</span>
+                     <span class="c">#&#39;Xmax&#39;,</span>
+                     <span class="c">#&#39;X&#39;,</span>
+                     <span class="c">#&#39;Y&#39;,</span>
+                     <span class="s">&#39;DisplayX&#39;</span><span class="p">,</span>
+                     <span class="s">&#39;DisplayY&#39;</span><span class="p">,</span>
+                     <span class="c">#&#39;LangCode&#39;,</span>
+                     <span class="c">#&#39;Status&#39;,</span>
+                    <span class="p">)</span>
+        <span class="n">outFields</span> <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outFields</span><span class="p">)</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="s">&#39;json&#39;</span><span class="p">,</span> <span class="c"># default HTML. Other options are JSON and KMZ.</span>
+                     <span class="n">outFields</span><span class="o">=</span><span class="n">outFields</span><span class="p">,</span>
+                     <span class="c">#outSR=WKID, defaults to 4326</span>
+                     <span class="n">maxLocations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="c"># default 1; max is 20</span>
+                     <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">query</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span> <span class="c"># multipart</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="s">&#39;findAddressCandidates&#39;</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span>
+                         <span class="n">Address</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="c"># commonly represents the house number and street name of a complete address</span>
+                         <span class="n">Admin1</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">city</span><span class="p">,</span>
+                         <span class="n">Admin2</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+                         <span class="c">#Admin3=</span>
+                         <span class="c">#Admin4=</span>
+                         <span class="n">Postal</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">postal</span><span class="p">,</span>
+                         <span class="c">#PostalExt=</span>
+                         <span class="n">CountryCode</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">country</span><span class="p">,</span> <span class="c"># full country name or ISO 3166-1 2- or 3-digit country code</span>
+                         <span class="p">)</span>
+            <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">searchExtent</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span><span class="o">.</span><span class="n">to_esri_wgs_json</span><span class="p">())</span>            
+        <span class="k">else</span><span class="p">:</span> <span class="c"># single-line</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="s">&#39;find&#39;</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span>
+                         <span class="n">text</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">query</span><span class="p">,</span> <span class="c"># This can be a street address, place name, postal code, or POI.</span>
+                         <span class="n">sourceCountry</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">country</span><span class="p">,</span> <span class="c"># full country name or ISO 3166-1 2- or 3-digit country code</span>
+                         <span class="p">)</span>
+            <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">bbox</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span><span class="o">.</span><span class="n">to_esri_wgs_json</span><span class="p">())</span>
+
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span> <span class="o">+</span> <span class="s">&#39;/&#39;</span> <span class="o">+</span> <span class="n">method</span>
+        <span class="n">response_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_json_obj</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+        <span class="n">returned_candidates</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># this will be the list returned</span>
+        <span class="k">try</span><span class="p">:</span> 
+            <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">response_obj</span><span class="p">[</span><span class="s">&#39;locations&#39;</span><span class="p">]:</span>         
+                <span class="n">c</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">()</span>
+                <span class="n">attributes</span> <span class="o">=</span> <span class="n">location</span><span class="p">[</span><span class="s">&#39;feature&#39;</span><span class="p">][</span><span class="s">&#39;attributes&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">locator</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;Addr_Type&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;Score&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">match_addr</span> <span class="o">=</span> <span class="n">location</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+                <span class="c">#: &quot;represents the actual location of the address. It differs from the X value&quot;</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;DisplayX&#39;</span><span class="p">]</span> 
+                <span class="c">#: &quot;represents the actual location of the address. It differs from the Y value&quot;</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;DisplayY&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">wkid</span> <span class="o">=</span> <span class="n">response_obj</span><span class="p">[</span><span class="s">&#39;spatialReference&#39;</span><span class="p">][</span><span class="s">&#39;wkid&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">geoservice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+                <span class="n">returned_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">returned_candidates</span>   
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">postprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">preprocessors</span> <span class="o">=</span> <span class="n">EsriWGS</span><span class="o">.</span><span class="n">DEFAULT_PREPROCESSORS</span> <span class="k">if</span> <span class="n">preprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">preprocessors</span>
+        <span class="n">postprocessors</span> <span class="o">=</span> <span class="n">EsriWGS</span><span class="o">.</span><span class="n">DEFAULT_POSTPROCESSORS</span> <span class="k">if</span> <span class="n">postprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">postprocessors</span>
+        <span class="n">GeocodeService</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="EsriWGSSSL"><a class="viewcode-back" href="../../index.html#omgeo.services.EsriWGSSSL">[docs]</a><span class="k">class</span> <span class="nc">EsriWGSSSL</span><span class="p">(</span><span class="n">EsriWGS</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Class to geocode using the ESRI World Geocoding service over SSL</span>
+<span class="sd">    &lt;https://geocode.arcgis.com/arcgis/geocoding.html&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_endpoint</span> <span class="o">=</span> <span class="s">&#39;https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer&#39;</span>
+</div>
+<div class="viewcode-block" id="MapQuest"><a class="viewcode-back" href="../../index.html#omgeo.services.MapQuest">[docs]</a><span class="k">class</span> <span class="nc">MapQuest</span><span class="p">(</span><span class="n">GeocodeService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to geocode using MapQuest licensed services.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_endpoint</span> <span class="o">=</span> <span class="s">&#39;http://www.mapquestapi.com/geocoding/v1/address&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">_geocode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">get_appended_location</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Add key/value pair to given dict only if value is not empty string.&quot;&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+                    <span class="n">location</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">kw</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">]})</span>
+            <span class="k">return</span> <span class="n">location</span>
+        <span class="n">location</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">location</span> <span class="o">=</span> <span class="n">get_appended_location</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">street</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">location</span> <span class="o">==</span> <span class="p">{}:</span>
+            <span class="n">location</span> <span class="o">=</span> <span class="n">get_appended_location</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">street</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+        <span class="n">location</span> <span class="o">=</span> <span class="n">get_appended_location</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">city</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+                                         <span class="n">postal</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">postal</span><span class="p">,</span> <span class="n">country</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">country</span><span class="p">)</span>
+        <span class="n">json_</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="n">location</span><span class="p">)</span>
+        <span class="n">json_</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">json_</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;MQ json: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">json_</span><span class="p">)</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">unquote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="p">[</span><span class="s">&#39;api_key&#39;</span><span class="p">]),</span>
+                     <span class="n">json</span><span class="o">=</span><span class="n">json_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">viewbox</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span><span class="o">.</span><span class="n">to_mapquest_str</span><span class="p">())</span>        
+        <span class="n">response_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_json_obj</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;MQ RESPONSE: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">response_obj</span><span class="p">)</span>
+        <span class="n">returned_candidates</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># this will be the list returned</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">response_obj</span><span class="p">[</span><span class="s">&#39;results&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;locations&#39;</span><span class="p">]:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">()</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">locator</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s">&#39;geocodeQuality&#39;</span><span class="p">]</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">confidence</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s">&#39;geocodeQualityCode&#39;</span><span class="p">]</span> <span class="c">#http://www.mapquestapi.com/geocoding/geocodequality.html</span>
+            <span class="n">match_addr_elements</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;street&#39;</span><span class="p">,</span> <span class="s">&#39;adminArea5&#39;</span><span class="p">,</span> <span class="s">&#39;adminArea3&#39;</span><span class="p">,</span>
+                                   <span class="s">&#39;adminArea2&#39;</span><span class="p">,</span> <span class="s">&#39;postalCode&#39;</span><span class="p">]</span> <span class="c"># similar to ESRI</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">match_addr</span> <span class="o">=</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">match_addr_elements</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">r</span><span class="p">])</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s">&#39;latLng&#39;</span><span class="p">][</span><span class="s">&#39;lng&#39;</span><span class="p">]</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s">&#39;latLng&#39;</span><span class="p">][</span><span class="s">&#39;lat&#39;</span><span class="p">]</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">wkid</span> <span class="o">=</span> <span class="mi">4326</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">geoservice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+            <span class="n">returned_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">returned_candidates</span>
+    </div>
+<span class="k">class</span> <span class="nc">MapQuestSSL</span><span class="p">(</span><span class="n">MapQuest</span><span class="p">):</span>
+    <span class="n">_endpoint</span> <span class="o">=</span> <span class="s">&#39;https://www.mapquestapi.com/geocoding/v1/address&#39;</span>
+
+<div class="viewcode-block" id="Nominatim"><a class="viewcode-back" href="../../index.html#omgeo.services.Nominatim">[docs]</a><span class="k">class</span> <span class="nc">Nominatim</span><span class="p">(</span><span class="n">GeocodeService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to geocode using `Nominatim services hosted </span>
+<span class="sd">    by MapQuest &lt;http://open.mapquestapi.com/nominatim/&gt;`_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_wkid</span> <span class="o">=</span> <span class="mi">4326</span>
+    <span class="n">_endpoint</span> <span class="o">=</span> <span class="s">&#39;http://open.mapquestapi.com/nominatim/v1/search&#39;</span>
+
+    <span class="n">DEFAULT_ACCEPTED_ENTITIES</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;building.&#39;</span><span class="p">,</span> <span class="s">&#39;historic.castle&#39;</span><span class="p">,</span> <span class="s">&#39;leisure.ice_rink&#39;</span><span class="p">,</span> 
+                                 <span class="s">&#39;leisure.miniature_golf&#39;</span><span class="p">,</span>
+                                 <span class="s">&#39;leisure.sports_centre&#39;</span><span class="p">,</span> <span class="s">&#39;lesiure.stadium&#39;</span><span class="p">,</span> <span class="s">&#39;leisure.track&#39;</span><span class="p">,</span>
+                                 <span class="s">&#39;lesiure.water_park&#39;</span><span class="p">,</span> <span class="s">&#39;man_made.lighthouse&#39;</span><span class="p">,</span> <span class="s">&#39;man_made.works&#39;</span><span class="p">,</span> 
+                                 <span class="s">&#39;military.barracks&#39;</span><span class="p">,</span> <span class="s">&#39;military.bunker&#39;</span><span class="p">,</span> <span class="s">&#39;office.&#39;</span><span class="p">,</span> <span class="s">&#39;place.house&#39;</span><span class="p">,</span>
+                                 <span class="s">&#39;amenity.&#39;</span><span class="p">,</span>  <span class="s">&#39;power.generator&#39;</span><span class="p">,</span> <span class="s">&#39;railway.station&#39;</span><span class="p">,</span>
+                                 <span class="s">&#39;shop.&#39;</span><span class="p">,</span> <span class="s">&#39;tourism.&#39;</span><span class="p">]</span>
+
+    <span class="n">DEFAULT_REJECTED_ENTITIES</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;amenity.drinking_water&#39;</span><span class="p">,</span>
+                                 <span class="s">&#39;amentity.bicycle_parking&#39;</span><span class="p">,</span> <span class="s">&#39;amentity.ev_charging&#39;</span><span class="p">,</span>
+                                 <span class="s">&#39;amentity.grit_bin&#39;</span><span class="p">,</span> <span class="s">&#39;amentity.atm&#39;</span><span class="p">,</span>
+                                 <span class="s">&#39;amentity.hunting_stand&#39;</span><span class="p">,</span> <span class="s">&#39;amentity.post_box&#39;</span><span class="p">]</span>
+
+    <span class="n">DEFAULT_PREPROCESSORS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ReplaceRangeWithNumber</span><span class="p">()]</span> <span class="c"># 766-68 Any St. -&gt; 766 Any St. </span>
+    <span class="sd">&quot;&quot;&quot;Preprocessors to use with this geocoder service, in order of desired execution.&quot;&quot;&quot;</span>
+    
+    <span class="n">DEFAULT_POSTPROCESSORS</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AttrFilter</span><span class="p">(</span><span class="n">DEFAULT_ACCEPTED_ENTITIES</span><span class="p">,</span> <span class="s">&#39;entity&#39;</span><span class="p">,</span> <span class="n">exact_match</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+        <span class="n">AttrExclude</span><span class="p">(</span><span class="n">DEFAULT_REJECTED_ENTITIES</span><span class="p">,</span> <span class="s">&#39;entity&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="sd">&quot;&quot;&quot;Postprocessors to use with this geocoder service, in order of desired execution.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">postprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">preprocessors</span> <span class="o">=</span> <span class="n">Nominatim</span><span class="o">.</span><span class="n">DEFAULT_PREPROCESSORS</span> <span class="k">if</span> <span class="n">preprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">preprocessors</span>
+        <span class="n">postprocessors</span> <span class="o">=</span> <span class="n">Nominatim</span><span class="o">.</span><span class="n">DEFAULT_POSTPROCESSORS</span> <span class="k">if</span> <span class="n">postprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">postprocessors</span>
+        <span class="n">GeocodeService</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_geocode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;q&#39;</span><span class="p">:</span><span class="n">pq</span><span class="o">.</span><span class="n">query</span><span class="p">,</span>
+                 <span class="s">&#39;countrycodes&#39;</span><span class="p">:</span><span class="n">pq</span><span class="o">.</span><span class="n">country</span><span class="p">,</span> <span class="c"># only takes ISO-2</span>
+                 <span class="s">&#39;format&#39;</span><span class="p">:</span><span class="s">&#39;json&#39;</span><span class="p">}</span>
+        
+        <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s">&#39;viewbox&#39;</span><span class="p">:</span><span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span><span class="o">.</span><span class="n">to_mapquest_str</span><span class="p">(),</span> <span class="s">&#39;bounded&#39;</span><span class="p">:</span><span class="n">pq</span><span class="o">.</span><span class="n">bounded</span><span class="p">})</span>
+
+        <span class="n">response_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_json_obj</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+  
+        <span class="n">returned_candidates</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># this will be the list returned</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">response_obj</span><span class="p">:</span>    
+            <span class="n">c</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">()</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">locator</span> <span class="o">=</span> <span class="s">&#39;parcel&#39;</span> <span class="c"># we don&#39;t have one but this is the closest match</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">entity</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s">&#39;class&#39;</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">])</span> <span class="c"># ex.: &quot;place.house&quot;</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">match_addr</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s">&#39;display_name&#39;</span><span class="p">]</span> <span class="c"># ex. &quot;Wolf Building, 340, N 12th St, Philadelphia, Philadelphia County, Pennsylvania, 19107, United States of America&quot; #TODO: shorten w/ pieces</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s">&#39;lon&#39;</span><span class="p">])</span> <span class="c"># long, ex. -122.13 # cast to float in 1.3.4</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s">&#39;lat&#39;</span><span class="p">])</span> <span class="c"># lat, ex. 47.64 # cast to float in 1.3.4</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">wkid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wkid</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">geoservice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+            <span class="n">returned_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">returned_candidates</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">python-omgeo 1.5.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../omgeo.html" >omgeo</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012 Azavea.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

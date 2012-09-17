@@ -1,0 +1,785 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Contents &mdash; python-omgeo 1.5.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.5.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="python-omgeo 1.5.0 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">python-omgeo 1.5.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="contents">
+<h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+</div>
+<div class="section" id="module-omgeo">
+<span id="omgeo"></span><h1>omgeo<a class="headerlink" href="#module-omgeo" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="omgeo.Geocoder">
+<em class="property">class </em><tt class="descclassname">omgeo.</tt><tt class="descname">Geocoder</tt><big>(</big><em>sources=None</em>, <em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>waterfall=False</em><big>)</big><a class="reference internal" href="_modules/omgeo.html#Geocoder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.Geocoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>The base geocode class.  This class can be initialized with settings
+for each geocoder and/or settings for the geocoder itself.</p>
+<dl class="docutils">
+<dt>sources         &#8211; a dictionary of GeocodeServiceConfig() parameters,</dt>
+<dd><p class="first">keyed by module name for the GeocodeService to use
+ex: {&#8216;esri_wgs&#8217;:{},</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>&#8216;bing&#8217;: {&#8216;settings&#8217;: {},</dt>
+<dd>&#8216;preprocessors&#8217;: [],
+&#8216;postprocessors&#8217;: []},</dd>
+</dl>
+<p>...}</p>
+</div></blockquote>
+</dd>
+</dl>
+<p>preprocessors   &#8211; list of universal preprocessors to use
+postprocessors  &#8211; list of universal postprocessors to use
+waterfall       &#8211; sets default for waterfall on geocode() method</p>
+<blockquote>
+<div>(default False)</div></blockquote>
+<dl class="method">
+<dt id="omgeo.Geocoder.geocode">
+<tt class="descname">geocode</tt><big>(</big><em>pq</em>, <em>waterfall=None</em><big>)</big><a class="reference internal" href="_modules/omgeo.html#Geocoder.geocode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.Geocoder.geocode" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Returns a dictionary including:</dt>
+<dd><ul class="first last simple">
+<li>candidates - list of Candidate objects</li>
+<li>upstream_response_info - list of UpstreamResponseInfo objects</li>
+</ul>
+</dd>
+</dl>
+<p>pq          &#8211;  A PlaceQuery object (required).
+waterfall   &#8211;  Boolean set to True if all geocoders listed should</p>
+<blockquote>
+<div>be used to find results, instead of stopping after
+the first geocoding service with valid candidates
+(defaults to &lt;Geocoder instance&gt;.waterfall).</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.Geocoder.set_sources">
+<tt class="descname">set_sources</tt><big>(</big><em>sources</em><big>)</big><a class="reference internal" href="_modules/omgeo.html#Geocoder.set_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.Geocoder.set_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates GeocodeServiceConfigs from each str source</p>
+<dl class="docutils">
+<dt>sources &#8211;  list of source-settings pairs</dt>
+<dd>ex. &#8220;[[&#8216;EsriWGS&#8217;, {}], [&#8216;Nominatim&#8217;, {}]]&#8221;</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-omgeo.places">
+<span id="places"></span><h1>places<a class="headerlink" href="#module-omgeo.places" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="omgeo.places.Candidate">
+<em class="property">class </em><tt class="descclassname">omgeo.places.</tt><tt class="descname">Candidate</tt><big>(</big><em>locator=''</em>, <em>score=0</em>, <em>match_addr=''</em>, <em>x=None</em>, <em>y=None</em>, <em>wkid=4326</em>, <em>entity=''</em>, <em>confidence=''</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/places.html#Candidate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.places.Candidate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing a candidate address returned from geocoders.
+Accepts arguments defined below, plus informal keyword arguments.</p>
+<p>locator     &#8211; Locator used for geocoding (default &#8216;&#8217;)
+score       &#8211; Standardized score (default 0)
+match_addr  &#8211; Address returned by geocoder (default &#8216;&#8217;)
+x           &#8211; X-coordinate (longitude for lat-lon SRS) (default None)
+y           &#8211; Y-coordinate (latitude for lat-lon SRS) (default None)
+wkid        &#8211; Well-known ID for spatial reference system (default 4326)
+entity      &#8211; Used by Bing, Nominatim (default &#8216;&#8217;)
+confidence  &#8211; Used by Bing (default &#8216;&#8217;)
+geoservice  &#8211; GeocodeService used for geocoding (default &#8216;&#8217;)</p>
+<dl class="docutils">
+<dt>c = Candidate(&#8216;US_RoofTop&#8217;, 91.5, &#8216;340 N 12th St, Philadelphia, PA, 19107&#8217;,</dt>
+<dd>&#8216;-75.16&#8217;, &#8216;39.95&#8217;, some_extra_data=&#8217;yellow&#8217;)</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.places.PlaceQuery">
+<em class="property">class </em><tt class="descclassname">omgeo.places.</tt><tt class="descname">PlaceQuery</tt><big>(</big><em>query=''</em>, <em>address=''</em>, <em>city=''</em>, <em>state=''</em>, <em>postal=''</em>, <em>country=''</em>, <em>viewbox=None</em>, <em>bounded=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/places.html#PlaceQuery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.places.PlaceQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing an address or place passed to geocoders.</p>
+<dl class="docutils">
+<dt>query       &#8211;  A string containing the query to parse</dt>
+<dd>and match to a coordinate on the map.
+<em>ex: &#8220;340 N 12th St Philadelphia PA 19107&#8221;
+or &#8220;Wolf Building, Philadelphia&#8221;</em></dd>
+<dt>address     &#8211;  A string for the street line of an address.</dt>
+<dd><em>ex: &#8220;340 N 12th St&#8221;</em></dd>
+<dt>city        &#8211;  A string specifying the populated place for the address.</dt>
+<dd>This commonly refers to a city, but may refer to a suburb
+or neighborhood in certain countries.</dd>
+</dl>
+<p>state       &#8211;  A string for the state, province, territory, etc.
+postal      &#8211;  A string for the postal / ZIP Code
+country     &#8211;  A string for the country or region. Because the geocoder</p>
+<blockquote>
+<div>uses the country to determine which geocoding service to use,
+this is strongly recommended for efficency. ISO alpha-2 is
+preferred, and is required by some geocoder services.</div></blockquote>
+<dl class="docutils">
+<dt>viewbox     &#8211;  A Viewbox object indicating the preferred area</dt>
+<dd>to find search results (default None)</dd>
+<dt>bounded     &#8211;  Boolean indicating whether or not to only</dt>
+<dd>return candidates within the given Viewbox (default False)</dd>
+</dl>
+<p>user_lat    &#8211;  A float representing the Latitude of the end-user.
+user_lon    &#8211;  A float representing the Longitude of the end-user.
+user_ip     &#8211;  A string representing the IP address of the end-user.
+culture     &#8211;  Culture code to be used for the request (used by Bing).</p>
+<blockquote>
+<div>For example, if set to &#8216;de&#8217;, the country for a U.S. address
+would be returned as &#8220;Vereinigte Staaten Von Amerika&#8221;
+instead of &#8220;United States&#8221;.</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.places.Viewbox">
+<em class="property">class </em><tt class="descclassname">omgeo.places.</tt><tt class="descname">Viewbox</tt><big>(</big><em>left=-180</em>, <em>top=90</em>, <em>right=180</em>, <em>bottom=-90</em>, <em>wkid=4326</em><big>)</big><a class="reference internal" href="_modules/omgeo/places.html#Viewbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.places.Viewbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing a bounding box.
+Defaults to maximum bounds for WKID 4326.</p>
+<p>left    &#8211; Minimum X value (default -180)
+top     &#8211; Maximum Y value (default 90)
+right   &#8211; Maximum X value (default 180)
+bottom  &#8211; Minimum Y value (default -90)
+wkid    &#8211; Well-known ID for spatial reference system (default 4326)</p>
+<dl class="method">
+<dt id="omgeo.places.Viewbox.convert_srs">
+<tt class="descname">convert_srs</tt><big>(</big><em>new_wkid</em><big>)</big><a class="reference internal" href="_modules/omgeo/places.html#Viewbox.convert_srs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.places.Viewbox.convert_srs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new Viewbox object with the specified SRS.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.places.Viewbox.to_bing_str">
+<tt class="descname">to_bing_str</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/places.html#Viewbox.to_bing_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.places.Viewbox.to_bing_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Viewbox object to a string that can be used by Bing
+as a query parameter.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.places.Viewbox.to_esri_wgs_json">
+<tt class="descname">to_esri_wgs_json</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/places.html#Viewbox.to_esri_wgs_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.places.Viewbox.to_esri_wgs_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Viewbox object to a JSON string that can be used
+by the ESRI World Geocoding Service as a parameter.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.places.Viewbox.to_mapquest_str">
+<tt class="descname">to_mapquest_str</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/places.html#Viewbox.to_mapquest_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.places.Viewbox.to_mapquest_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Viewbox object to a string that can be used by
+MapQuest as a query parameter.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-omgeo.services.base">
+<span id="services"></span><h1>services<a class="headerlink" href="#module-omgeo.services.base" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="omgeo.services.base.GeocodeService">
+<em class="property">class </em><tt class="descclassname">omgeo.services.base.</tt><tt class="descname">GeocodeService</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services/base.html#GeocodeService"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.base.GeocodeService" title="Permalink to this definition">¶</a></dt>
+<dd><p>A tuple of classes representing the geocoders that will be used
+to find addresses for the given locations</p>
+<dl class="method">
+<dt id="omgeo.services.base.GeocodeService.geocode">
+<tt class="descname">geocode</tt><big>(</big><em>pq</em><big>)</big><a class="reference internal" href="_modules/omgeo/services/base.html#GeocodeService.geocode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.base.GeocodeService.geocode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an unprocessed PlaceQuery object, return a two-part tuple
+including a post-processed list of Candidate objects 
+and an UpstreamResponseInfo object if an API call was made.</p>
+<dl class="docutils">
+<dt>Preprocessor throws out request:</dt>
+<dd>([], None)</dd>
+<dt>Postprocessor throws out some candidates:</dt>
+<dd>([&lt;Candidate obj&gt;, &lt;Candidate obj&gt;], &lt;UpstreamResponseInfo obj&gt;)</dd>
+<dt>Postprocessor throws out all candidates:</dt>
+<dd>([], &lt;UpstreamResponseInfo obj&gt;)</dd>
+<dt>An exception occurs while making the API call:</dt>
+<dd>([], &lt;UpstreamResponseInfo obj&gt;)</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.services.base.UpstreamResponseInfo">
+<em class="property">class </em><tt class="descclassname">omgeo.services.base.</tt><tt class="descname">UpstreamResponseInfo</tt><big>(</big><em>geoservice</em>, <em>processed_pq</em>, <em>response_code=None</em>, <em>response_time=None</em>, <em>success=True</em>, <em>errors=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services/base.html#UpstreamResponseInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.base.UpstreamResponseInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class describing the API call result from an upstream provider.
+For cleaning and consistency, set attributes using the given methods.</p>
+<p>geoservice       &#8211; name of the upstream provider used
+processed_pq     &#8211; Processed PlaceQuery object</p>
+<p>response_code    &#8211; HTTP response code (default None)
+response_time    &#8211; time in milliseconds that it takes to get a</p>
+<blockquote>
+<div>response (default None)</div></blockquote>
+<dl class="docutils">
+<dt>success          &#8211; indicates if the API call was successful. A 200 response</dt>
+<dd>with no candidates is still considered a success.
+(default True)</dd>
+</dl>
+<p>errors           &#8211; a list of human-readable error descriptions</p>
+</dd></dl>
+
+<span class="target" id="module-omgeo.services"></span><dl class="class">
+<dt id="omgeo.services.Bing">
+<em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">Bing</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services.html#Bing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.Bing" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Class to geocode using Bing services:</dt>
+<dd><ul class="first last simple">
+<li><a class="reference external" href="http://msdn.microsoft.com/en-us/library/ff701711.aspx">Find a Location by Query</a></li>
+<li><a class="reference external" href="http://msdn.microsoft.com/en-us/library/ff701714.aspx">Find a Location by Address</a></li>
+</ul>
+</dd>
+</dl>
+<p>api_key &#8211;  The API key used to access Bing services.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.services.CitizenAtlas">
+<em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">CitizenAtlas</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services.html#CitizenAtlas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.CitizenAtlas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to geocode using the Washington DC CitizenAtlas &lt;<a class="reference external" href="http://citizenatlas.dc.gov/newwebservices">http://citizenatlas.dc.gov/newwebservices</a>&gt;</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.services.EsriEUGeocodeService">
+<em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">EsriEUGeocodeService</tt><a class="reference internal" href="_modules/omgeo/services.html#EsriEUGeocodeService"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.EsriEUGeocodeService" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defaults for Esri EU Geocoders</p>
+<p>As of 29 Dec 2011, the ESRI website claims to support Andorra, Austria, 
+Belgium, Denmark, Finland, France, Germany, Gibraltar, Ireland, Italy,
+Liechtenstein, Luxembourg, Monaco, The Netherlands, Norway, Portugal,
+San Marino, Spain, Sweden, Switzerland, United Kingdom, and Vatican City.</p>
+<dl class="attribute">
+<dt id="omgeo.services.EsriEUGeocodeService.MAP_FIPS_TO_ISO2">
+<tt class="descname">MAP_FIPS_TO_ISO2</tt><em class="property"> = {'MN': 'MC', 'EI': 'IE', 'DA': 'DK', 'AU': 'AT', 'GM': 'DE', 'AN': 'AD', 'SZ': 'CH', 'SP': 'ES', 'SW': 'SE', 'LS': 'LI', 'UK': 'GB', 'VT': 'VC', 'PO': 'PT'}</em><a class="headerlink" href="#omgeo.services.EsriEUGeocodeService.MAP_FIPS_TO_ISO2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map of FIPS to ISO-2 codes, if they are different.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="omgeo.services.EsriEUGeocodeService.SUPPORTED_COUNTRIES_FIPS">
+<tt class="descname">SUPPORTED_COUNTRIES_FIPS</tt><em class="property"> = ['AN', 'AU', 'BE', 'DA', 'FI', 'FR', 'GM', 'GI', 'EI', 'IT', 'LS', 'LU', 'MN', 'NL', 'NO', 'PO', 'SM', 'SP', 'SW', 'SZ', 'UK', 'VT']</em><a class="headerlink" href="#omgeo.services.EsriEUGeocodeService.SUPPORTED_COUNTRIES_FIPS" title="Permalink to this definition">¶</a></dt>
+<dd><p>FIPS codes of supported countries</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="omgeo.services.EsriEUGeocodeService.SUPPORTED_COUNTRIES_ISO2">
+<tt class="descname">SUPPORTED_COUNTRIES_ISO2</tt><em class="property"> = ['AD', 'AT', 'BE', 'DK', 'FI', 'FR', 'DE', 'GI', 'IE', 'IT', 'LI', 'LU', 'MC', 'NL', 'NO', 'PT', 'SM', 'ES', 'SE', 'CH', 'GB', 'VC']</em><a class="headerlink" href="#omgeo.services.EsriEUGeocodeService.SUPPORTED_COUNTRIES_ISO2" title="Permalink to this definition">¶</a></dt>
+<dd><p>ISO-2 codes of supported countries</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.services.EsriGeocodeService">
+<em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">EsriGeocodeService</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services.html#EsriGeocodeService"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.EsriGeocodeService" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>api_key &#8211;  The API key used to access ESRI premium services.  If this</dt>
+<dd>key is present, the object&#8217;s endpoint will be set to use
+premium tasks.</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.services.EsriNA">
+<em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">EsriNA</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services.html#EsriNA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.EsriNA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Esri REST Geocoder for North America</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.services.EsriNAGeocodeService">
+<em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">EsriNAGeocodeService</tt><a class="reference internal" href="_modules/omgeo/services.html#EsriNAGeocodeService"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.EsriNAGeocodeService" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defaults for the EsriNAGeocodeService</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.services.EsriNASoap">
+<em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">EsriNASoap</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services.html#EsriNASoap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.EsriNASoap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the SOAP version of the ArcGIS-10-style Geocoder for North America</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.services.EsriWGS">
+<em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">EsriWGS</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services.html#EsriWGS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.EsriWGS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to geocode using the ESRI World Geocoding service
+&lt;<a class="reference external" href="http://geocode.arcgis.com/arcgis/geocoding.html">http://geocode.arcgis.com/arcgis/geocoding.html</a>&gt;.</p>
+<p>This uses two endpoints &#8211; one for single-line addresses,
+and one for multi-part addresses.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.services.EsriWGSSSL">
+<em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">EsriWGSSSL</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services.html#EsriWGSSSL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.EsriWGSSSL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to geocode using the ESRI World Geocoding service over SSL
+&lt;<a class="reference external" href="https://geocode.arcgis.com/arcgis/geocoding.html">https://geocode.arcgis.com/arcgis/geocoding.html</a>&gt;</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.services.MapQuest">
+<em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">MapQuest</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services.html#MapQuest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.MapQuest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to geocode using MapQuest licensed services.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.services.Nominatim">
+<em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">Nominatim</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services.html#Nominatim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.Nominatim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to geocode using <a class="reference external" href="http://open.mapquestapi.com/nominatim/">Nominatim services hosted 
+by MapQuest</a>.</p>
+<dl class="attribute">
+<dt id="omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS">
+<tt class="descname">DEFAULT_POSTPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.postprocessors.AttrFilter instance at 0x30e5248&gt;, &lt;omgeo.processors.postprocessors.AttrExclude instance at 0x30e5290&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Postprocessors to use with this geocoder service, in order of desired execution.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="omgeo.services.Nominatim.DEFAULT_PREPROCESSORS">
+<tt class="descname">DEFAULT_PREPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.preprocessors.ReplaceRangeWithNumber instance at 0x30e51b8&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_PREPROCESSORS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preprocessors to use with this geocoder service, in order of desired execution.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-omgeo.processors">
+<span id="processors"></span><h1>processors<a class="headerlink" href="#module-omgeo.processors" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="omgeo.processors.PostProcessor">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.</tt><tt class="descname">PostProcessor</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors.html#PostProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.PostProcessor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes, processes, and returns list of geocoding.places.Candidate objects.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.PreProcessor">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.</tt><tt class="descname">PreProcessor</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors.html#PreProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.PreProcessor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes, processes, and returns a geocoding.places.PlaceQuery object.</p>
+</dd></dl>
+
+<span class="target" id="module-omgeo.processors.preprocessors"></span><dl class="class">
+<dt id="omgeo.processors.preprocessors.CancelIfPOBox">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.preprocessors.</tt><tt class="descname">CancelIfPOBox</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/preprocessors.html#CancelIfPOBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.preprocessors.CancelIfPOBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return False if the address is starts with any variation of &#8220;PO Box&#8221;.
+Otherwise, return original PlaceQuery.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.preprocessors.CancelIfRegexInAttr">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.preprocessors.</tt><tt class="descname">CancelIfRegexInAttr</tt><big>(</big><em>regex</em>, <em>attrs</em>, <em>ignorecase=True</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/preprocessors.html#CancelIfRegexInAttr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.preprocessors.CancelIfRegexInAttr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return False if given regex is found in ANY of the given
+PlaceQuery attributes, otherwise return original PlaceQuery instance.
+In the event that a given attribute does not exist in the given
+PlaceQuery, no exception will be raised.</p>
+<p>regex         &#8211; a regex string to match (represents what you do NOT want)
+attrs         &#8211; a list or tuple of strings of attribute names to look through
+ignorecase    &#8211; set to False for a case-sensitive match (default True)</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.preprocessors.CountryPreProcessor">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.preprocessors.</tt><tt class="descname">CountryPreProcessor</tt><big>(</big><em>acceptable_countries=</em><span class="optional">[</span><span class="optional">]</span>, <em>country_map={}</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/preprocessors.html#CountryPreProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.preprocessors.CountryPreProcessor" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>acceptable_countries &#8211; A list of acceptable countries.</dt>
+<dd><p class="first">[] is used to indicate that all countries are acceptable.</p>
+<p class="last">An empty string is also an acceptable country. To require
+a country, use the <cite>RequireCountry</cite> preprocessor.</p>
+</dd>
+<dt>country_map          &#8211; A map of the input PlaceQuery.country property</dt>
+<dd><p class="first">to the country value accepted by the geocoding service.</p>
+<p>Suppose that the geocoding service recognizes &#8216;GB&#8217;, but not &#8216;UK&#8217;,
+and &#8216;US&#8217;, but not &#8216;USA&#8217;:</p>
+<blockquote class="last">
+<div>country_map = {&#8216;UK&#8217;:&#8217;GB&#8217;, &#8216;USA&#8217;:&#8217;US&#8217;}</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.preprocessors.RequireCountry">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.preprocessors.</tt><tt class="descname">RequireCountry</tt><big>(</big><em>default_country=''</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/preprocessors.html#RequireCountry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.preprocessors.RequireCountry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return False if no default country is set in first parameter.
+Otherwise, return the default country if country is empty.</p>
+</dd></dl>
+
+<span class="target" id="module-omgeo.processors.postprocessors"></span><dl class="class">
+<dt id="omgeo.processors.postprocessors.AttrExclude">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">AttrExclude</tt><big>(</big><em>bad_values=</em><span class="optional">[</span><span class="optional">]</span>, <em>attr='locator'</em>, <em>exact_match=True</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#AttrExclude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.AttrExclude" title="Permalink to this definition">¶</a></dt>
+<dd><p>PostProcessor used to ditch results with unwanted attribute values.</p>
+<dl class="docutils">
+<dt>bad_values   &#8211;  A list of values whose candidates we will</dt>
+<dd>not accept results from (default [])</dd>
+</dl>
+<p>attr         &#8211;  The attribute type on which to filter</p>
+<dl class="docutils">
+<dt>exact_match  &#8211;  True if attribute must match a bad value exactly.</dt>
+<dd>False if the bad value can be a substring of the
+attribute value. In other words, if our Candidate
+attribute is &#8216;Postcode3&#8217; and one of the bad values
+is &#8216;Postcode&#8217; because we want something more precise,
+like &#8216;Address&#8217;, we will not keep this candidate.</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.postprocessors.AttrFilter">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">AttrFilter</tt><big>(</big><em>good_values=</em><span class="optional">[</span><span class="optional">]</span>, <em>attr='locator'</em>, <em>exact_match=True</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#AttrFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.AttrFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>PostProcessor used to ditch results with unwanted attribute values.</p>
+<dl class="docutils">
+<dt>good_values   &#8211;  A list of values whose candidates we will</dt>
+<dd>accept results from (default [])</dd>
+</dl>
+<p>attr          &#8211;  The attribute type on which to filter</p>
+<dl class="docutils">
+<dt>exact_match   &#8211;  True if attribute must match a good value exactly.</dt>
+<dd>False if the attribute can be a substring in a
+good value. In other words, if our Candidate
+attribute is &#8216;US_Rooftop&#8217; and one of the good_values
+is &#8216;Rooftop&#8217;, we will keep this candidate.</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.postprocessors.AttrMigrator">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">AttrMigrator</tt><big>(</big><em>attr_from</em>, <em>attr_to</em>, <em>attr_map={}</em>, <em>exact_match=False</em>, <em>case_sensitive=False</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#AttrMigrator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.AttrMigrator" title="Permalink to this definition">¶</a></dt>
+<dd><p>PostProcessor used to migrate the given attribute
+to another attribute.</p>
+<p>attr_from       &#8211; Name of the input attribute
+attr_to         &#8211; Name of the input attribute to overwrite
+attr_map        &#8211; Dictionary of old names : new names.
+exact_match     &#8211; Boolean
+case_sensitive  &#8211; Boolean</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.postprocessors.AttrRename">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">AttrRename</tt><big>(</big><em>attr</em>, <em>attr_map={}</em>, <em>exact_match=False</em>, <em>case_sensitive=False</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#AttrRename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.AttrRename" title="Permalink to this definition">¶</a></dt>
+<dd><p>PostProcessor used to rename the given attribute, with unspecified
+attributes appearing at the end of the list.</p>
+<p>attr            &#8211; Name of the attribute
+attr_map        &#8211; Dictionary of old names : new names.
+exact_match
+case_sensitive</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.postprocessors.AttrReverseSorter">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">AttrReverseSorter</tt><big>(</big><em>ordered_values=</em><span class="optional">[</span><span class="optional">]</span>, <em>attr='locator'</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#AttrReverseSorter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.AttrReverseSorter" title="Permalink to this definition">¶</a></dt>
+<dd><p>PostProcessor used to sort by the given attributes in reverse order,
+with unspecified attributes appearing at the end of the list.</p>
+<p>This is good to use when a list has already been defined in a script
+and you are too lazy to use the reverse() function, or don&#8217;t want
+to in order to maintain more readable code.</p>
+<dl class="docutils">
+<dt>ordered_values   &#8211; A list of values placed in the reverse </dt>
+<dd>of the desired order.</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.postprocessors.AttrSorter">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">AttrSorter</tt><big>(</big><em>ordered_values=</em><span class="optional">[</span><span class="optional">]</span>, <em>attr='locator'</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#AttrSorter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.AttrSorter" title="Permalink to this definition">¶</a></dt>
+<dd><p>PostProcessor used to sort by a the given attribute, with unspecified
+attributes appearing at the end of the list.</p>
+<p>ordered_values   &#8211;  A list of values placed in the desired order.
+attr             &#8211;  The attribute on which to sort.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.postprocessors.DupePicker">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">DupePicker</tt><big>(</big><em>attr_dupes</em>, <em>attr_sort</em>, <em>ordered_list</em>, <em>return_clean=False</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#DupePicker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.DupePicker" title="Permalink to this definition">¶</a></dt>
+<dd><p>PostProcessor used to choose the best candidate(s)
+where there are duplicates (or more than one result
+that is very similar*) among high-scoring candidates,
+such as an address.</p>
+<ul class="simple">
+<li>When comparing attribute values, case and commas do not count.</li>
+</ul>
+<p>attr_dupes      &#8211; Property on which to look for duplicates.
+attr_sort       &#8211; Property on which to sort using ordered_list
+ordered_list    &#8211; A list of property values, from most desirable</p>
+<blockquote>
+<div>to least desirable.</div></blockquote>
+<dl class="docutils">
+<dt>return_clean    &#8211; Boolean indicating whether or not to</dt>
+<dd>homogenize string values into uppercase
+without commas.</dd>
+</dl>
+<table border="1" class="docutils">
+<colgroup>
+<col width="57%" />
+<col width="18%" />
+<col width="25%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>match_addr</td>
+<td>score</td>
+<td>locator</td>
+</tr>
+<tr class="row-even"><td>123 N Wood St</td>
+<td>90</td>
+<td>roof</td>
+</tr>
+<tr class="row-odd"><td>123 S Wood St</td>
+<td>90</td>
+<td>address</td>
+</tr>
+<tr class="row-even"><td>123 N WOOD ST</td>
+<td>77</td>
+<td>address</td>
+</tr>
+<tr class="row-odd"><td>123, S Wood ST</td>
+<td>85</td>
+<td>roof</td>
+</tr>
+</tbody>
+</table>
+<p>Above, the first two results have the highest scores. We could just
+use those, because one of the two likely has the correct address.
+However, the second result does not have the most precise location
+for 123 S. Wood Street. While the fourth result does not score as
+high as the first too, it&#8217;s locator method is more desirable.
+Since the addresses are the same, we can assume that the fourth result
+will provide better data than the second.</p>
+<p>We can get a narrowed list as described above by running the process()
+method in the DupePicker() PostProcessor class as follows, assuming
+that the &#8220;candidates&#8221; is our list of candidates:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>dp = DupePicker(</dt>
+<dd>attr_dupes=&#8217;match_addr&#8217;,
+attr_sort=&#8217;locator&#8217;,
+ordered_list=[&#8216;rooftop&#8217;, &#8216;address_point&#8217;, &#8216;address_range&#8217;])</dd>
+</dl>
+<p>return dp.process(candidates)</p>
+</div></blockquote>
+<p>Output:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="57%" />
+<col width="18%" />
+<col width="25%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>match_addr</td>
+<td>score</td>
+<td>locator</td>
+</tr>
+<tr class="row-even"><td>123 N Wood St</td>
+<td>90</td>
+<td>roof</td>
+</tr>
+<tr class="row-odd"><td>123, S Wood ST</td>
+<td>85</td>
+<td>roof</td>
+</tr>
+</tbody>
+</table>
+<p>Output with return_clean=True:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="57%" />
+<col width="18%" />
+<col width="25%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>match_addr</td>
+<td>score</td>
+<td>locator</td>
+</tr>
+<tr class="row-even"><td>123 N WOOD ST</td>
+<td>90</td>
+<td>roof</td>
+</tr>
+<tr class="row-odd"><td>123 S WOOD ST</td>
+<td>85</td>
+<td>roof</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.postprocessors.GroupBy">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">GroupBy</tt><big>(</big><em>attr='match_addr'</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#GroupBy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.GroupBy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Groups results by a certain attribute by choosing the
+first occurrence in the list (this means you will want
+to sort ahead of time).</p>
+<dl class="docutils">
+<dt>attr   &#8211;  The attribute on which to combine results</dt>
+<dd>or a list or tuple of attributes where all
+attributes must match between candidates.</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.postprocessors.GroupByMultiple">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">GroupByMultiple</tt><big>(</big><em>attrs</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#GroupByMultiple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.GroupByMultiple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Groups results by a certain attribute by choosing the
+first occurrence in the list of candidates 
+(this means you will want to sort ahead of time).</p>
+<p>attrs   &#8211;  A list or tuple of attributes on which to combine results</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.postprocessors.LocatorFilter">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">LocatorFilter</tt><big>(</big><em>good_locators=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#LocatorFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.LocatorFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>PostProcessor used to ditch results with lousy locators.</p>
+<dl class="docutils">
+<dt>good_locators   &#8211;  A list of locators to</dt>
+<dd>accept results from (default [])</dd>
+</dl>
+<dl class="attribute">
+<dt id="omgeo.processors.postprocessors.LocatorFilter.good_locators">
+<tt class="descname">good_locators</tt><em class="property"> = []</em><a class="headerlink" href="#omgeo.processors.postprocessors.LocatorFilter.good_locators" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of Candidate.locator values that are good enough for what we need.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.postprocessors.LocatorSorter">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">LocatorSorter</tt><big>(</big><em>ordered_locators=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#LocatorSorter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.LocatorSorter" title="Permalink to this definition">¶</a></dt>
+<dd><p>PostProcessor used to sort by locators</p>
+<dl class="attribute">
+<dt id="omgeo.processors.postprocessors.LocatorSorter.ordered_locators">
+<tt class="descname">ordered_locators</tt><em class="property"> = []</em><a class="headerlink" href="#omgeo.processors.postprocessors.LocatorSorter.ordered_locators" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of Candidate.locator values placed in the desired order.</p>
+<p><em>Examples</em>:</p>
+<blockquote>
+<div>[&#8216;rooftop&#8217;, &#8216;address&#8217;, &#8216;street&#8217;, &#8216;city&#8217;]</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.postprocessors.ScoreSorter">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">ScoreSorter</tt><big>(</big><em>reverse=True</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#ScoreSorter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.ScoreSorter" title="Permalink to this definition">¶</a></dt>
+<dd><p>PostProcessor class to sort candidate scores.</p>
+<dl class="docutils">
+<dt>reverse  &#8211;  Boolean indicating if the scores should be sorted </dt>
+<dd>descending (e.g. 100, 90, 80, ...) (default True)</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.postprocessors.SnapPoints">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">SnapPoints</tt><big>(</big><em>distance=50</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#SnapPoints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.SnapPoints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Chooses the first of two or more points where they are within the given
+sphere-based great circle distance.</p>
+<p>pnt 1       &#8211; (x, y) tuple
+pnt 2       &#8211; (x, y) tuple    
+distance    &#8211; maximum distance (in metres) between two points in which</p>
+<blockquote>
+<div>the the first will be kept and the second thrown out
+(default 1).</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.processors.postprocessors.UseHighScoreIfAtLeast">
+<em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">UseHighScoreIfAtLeast</tt><big>(</big><em>min_score</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#UseHighScoreIfAtLeast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.UseHighScoreIfAtLeast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Limit results to results with at least the given score,
+if and only if one or more results has, at least, the
+given score. If no results have at least this score,
+all of the original results are returned intact.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Contents</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-omgeo">omgeo</a></li>
+<li><a class="reference internal" href="#module-omgeo.places">places</a></li>
+<li><a class="reference internal" href="#module-omgeo.services.base">services</a></li>
+<li><a class="reference internal" href="#module-omgeo.processors">processors</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">python-omgeo 1.5.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012 Azavea.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

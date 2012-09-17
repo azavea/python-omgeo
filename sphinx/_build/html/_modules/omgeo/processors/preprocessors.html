@@ -1,0 +1,285 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>omgeo.processors.preprocessors &mdash; python-omgeo 1.5.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.5.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="python-omgeo 1.5.0 documentation" href="../../../index.html" />
+    <link rel="up" title="omgeo.processors" href="../processors.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python-omgeo 1.5.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../omgeo.html" >omgeo</a> &raquo;</li>
+          <li><a href="../processors.html" accesskey="U">omgeo.processors</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for omgeo.processors.preprocessors</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">omgeo.processors</span> <span class="kn">import</span> <span class="n">PreProcessor</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="k">class</span> <span class="nc">ReplaceRangeWithNumber</span><span class="p">(</span><span class="n">PreProcessor</span><span class="p">):</span>
+    <span class="n">re_street_number</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&#39;\d+\w*-\d*\w*&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Regular expression to represent ranges like:</span>
+<span class="sd">     * 789-791 </span>
+<span class="sd">     * 789-91</span>
+<span class="sd">     * 201A-201B</span>
+<span class="sd">     * 201A-B</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">replace_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr_str</span><span class="p">):</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">re_street_number</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">addr_str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">old</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">addr_str</span> <span class="o">=</span> <span class="n">addr_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">addr_str</span>
+
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a PlaceQuery with ranges truncated to the first street number</span>
+<span class="sd">        for its query and address properties.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pq</span><span class="o">.</span><span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">replace_range</span><span class="p">(</span><span class="n">pq</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">pq</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">replace_range</span><span class="p">(</span><span class="n">pq</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>                       
+        <span class="k">return</span> <span class="n">pq</span>
+
+<span class="k">class</span> <span class="nc">ParseSingleLine</span><span class="p">(</span><span class="n">PreProcessor</span><span class="p">):</span>
+    <span class="c"># Some Regexes:</span>
+    <span class="n">re_unit_numbered</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&#39;(su?i?te|p\W*[om]\W*b(?:ox)?|(?:ap|dep)(?:ar)?t(?:me?nt)?|ro*m|flo*r?|uni?t|bu?i?ldi?n?g|ha?nga?r|lo?t|pier|slip|spa?ce?|stop|tra?i?le?r|bo?x|no\.?)\s+|#&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">re_unit_not_numbered</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&#39;ba?se?me?n?t|fro?nt|lo?bby|lowe?r|off?i?ce?|pe?n?t?ho?u?s?e?|rear|side|uppe?r&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">re_UK_postcode</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&#39;[A-Z]{1,2}[0-9R][0-9A-Z]? *[0-9][A-Z]{0,2}&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">re_blank</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&#39;\s&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_comma_join</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">left</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">right</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Takes QueryString object, breaks query out into address pieces,</span>
+<span class="sd">        returns improved QueryString object.</span>
+
+<span class="sd">        Adapted from azavea.com/packages/azavea_cicero/blocks/cicero_live/view.js</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">query</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">postcode</span> <span class="o">=</span> <span class="n">address</span> <span class="o">=</span> <span class="n">city</span> <span class="o">=</span> <span class="s">&#39;&#39;</span> <span class="c"># define the vars we&#39;ll use</span>
+
+            <span class="c"># global regex postcode search, pop off last result</span>
+            <span class="n">postcode_matches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">re_UK_postcode</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pq</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">postcode_matches</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">postcode</span> <span class="o">=</span> <span class="n">postcode_matches</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                            
+            <span class="n">query_parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">pq</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)]</span>
+
+            <span class="k">if</span> <span class="n">postcode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="s">&#39;&#39;</span> <span class="ow">and</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">postcode</span><span class="p">,</span> <span class="n">query_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="c"># if postcode is in the first part of query_parts, there are probably no commas</span>
+                <span class="c"># get just the part before the postcode</span>
+                <span class="n">part_before_postcode</span> <span class="o">=</span> <span class="n">query_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">postcode</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">re_blank</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">part_before_postcode</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">address</span> <span class="o">=</span> <span class="n">part_before_postcode</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">address</span> <span class="o">=</span> <span class="n">query_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c">#perhaps it isn&#39;t really a postcode (apt num, etc)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">address</span> <span class="o">=</span> <span class="n">query_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c"># no postcode to worry about</span>
+            
+            <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">query_parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">part</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">postcode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="s">&#39;&#39;</span> <span class="ow">and</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">postcode</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">part</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">postcode</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="c"># if postcode is in part, remove it</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">re_unit_numbered</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="c"># test to see if part is secondary address, like &quot;Ste 402&quot;</span>
+                    <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_comma_join</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">re_unit_not_numbered</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="c"># ! might cause problems if &#39;Lower&#39; or &#39;Upper&#39; is in the city name</span>
+                    <span class="c"># test to see if part is secondary address, like &quot;Basement&quot;</span>
+                    <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_comma_join</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">city</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_comma_join</span><span class="p">(</span><span class="n">city</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span><span class="c"># it&#39;s probably a city (or &quot;City, County&quot;)                </span>
+            <span class="c"># set pq parts if they aren&#39;t already set (we don&#39;t want to overwrite explicit params)</span>
+            <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">postal</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span> <span class="n">pq</span><span class="o">.</span><span class="n">postal</span> <span class="o">=</span> <span class="n">postcode</span>
+            <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">address</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span> <span class="n">pq</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">address</span>
+            <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">city</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span> <span class="n">pq</span><span class="o">.</span><span class="n">city</span> <span class="o">=</span> <span class="n">city</span>
+
+        <span class="k">return</span> <span class="n">pq</span>
+    
+<div class="viewcode-block" id="CountryPreProcessor"><a class="viewcode-back" href="../../../index.html#omgeo.processors.preprocessors.CountryPreProcessor">[docs]</a><span class="k">class</span> <span class="nc">CountryPreProcessor</span><span class="p">(</span><span class="n">PreProcessor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Arguments</span>
+<span class="sd">    =========</span>
+<span class="sd">    acceptable_countries -- A list of acceptable countries.</span>
+<span class="sd">                            [] is used to indicate that all countries are acceptable.</span>
+
+<span class="sd">                            An empty string is also an acceptable country. To require</span>
+<span class="sd">                            a country, use the `RequireCountry` preprocessor.</span>
+
+
+<span class="sd">    country_map          -- A map of the input PlaceQuery.country property</span>
+<span class="sd">                            to the country value accepted by the geocoding service.</span>
+
+<span class="sd">                            Example:</span>
+<span class="sd">                            ========</span>
+<span class="sd">                            Suppose that the geocoding service recognizes &#39;GB&#39;, but not &#39;UK&#39;,</span>
+<span class="sd">                            and &#39;US&#39;, but not &#39;USA&#39;:</span>
+<span class="sd">                                country_map = {&#39;UK&#39;:&#39;GB&#39;, &#39;USA&#39;:&#39;US&#39;}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acceptable_countries</span><span class="o">=</span><span class="p">[],</span> <span class="n">country_map</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_helper</span><span class="p">(</span><span class="nb">vars</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="c"># Map country, but don&#39;t let map overwrite</span>
+        <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptable_countries</span> <span class="ow">and</span> \
+           <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">country_map</span><span class="p">:</span>
+            <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">country_map</span><span class="p">[</span><span class="n">pq</span><span class="o">.</span><span class="n">country</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span> <span class="ow">and</span> \
+           <span class="bp">self</span><span class="o">.</span><span class="n">acceptable_countries</span> <span class="o">!=</span> <span class="p">[]</span> <span class="ow">and</span> \
+           <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptable_countries</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="n">pq</span>
+    
+    </div>
+<div class="viewcode-block" id="CancelIfRegexInAttr"><a class="viewcode-back" href="../../../index.html#omgeo.processors.preprocessors.CancelIfRegexInAttr">[docs]</a><span class="k">class</span> <span class="nc">CancelIfRegexInAttr</span><span class="p">(</span><span class="n">PreProcessor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return False if given regex is found in ANY of the given</span>
+<span class="sd">    PlaceQuery attributes, otherwise return original PlaceQuery instance.</span>
+<span class="sd">    In the event that a given attribute does not exist in the given</span>
+<span class="sd">    PlaceQuery, no exception will be raised.</span>
+<span class="sd">    </span>
+<span class="sd">    Arguments</span>
+<span class="sd">    =========</span>
+<span class="sd">    regex         -- a regex string to match (represents what you do NOT want)</span>
+<span class="sd">    attrs         -- a list or tuple of strings of attribute names to look through</span>
+<span class="sd">    ignorecase    -- set to False for a case-sensitive match (default True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regex</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">ignorecase</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="n">regex_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;First param &quot;regex&quot; must be a regex of type&#39;</span>\
+                            <span class="s">&#39; str or unicode, not </span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="n">regex_type</span><span class="p">)</span>
+        <span class="n">attrs_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">attrs_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Second param &quot;attrs&quot; must be a list or tuple&#39;</span>\
+                            <span class="s">&#39; of PlaceQuery attributes, not </span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="n">attrs_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;All given PlaceQuery attributes must be strings.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="n">attrs</span>
+        <span class="k">if</span> <span class="n">ignorecase</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">pq</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pq</span><span class="p">,</span> <span class="n">attr</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="bp">False</span> <span class="c"># if a match is found</span>
+        <span class="k">return</span> <span class="n">pq</span>
+    
+</div>
+<div class="viewcode-block" id="CancelIfPOBox"><a class="viewcode-back" href="../../../index.html#omgeo.processors.preprocessors.CancelIfPOBox">[docs]</a><span class="k">class</span> <span class="nc">CancelIfPOBox</span><span class="p">(</span><span class="n">PreProcessor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return False if the address is starts with any variation of &quot;PO Box&quot;.</span>
+<span class="sd">    Otherwise, return original PlaceQuery.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="n">regex</span> <span class="o">=</span> <span class="s">r&#39;^\s*P\.?\s*O\.?\s*B\.?O?X?[\s\d]&#39;</span>
+        <span class="k">return</span> <span class="n">CancelIfRegexInAttr</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;address&#39;</span><span class="p">,</span> <span class="s">&#39;query&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">pq</span><span class="p">)</span>
+    
+</div>
+<div class="viewcode-block" id="RequireCountry"><a class="viewcode-back" href="../../../index.html#omgeo.processors.preprocessors.RequireCountry">[docs]</a><span class="k">class</span> <span class="nc">RequireCountry</span><span class="p">(</span><span class="n">PreProcessor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return False if no default country is set in first parameter.</span>
+<span class="sd">    Otherwise, return the default country if country is empty.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default_country</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_helper</span><span class="p">(</span><span class="nb">vars</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">country</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_country</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span> <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">else</span><span class="p">:</span> <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_country</span>
+        <span class="k">return</span> <span class="n">pq</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python-omgeo 1.5.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../omgeo.html" >omgeo</a> &raquo;</li>
+          <li><a href="../processors.html" >omgeo.processors</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012 Azavea.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

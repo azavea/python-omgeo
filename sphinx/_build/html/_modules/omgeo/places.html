@@ -1,0 +1,264 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>omgeo.places &mdash; python-omgeo 1.5.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.5.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="python-omgeo 1.5.0 documentation" href="../../index.html" />
+    <link rel="up" title="omgeo" href="../omgeo.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">python-omgeo 1.5.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../omgeo.html" accesskey="U">omgeo</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for omgeo.places</h1><div class="highlight"><pre>
+<div class="viewcode-block" id="Viewbox"><a class="viewcode-back" href="../../index.html#omgeo.places.Viewbox">[docs]</a><span class="k">class</span> <span class="nc">Viewbox</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing a bounding box.</span>
+<span class="sd">    Defaults to maximum bounds for WKID 4326.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    ==========</span>
+<span class="sd">    left    -- Minimum X value (default -180)</span>
+<span class="sd">    top     -- Maximum Y value (default 90)</span>
+<span class="sd">    right   -- Maximum X value (default 180)</span>
+<span class="sd">    bottom  -- Minimum Y value (default -90)</span>
+<span class="sd">    wkid    -- Well-known ID for spatial reference system (default 4326)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make sure numbers are actually numbers</span>
+<span class="sd">        Return True if WKID is found and Viewbox is within maximum bounds.</span>
+<span class="sd">        Return True if WKID is not found.</span>
+<span class="sd">        Otherwise raise error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">True</span> <span class="c">#TODO: Find max bounds from WKID in PostGIS database</span>
+
+<div class="viewcode-block" id="Viewbox.convert_srs"><a class="viewcode-back" href="../../index.html#omgeo.places.Viewbox.convert_srs">[docs]</a>    <span class="k">def</span> <span class="nf">convert_srs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_wkid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a new Viewbox object with the specified SRS.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span> <span class="c"># TODO: convert SRS</span>
+</div>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="o">=-</span><span class="mi">180</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=-</span><span class="mi">90</span><span class="p">,</span> <span class="n">wkid</span><span class="o">=</span><span class="mi">4326</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s">&#39;self&#39;</span><span class="p">:</span> <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">k</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span><span class="p">()</span> 
+
+<div class="viewcode-block" id="Viewbox.to_bing_str"><a class="viewcode-back" href="../../index.html#omgeo.places.Viewbox.to_bing_str">[docs]</a>    <span class="k">def</span> <span class="nf">to_bing_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert Viewbox object to a string that can be used by Bing</span>
+<span class="sd">        as a query parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">vb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_srs</span><span class="p">(</span><span class="mi">4326</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">vb</span><span class="o">.</span><span class="n">bottom</span><span class="p">,</span> <span class="n">vb</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">vb</span><span class="o">.</span><span class="n">top</span><span class="p">,</span> <span class="n">vb</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Viewbox.to_mapquest_str"><a class="viewcode-back" href="../../index.html#omgeo.places.Viewbox.to_mapquest_str">[docs]</a>    <span class="k">def</span> <span class="nf">to_mapquest_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert Viewbox object to a string that can be used by</span>
+<span class="sd">        MapQuest as a query parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">vb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_srs</span><span class="p">(</span><span class="mi">4326</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">vb</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">vb</span><span class="o">.</span><span class="n">top</span><span class="p">,</span> <span class="n">vb</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">vb</span><span class="o">.</span><span class="n">bottom</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Viewbox.to_esri_wgs_json"><a class="viewcode-back" href="../../index.html#omgeo.places.Viewbox.to_esri_wgs_json">[docs]</a>    <span class="k">def</span> <span class="nf">to_esri_wgs_json</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert Viewbox object to a JSON string that can be used</span>
+<span class="sd">        by the ESRI World Geocoding Service as a parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="s">&#39;{ &quot;xmin&quot; : </span><span class="si">%s</span><span class="s">, &#39;</span>
+                    <span class="s">&#39;&quot;ymin&quot; : </span><span class="si">%s</span><span class="s">, &#39;</span>
+                    <span class="s">&#39;&quot;xmax&quot; : </span><span class="si">%s</span><span class="s">, &#39;</span>
+                    <span class="s">&#39;&quot;ymax&quot; : </span><span class="si">%s</span><span class="s">, &#39;</span>
+                    <span class="s">&#39;&quot;spatialReference&quot; : {&quot;wkid&quot; : </span><span class="si">%d</span><span class="s">} }&#39;</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">,</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">,</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="p">,</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">,</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">wkid</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;One or more values could not be cast to a number. &#39;</span>
+                            <span class="s">&#39;Four bounding points must be real numbers. &#39;</span>
+                            <span class="s">&#39;WKID must be an integer.&#39;</span><span class="p">)</span>
+    </div></div>
+<div class="viewcode-block" id="PlaceQuery"><a class="viewcode-back" href="../../index.html#omgeo.places.PlaceQuery">[docs]</a><span class="k">class</span> <span class="nc">PlaceQuery</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing an address or place passed to geocoders.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    ==========</span>
+<span class="sd">    query       --  A string containing the query to parse</span>
+<span class="sd">                    and match to a coordinate on the map.</span>
+<span class="sd">                    *ex: &quot;340 N 12th St Philadelphia PA 19107&quot;</span>
+<span class="sd">                    or &quot;Wolf Building, Philadelphia&quot;*</span>
+<span class="sd">    address     --  A string for the street line of an address.</span>
+<span class="sd">                    *ex: &quot;340 N 12th St&quot;*</span>
+<span class="sd">    city        --  A string specifying the populated place for the address.</span>
+<span class="sd">                    This commonly refers to a city, but may refer to a suburb</span>
+<span class="sd">                    or neighborhood in certain countries.</span>
+<span class="sd">    state       --  A string for the state, province, territory, etc.</span>
+<span class="sd">    postal      --  A string for the postal / ZIP Code</span>
+<span class="sd">    country     --  A string for the country or region. Because the geocoder</span>
+<span class="sd">                    uses the country to determine which geocoding service to use,</span>
+<span class="sd">                    this is strongly recommended for efficency. ISO alpha-2 is</span>
+<span class="sd">                    preferred, and is required by some geocoder services.</span>
+<span class="sd">    viewbox     --  A Viewbox object indicating the preferred area</span>
+<span class="sd">                    to find search results (default None)</span>
+<span class="sd">    bounded     --  Boolean indicating whether or not to only</span>
+<span class="sd">                    return candidates within the given Viewbox (default False)</span>
+
+<span class="sd">    Keyword Arguments:</span>
+<span class="sd">    ==================</span>
+<span class="sd">    user_lat    --  A float representing the Latitude of the end-user.</span>
+<span class="sd">    user_lon    --  A float representing the Longitude of the end-user.</span>
+<span class="sd">    user_ip     --  A string representing the IP address of the end-user.</span>
+<span class="sd">    culture     --  Culture code to be used for the request (used by Bing).</span>
+<span class="sd">                    For example, if set to &#39;de&#39;, the country for a U.S. address</span>
+<span class="sd">                    would be returned as &quot;Vereinigte Staaten Von Amerika&quot;</span>
+<span class="sd">                    instead of &quot;United States&quot;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">postal</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">country</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> 
+                <span class="n">viewbox</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bounded</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;self&#39;</span><span class="p">,</span> <span class="s">&#39;kwargs&#39;</span><span class="p">]:</span> <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">query</span> <span class="o">==</span> <span class="s">&#39;&#39;</span> <span class="ow">and</span> <span class="n">address</span> <span class="o">==</span> <span class="s">&#39;&#39;</span> <span class="ow">and</span> <span class="n">city</span> <span class="o">==</span> <span class="s">&#39;&#39;</span> <span class="ow">and</span> <span class="n">state</span> <span class="o">==</span> <span class="s">&#39;&#39;</span> <span class="ow">and</span> <span class="n">postal</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Must provide query or one or more of address, city, state, and postal.&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            
+    <span class="k">def</span> <span class="nf">__unicode__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+    <span class="n">__str__</span> <span class="o">=</span> <span class="n">__unicode__</span>
+</div>
+<div class="viewcode-block" id="Candidate"><a class="viewcode-back" href="../../index.html#omgeo.places.Candidate">[docs]</a><span class="k">class</span> <span class="nc">Candidate</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing a candidate address returned from geocoders.</span>
+<span class="sd">    Accepts arguments defined below, plus informal keyword arguments.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    ==========</span>
+<span class="sd">    locator     -- Locator used for geocoding (default &#39;&#39;)</span>
+<span class="sd">    score       -- Standardized score (default 0)</span>
+<span class="sd">    match_addr  -- Address returned by geocoder (default &#39;&#39;)</span>
+<span class="sd">    x           -- X-coordinate (longitude for lat-lon SRS) (default None)</span>
+<span class="sd">    y           -- Y-coordinate (latitude for lat-lon SRS) (default None)</span>
+<span class="sd">    wkid        -- Well-known ID for spatial reference system (default 4326)</span>
+<span class="sd">    entity      -- Used by Bing, Nominatim (default &#39;&#39;)</span>
+<span class="sd">    confidence  -- Used by Bing (default &#39;&#39;)</span>
+<span class="sd">    geoservice  -- GeocodeService used for geocoding (default &#39;&#39;)</span>
+
+<span class="sd">    Usage Example:</span>
+<span class="sd">    ==============</span>
+<span class="sd">    c = Candidate(&#39;US_RoofTop&#39;, 91.5, &#39;340 N 12th St, Philadelphia, PA, 19107&#39;,</span>
+<span class="sd">        &#39;-75.16&#39;, &#39;39.95&#39;, some_extra_data=&#39;yellow&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">locator</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">match_addr</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">wkid</span><span class="o">=</span><span class="mi">4326</span><span class="p">,</span> <span class="n">entity</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;self&#39;</span><span class="p">,</span> <span class="s">&#39;kwargs&#39;</span><span class="p">]:</span> <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__unicode__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_addr</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">match_addr</span> <span class="o">=</span> <span class="s">&#39;(no address specified)&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">match_addr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_addr</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="s">&#39;(no x coord specified)&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="s">&#39;(no y coord specified)&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span>
+
+        <span class="n">geoservice</span> <span class="o">=</span> <span class="s">&#39;via </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;geoservice&#39;</span><span class="p">,</span> <span class="s">&#39;(no geoservice specfied&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">) </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">match_addr</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">geoservice</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">unicode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">python-omgeo 1.5.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../omgeo.html" >omgeo</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012 Azavea.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
