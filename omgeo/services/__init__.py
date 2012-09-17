@@ -537,16 +537,14 @@ class EsriWGS(GeocodeService):
     This uses two endpoints -- one for single-line addresses,
     and one for multi-part addresses.
     """
+
     _endpoint = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
 
     def _geocode(self, location):
         """Return a list of Candidates given a PlaceQuery instance."""
-        # determine endpoint needed (find for single-line; )
-        # query options used in both endpoints
-
         #: List of desired output fields
         #: See `ESRI docs <http://geocode.arcgis.com/arcgis/geocoding.html#output>_` for details
-        outFields = ('Loc_name',
+        outFields = (#'Loc_name',
                      #'Shape',
                      'Score',
                      #'Match_Addr', #based on address standards for the country
@@ -558,7 +556,7 @@ class EsriWGS(GeocodeService):
                      #'Locality',
                      #'Postal',
                      #'PostalExt',
-                     #'Addr_Type',
+                     'Addr_Type',
                      #'Type',
                      #'Rank',
                      #'AddNum',
@@ -589,7 +587,8 @@ class EsriWGS(GeocodeService):
                      maxLocations=20, # default 1; max is 20
                      )
 
-        if pq.query = '': # multipart
+        if pq.query == '': # multipart
+            multipart = True
             query = dict(query,
                          Address=pq.address, # commonly represents the house number and street name of a complete address
                          Admin1=pq.city,
@@ -601,9 +600,9 @@ class EsriWGS(GeocodeService):
                          CountryCode=pq.country, # full country name or ISO 3166-1 2- or 3-digit country code
                          )
             if pq.viewbox not None:
-                query = dict(query, searchExtent=pq.viewbox.to_esri_wgs_json())
-            
+                query = dict(query, searchExtent=pq.viewbox.to_esri_wgs_json())            
         else: # single-line
+            multipart = False
             query = dict(query,
                          text=pq.query, # This can be a street address, place name, postal code, or POI.
                          sourceCountry=pq.country, # full country name or ISO 3166-1 2- or 3-digit country code
@@ -621,7 +620,7 @@ class EsriWGS(GeocodeService):
         try: 
             for location in response_obj['locations']:         
                 c = Candidate()
-                c.locator = location['attributes']['Loc_name']
+                c.locator = location['attributes']['Addr_Type']
                 c.score = location['attributes']['Score']
                 c.match_addr = location['name']
                 #: "represents the actual location of the address. It differs from the X value"
@@ -633,8 +632,7 @@ class EsriWGS(GeocodeService):
                 returned_candidates.append(c)
         except KeyError:
             pass
-        return returned_candidates
-        
+        return returned_candidates   
 
 class EsriWGSSSL(EsriWGS):
     """ 
