@@ -16,7 +16,7 @@ class Geocoder():
     ==========
     sources         -- a dictionary of GeocodeServiceConfig() parameters,
                        keyed by module name for the GeocodeService to use
-                       ex: {'esri_na':{}, 
+                       ex: {'esri_wgs':{}, 
                             'bing': {'settings': {},
                                      'preprocessors': [],
                                      'postprocessors': []},
@@ -27,8 +27,7 @@ class Geocoder():
                        (default False)
     """
 
-    DEFAULT_SOURCES = [['omgeo.services.EsriNA', {}],
-                       ['omgeo.services.EsriEU', {}],
+    DEFAULT_SOURCES = [['omgeo.services.EsriWGS', {}],
                        ['omgeo.services.Nominatim', {}]]
     DEFAULT_PREPROCESSORS = []
     DEFAULT_POSTPROCESSORS = [SnapPoints(),
@@ -64,7 +63,7 @@ class Geocoder():
         Argument:
         =========
         sources --  list of source-settings pairs
-                    ex. "[['EsriNA', {}], ['Nominatim', {}]]"
+                    ex. "[['EsriWGS', {}], ['Nominatim', {}]]"
         """
         if len(sources) == 0:
             raise Exception('Must declare at least one source for a geocoder')
