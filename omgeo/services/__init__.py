@@ -538,9 +538,25 @@ class EsriWGS(GeocodeService):
     and one for multi-part addresses.
     """
 
+    LOCATOR_MAP = {
+        'PointAddress': 'rooftop',
+        'StreetAddress': 'interpolation',
+        #TODO: allow postal if ZIP+4
+    }
+
+    DEFAULT_POSTPROCESSORS = [
+        AttrFilter(['PointAddress', 'StreetAddress'], 'locator'),
+        AttrSorter(['PointAddress', 'StreetAddress'], 'locator'),
+        AttrRename('locator', LOCATOR_MAP), # after filter to avoid searching things we toss out
+        UseHighScoreIfAtLeast(99.8),
+        GroupBy('match_addr'),
+        ScoreSorter(),
+        #TODO: closeness filter
+    ]
+
     _endpoint = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
 
-    def _geocode(self, location):
+    def _geocode(self, pq):
         """Return a list of Candidates given a PlaceQuery instance."""
         #: List of desired output fields
         #: See `ESRI docs <http://geocode.arcgis.com/arcgis/geocoding.html#output>_` for details
@@ -588,7 +604,7 @@ class EsriWGS(GeocodeService):
                      )
 
         if pq.query == '': # multipart
-            multipart = True
+            method = 'findAddressCandidates'
             query = dict(query,
                          Address=pq.address, # commonly represents the house number and street name of a complete address
                          Admin1=pq.city,
@@ -602,7 +618,7 @@ class EsriWGS(GeocodeService):
             if pq.viewbox is not None:
                 query = dict(query, searchExtent=pq.viewbox.to_esri_wgs_json())            
         else: # single-line
-            multipart = False
+            method = 'find'
             query = dict(query,
                          text=pq.query, # This can be a street address, place name, postal code, or POI.
                          sourceCountry=pq.country, # full country name or ISO 3166-1 2- or 3-digit country code
@@ -610,24 +626,21 @@ class EsriWGS(GeocodeService):
             if pq.viewbox is not None:
                 query = dict(query, bbox=pq.viewbox.to_esri_wgs_json())
 
-        response_obj = self._get_json_obj(self._endpoint, query)
-        try:
-            output_wkid = response_obj['spatialReference']['wkid']
-        except KeyError:
-            pass
-        
+        endpoint = self._endpoint + '/' + method
+        response_obj = self._get_json_obj(endpoint, query)
         returned_candidates = [] # this will be the list returned
         try: 
             for location in response_obj['locations']:         
                 c = Candidate()
-                c.locator = location['attributes']['Addr_Type']
-                c.score = location['attributes']['Score']
+                attributes = location['feature']['attributes']
+                c.locator = attributes['Addr_Type']
+                c.score = attributes['Score']
                 c.match_addr = location['name']
                 #: "represents the actual location of the address. It differs from the X value"
-                c.x = location['attributes']['DisplayX'] 
+                c.x = attributes['DisplayX'] 
                 #: "represents the actual location of the address. It differs from the Y value"
-                c.y = location['attributes']['DisplayY']
-                c.wkid = output_wkid
+                c.y = attributes['DisplayY']
+                c.wkid = response_obj['spatialReference']['wkid']
                 c.geoservice = self.__class__.__name__
                 returned_candidates.append(c)
         except KeyError:

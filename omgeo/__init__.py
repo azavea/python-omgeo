@@ -8,7 +8,6 @@ stats_logger = logging.getLogger('omgeo.stats')
 
 class Geocoder():
     """
-    17h11
     The base geocode class.  This class can be initialized with settings
     for each geocoder and/or settings for the geocoder itself.
 
