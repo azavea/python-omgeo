@@ -83,7 +83,11 @@ v1.4.1, 2012-06-20
  * Wrap entire JSON result processing from geocoder in try/catch
  * Add separate logger for stats from geocoder
 
-v1.4.2, 2012-08-09
+v1.4.3, 2012-08-09
 ------------------
  * Expand information in UpstreamResponseInfo object
  * Enhance logging
+
+v1.4.4, 2012-08-13
+------------------
+ * Add original PlaceQuery to nested dict method response

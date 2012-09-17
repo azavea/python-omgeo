@@ -13,6 +13,7 @@ class Viewbox():
     """
     def _validate(self):
         """
+        Make sure numbers are actually numbers
         Return True if WKID is found and Viewbox is within maximum bounds.
         Return True if WKID is not found.
         Otherwise raise error.
@@ -23,7 +24,7 @@ class Viewbox():
         """
         Return a new Viewbox object with the specified SRS.
         """
-        return self # for now
+        return self # TODO: convert SRS
 
     def __init__(self, left=-180, top=90, right=180, bottom=-90, wkid=4326):
         for k in locals().keys():
@@ -45,6 +46,27 @@ class Viewbox():
         """
         vb = self.convert_srs(4326)
         return '%s,%s,%s,%s' % (vb.left, vb.top, vb.right, vb.bottom)
+
+    def to_esri_wgs_json(self):
+        """
+        Convert Viewbox object to a JSON string that can be used
+        by the ESRI World Geocoding Service as a parameter.
+        """
+        try:
+            return ('{ "xmin" : %s, '
+                    '"ymin" : %s, '
+                    '"xmax" : %s, '
+                    '"ymax" : %s, '
+                    '"spatialReference" : {"wkid" : %d} }'
+                    % (self.left,
+                       self.bottom,
+                       self.top,
+                       self.right,
+                       self.wkid))
+        except ValueError:
+            raise Exception('One or more values could not be cast to a number. '
+                            'Four bounding points must be real numbers. '
+                            'WKID must be an integer.')
     
 class PlaceQuery():
     """

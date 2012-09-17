@@ -480,8 +480,7 @@ class EsriNASoap(EsriSoapGeocodeService, EsriNAGeocodeService):
                 return []
 
         return candidates
-        
-        
+         
 class EsriNA(EsriGeocodeService, EsriNAGeocodeService):
     """Esri REST Geocoder for North America"""
     _task_endpoint = '/rest/services/Locators/TA_Address_NA_10/GeocodeServer/findAddressCandidates'
@@ -494,7 +493,6 @@ class EsriNA(EsriGeocodeService, EsriNAGeocodeService):
             if postprocessors is None else postprocessors
         
         EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
-
 
     def _geocode(self, location):
         query = {
@@ -531,6 +529,120 @@ class EsriNA(EsriGeocodeService, EsriNAGeocodeService):
             pass
         return returned_candidates
     
+class EsriWGS(GeocodeService):
+    """
+    Class to geocode using the ESRI World Geocoding service
+    <http://geocode.arcgis.com/arcgis/geocoding.html>.
+
+    This uses two endpoints -- one for single-line addresses,
+    and one for multi-part addresses.
+    """
+    _endpoint = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
+
+    def _geocode(self, location):
+        """Return a list of Candidates given a PlaceQuery instance."""
+        # determine endpoint needed (find for single-line; )
+        # query options used in both endpoints
+
+        #: List of desired output fields
+        #: See `ESRI docs <http://geocode.arcgis.com/arcgis/geocoding.html#output>_` for details
+        outFields = ('Loc_name',
+                     #'Shape',
+                     'Score',
+                     #'Match_Addr', #based on address standards for the country
+                     #'Address', # returned by default
+                     #'Country' # 3-digit ISO 3166-1 code for a country. Example: Canada = "CAN"
+                     #'Admin',
+                     #'DepAdmin',
+                     #'SubAdmin',
+                     #'Locality',
+                     #'Postal',
+                     #'PostalExt',
+                     #'Addr_Type',
+                     #'Type',
+                     #'Rank',
+                     #'AddNum',
+                     #'StPreDir',
+                     #'StPreType',
+                     #'StName',
+                     #'StType',
+                     #'StDir',
+                     #'Side',
+                     #'AddNumFrom',
+                     #'AddNumTo',
+                     #'AddBldg',
+                     #'Ymax',
+                     #'Ymin',
+                     #'Xmin',
+                     #'Xmax',
+                     #'X',
+                     #'Y',
+                     'DisplayX',
+                     'DisplayY',
+                     #'LangCode',
+                     #'Status',
+                    )
+        outFields = ','.join(outFields)
+        query = dict(f='json', # default HTML. Other options are JSON and KMZ.
+                     outFields=outFields,
+                     #outSR=WKID, defaults to 4326
+                     maxLocations=20, # default 1; max is 20
+                     )
+
+        if pq.query = '': # multipart
+            query = dict(query,
+                         Address=pq.address, # commonly represents the house number and street name of a complete address
+                         Admin1=pq.city,
+                         Admin2=pq.state,
+                         #Admin3=
+                         #Admin4=
+                         Postal=pq.postal,
+                         #PostalExt=
+                         CountryCode=pq.country, # full country name or ISO 3166-1 2- or 3-digit country code
+                         )
+            if pq.viewbox not None:
+                query = dict(query, searchExtent=pq.viewbox.to_esri_wgs_json())
+            
+        else: # single-line
+            query = dict(query,
+                         text=pq.query, # This can be a street address, place name, postal code, or POI.
+                         sourceCountry=pq.country, # full country name or ISO 3166-1 2- or 3-digit country code
+                         )
+            if pq.viewbox not None:
+                query = dict(query, bbox=pq.viewbox.to_esri_wgs_json())
+
+        response_obj = self._get_json_obj(self._endpoint, query)
+        try:
+            output_wkid = response_obj['spatialReference']['wkid']
+        except KeyError:
+            pass
+        
+        returned_candidates = [] # this will be the list returned
+        try: 
+            for location in response_obj['locations']:         
+                c = Candidate()
+                c.locator = location['attributes']['Loc_name']
+                c.score = location['attributes']['Score']
+                c.match_addr = location['name']
+                #: "represents the actual location of the address. It differs from the X value"
+                c.x = location['attributes']['DisplayX'] 
+                #: "represents the actual location of the address. It differs from the Y value"
+                c.y = location['attributes']['DisplayY']
+                c.wkid = output_wkid
+                c.geoservice = self.__class__.__name__
+                returned_candidates.append(c)
+        except KeyError:
+            pass
+        return returned_candidates
+        
+
+class EsriWGSSSL(EsriWGS):
+    """ 
+    Class to geocode using the ESRI World Geocoding service over SSL
+    <https://geocode.arcgis.com/arcgis/geocoding.html>
+    """
+    _endpoint = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
+
 class MapQuest(GeocodeService):
     """
     Class to geocode using MapQuest licensed services.

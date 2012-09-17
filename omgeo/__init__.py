@@ -124,7 +124,9 @@ class Geocoder():
             
         result = dict(candidates=processed_candidates,
                       upstream_response_info=upstream_response_info_list)
-        stats_logger.info(self.convert_geocode_result_to_nested_dicts(result))
+        stats_dict = self.convert_geocode_result_to_nested_dicts(result)
+        stats_dict = dict(stats_dict, original_pq=pq.__dict__)
+        stats_logger.info(stats_dict)
         return result
     
     def get_candidates(self, pq, waterfall=None):
