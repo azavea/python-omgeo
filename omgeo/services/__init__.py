@@ -191,15 +191,11 @@ class EsriGeocodeService(GeocodeService):
                              * ``api_key``: The API key used to access ESRI premium services.  
                                If this key is present, the object's endpoint will be
                                set to use premium tasks.
-                               
+
         """
         GeocodeService.__init__(self, preprocessors, postprocessors, settings)
-        
-        if 'api_key' in self._settings:
-            service_url = 'http://premiumtasks.arcgisonline.com/server'
-        else:
-            service_url = 'http://tasks.arcgisonline.com/ArcGIS'
-
+        self.service_url = 'http://premiumtasks.arcgisonline.com/server' if 'api_key' in self.settings \
+            else 'http://tasks.arcgisonline.com/ArcGIS'
         self._endpoint = service_url + self._task_endpoint
 
     def append_token_if_needed(self, query_dict):
