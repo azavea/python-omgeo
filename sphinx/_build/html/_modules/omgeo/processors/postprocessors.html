@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>omgeo.processors.postprocessors &mdash; python-omgeo 1.5.0 documentation</title>
+    <title>omgeo.processors.postprocessors &mdash; python-omgeo 1.4.9 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.5.0',
+        VERSION:     '1.4.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="python-omgeo 1.5.0 documentation" href="../../../index.html" />
+    <link rel="top" title="python-omgeo 1.4.9 documentation" href="../../../index.html" />
     <link rel="up" title="omgeo.processors" href="../processors.html" /> 
   </head>
   <body>
@@ -37,7 +37,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">python-omgeo 1.5.0 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">python-omgeo 1.4.9 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li>
           <li><a href="../../omgeo.html" >omgeo</a> &raquo;</li>
           <li><a href="../processors.html" accesskey="U">omgeo.processors</a> &raquo;</li> 
@@ -72,14 +72,14 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">good_locators</span><span class="o">=</span><span class="p">[]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_helper</span><span class="p">(</span><span class="nb">vars</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidates</span><span class="p">):</span>
+<div class="viewcode-block" id="LocatorFilter.process"><a class="viewcode-back" href="../../../index.html#omgeo.processors.postprocessors.LocatorFilter.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidates</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">[:]:</span>
             <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">locator</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">good_locators</span><span class="p">:</span>
                 <span class="c">#TODO: search string, i.e. find &quot;EU_Street_Name&quot; in &quot;EU_Street_Name.GBR_StreetName&quot;</span>
                 <span class="n">candidates</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
          
         <span class="k">return</span> <span class="n">candidates</span>
-</div>
+</div></div>
 <div class="viewcode-block" id="LocatorSorter"><a class="viewcode-back" href="../../../index.html#omgeo.processors.postprocessors.LocatorSorter">[docs]</a><span class="k">class</span> <span class="nc">LocatorSorter</span><span class="p">(</span><span class="n">PostProcessor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    PostProcessor used to sort by locators</span>
@@ -97,7 +97,7 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ordered_locators</span><span class="o">=</span><span class="p">[]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_helper</span><span class="p">(</span><span class="nb">vars</span><span class="p">())</span>
     
-    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unordered_candidates</span><span class="p">):</span>
+<div class="viewcode-block" id="LocatorSorter.process"><a class="viewcode-back" href="../../../index.html#omgeo.processors.postprocessors.LocatorSorter.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unordered_candidates</span><span class="p">):</span>
         <span class="n">ordered_candidates</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="c"># make a new list of candidates in order of ordered_locators</span>
         <span class="k">for</span> <span class="n">locator</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordered_locators</span><span class="p">:</span>
@@ -109,7 +109,7 @@
         <span class="c"># (whose locator values are not in ordered_locators)</span>
         <span class="c"># and return the new list</span>
         <span class="k">return</span> <span class="n">ordered_candidates</span> <span class="o">+</span> <span class="n">unordered_candidates</span>
-</div>
+</div></div>
 <div class="viewcode-block" id="AttrRename"><a class="viewcode-back" href="../../../index.html#omgeo.processors.postprocessors.AttrRename">[docs]</a><span class="k">class</span> <span class="nc">AttrRename</span><span class="p">(</span><span class="n">PostProcessor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    PostProcessor used to rename the given attribute, with unspecified</span>
@@ -126,7 +126,7 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">attr_map</span><span class="o">=</span><span class="p">{},</span> <span class="n">exact_match</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_helper</span><span class="p">(</span><span class="nb">vars</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidates</span><span class="p">):</span>
+<div class="viewcode-block" id="AttrRename.process"><a class="viewcode-back" href="../../../index.html#omgeo.processors.postprocessors.AttrRename.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidates</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">_cc</span><span class="p">(</span><span class="n">str_</span><span class="p">):</span> <span class="c">#change case</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">case_sensitive</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span> <span class="k">return</span> <span class="n">str_</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">str_</span>      
@@ -143,7 +143,7 @@
                 <span class="nb">setattr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_map</span><span class="p">[</span><span class="n">map_key</span><span class="p">])</span>
             <span class="n">new_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">new_candidates</span>
-</div>
+</div></div>
 <div class="viewcode-block" id="UseHighScoreIfAtLeast"><a class="viewcode-back" href="../../../index.html#omgeo.processors.postprocessors.UseHighScoreIfAtLeast">[docs]</a><span class="k">class</span> <span class="nc">UseHighScoreIfAtLeast</span><span class="p">(</span><span class="n">PostProcessor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Limit results to results with at least the given score,</span>
@@ -154,12 +154,12 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_score</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_helper</span><span class="p">(</span><span class="nb">vars</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidates</span><span class="p">):</span>
+<div class="viewcode-block" id="UseHighScoreIfAtLeast.process"><a class="viewcode-back" href="../../../index.html#omgeo.processors.postprocessors.UseHighScoreIfAtLeast.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidates</span><span class="p">):</span>
         <span class="n">high_score_candidates</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">candidates</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">score</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_score</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">high_score_candidates</span> <span class="o">!=</span> <span class="p">[]:</span>
             <span class="k">return</span> <span class="n">high_score_candidates</span>
         <span class="k">return</span> <span class="n">candidates</span>
-</div>
+</div></div>
 <div class="viewcode-block" id="ScoreSorter"><a class="viewcode-back" href="../../../index.html#omgeo.processors.postprocessors.ScoreSorter">[docs]</a><span class="k">class</span> <span class="nc">ScoreSorter</span><span class="p">(</span><span class="n">PostProcessor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    PostProcessor class to sort candidate scores.</span>
@@ -173,9 +173,9 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_helper</span><span class="p">(</span><span class="nb">vars</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidates</span><span class="p">):</span>
+<div class="viewcode-block" id="ScoreSorter.process"><a class="viewcode-back" href="../../../index.html#omgeo.processors.postprocessors.ScoreSorter.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidates</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">candidates</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">attrgetter</span><span class="p">(</span><span class="s">&#39;score&#39;</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reverse</span><span class="p">)</span>
-</div>
+</div></div>
 <div class="viewcode-block" id="AttrSorter"><a class="viewcode-back" href="../../../index.html#omgeo.processors.postprocessors.AttrSorter">[docs]</a><span class="k">class</span> <span class="nc">AttrSorter</span><span class="p">(</span><span class="n">PostProcessor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    PostProcessor used to sort by a the given attribute, with unspecified</span>
@@ -552,7 +552,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">python-omgeo 1.5.0 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">python-omgeo 1.4.9 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li>
           <li><a href="../../omgeo.html" >omgeo</a> &raquo;</li>
           <li><a href="../processors.html" >omgeo.processors</a> &raquo;</li> 
