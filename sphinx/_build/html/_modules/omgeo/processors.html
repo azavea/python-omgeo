@@ -61,12 +61,11 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Constructor for Processor.</span>
-<span class="sd">        </span>
 <span class="sd">        In a subclass, arguments may be formally defined to avoid the use of keywords</span>
-<span class="sd">        (and to throw errors when bogus keyword arguments are passed):</span>
+<span class="sd">        (and to throw errors when bogus keyword arguments are passed)::</span>
 
 <span class="sd">            def __init__(self, arg1=&#39;foo&#39;, arg2=&#39;bar&#39;)</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_helper</span><span class="p">(</span><span class="nb">vars</span><span class="p">())</span>
 

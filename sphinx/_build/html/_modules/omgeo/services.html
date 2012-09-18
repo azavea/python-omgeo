@@ -53,8 +53,10 @@
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">omgeo.places</span> <span class="kn">import</span> <span class="n">Candidate</span>
-<span class="kn">from</span> <span class="nn">omgeo.processors.preprocessors</span> <span class="kn">import</span> <span class="n">CountryPreProcessor</span><span class="p">,</span> <span class="n">RequireCountry</span><span class="p">,</span> <span class="n">ParseSingleLine</span><span class="p">,</span> <span class="n">ReplaceRangeWithNumber</span>
-<span class="kn">from</span> <span class="nn">omgeo.processors.postprocessors</span> <span class="kn">import</span> <span class="n">AttrFilter</span><span class="p">,</span> <span class="n">AttrExclude</span><span class="p">,</span> <span class="n">AttrRename</span><span class="p">,</span> <span class="n">AttrSorter</span><span class="p">,</span> <span class="n">AttrMigrator</span><span class="p">,</span> <span class="n">UseHighScoreIfAtLeast</span><span class="p">,</span> <span class="n">GroupBy</span><span class="p">,</span> <span class="n">ScoreSorter</span>
+<span class="kn">from</span> <span class="nn">omgeo.processors.preprocessors</span> <span class="kn">import</span> <span class="n">CancelIfPOBox</span><span class="p">,</span> <span class="n">CountryPreProcessor</span><span class="p">,</span> <span class="n">RequireCountry</span><span class="p">,</span> \
+    <span class="n">ParseSingleLine</span><span class="p">,</span> <span class="n">ReplaceRangeWithNumber</span>
+<span class="kn">from</span> <span class="nn">omgeo.processors.postprocessors</span> <span class="kn">import</span> <span class="n">AttrFilter</span><span class="p">,</span> <span class="n">AttrExclude</span><span class="p">,</span> <span class="n">AttrRename</span><span class="p">,</span> <span class="n">AttrSorter</span><span class="p">,</span> \
+    <span class="n">AttrMigrator</span><span class="p">,</span> <span class="n">UseHighScoreIfAtLeast</span><span class="p">,</span> <span class="n">GroupBy</span><span class="p">,</span> <span class="n">ScoreSorter</span>
 <span class="kn">from</span> <span class="nn">suds.client</span> <span class="kn">import</span> <span class="n">Client</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">unquote</span>
@@ -68,8 +70,8 @@
 <span class="sd">     * `Find a Location by Address &lt;http://msdn.microsoft.com/en-us/library/ff701714.aspx&gt;`_</span>
 
 <span class="sd">    Settings used by the Bing GeocodeService object may include:</span>
-<span class="sd">    ============================================================</span>
-<span class="sd">    api_key --  The API key used to access Bing services.</span>
+<span class="sd">     * api_key --  The API key used to access Bing services.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_endpoint</span> <span class="o">=</span> <span class="s">&#39;http://dev.virtualearth.net/REST/v1/Locations&#39;</span>
 
@@ -139,7 +141,6 @@
 
         <span class="n">addl_settings</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;key&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="p">[</span><span class="s">&#39;api_key&#39;</span><span class="p">]}</span>
         <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="n">addl_settings</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="n">response_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_json_obj</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
         <span class="n">returned_candidates</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># this will be the list returned</span>
         <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">response_obj</span><span class="p">[</span><span class="s">&#39;resourceSets&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;resources&#39;</span><span class="p">]:</span>    
@@ -230,18 +231,17 @@
 </div>
 <div class="viewcode-block" id="EsriGeocodeService"><a class="viewcode-back" href="../../index.html#omgeo.services.EsriGeocodeService">[docs]</a><span class="k">class</span> <span class="nc">EsriGeocodeService</span><span class="p">(</span><span class="n">GeocodeService</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Settings used by an EsriGeocodeService object may include:</span>
-<span class="sd">    ============================================================</span>
-<span class="sd">    api_key --  The API key used to access ESRI premium services.  If this</span>
-<span class="sd">                key is present, the object&#39;s endpoint will be set to use</span>
-<span class="sd">                premium tasks.</span>
+<span class="sd">    Base class for older ESRI geocoders (EsriEU, EsriNA).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">postprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        ESRI services can be used as free services or &quot;premium tasks&quot;.  If an</span>
-<span class="sd">        ESRI service is created with an api_key in the settings, we&#39;ll set this</span>
-<span class="sd">        service up with the premium task URL.</span>
+<span class="sd">        :arg list preprocessors: preprocessors</span>
+<span class="sd">        :arg list postprocessors: postprocessors</span>
+<span class="sd">        :arg dict settings: Settings used by an EsriGeocodeService object may include:</span>
+<span class="sd">                             * ``api_key``: The API key used to access ESRI premium services.  </span>
+<span class="sd">                               If this key is present, the object&#39;s endpoint will be</span>
+<span class="sd">                               set to use premium tasks.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">GeocodeService</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
         
@@ -317,7 +317,7 @@
 
 <div class="viewcode-block" id="EsriEUGeocodeService"><a class="viewcode-back" href="../../index.html#omgeo.services.EsriEUGeocodeService">[docs]</a><span class="k">class</span> <span class="nc">EsriEUGeocodeService</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Defaults for Esri EU Geocoders</span>
+<span class="sd">    Base class including for Esri EU REST and SOAP Geocoders</span>
 
 <span class="sd">    As of 29 Dec 2011, the ESRI website claims to support Andorra, Austria, </span>
 <span class="sd">    Belgium, Denmark, Finland, France, Germany, Gibraltar, Ireland, Italy,</span>
@@ -326,14 +326,15 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_wkid</span> <span class="o">=</span> <span class="mi">4326</span>
 
+    <span class="c">#: FIPS codes of supported countries</span>
     <span class="n">SUPPORTED_COUNTRIES_FIPS</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;AN&#39;</span><span class="p">,</span> <span class="s">&#39;AU&#39;</span><span class="p">,</span> <span class="s">&#39;BE&#39;</span><span class="p">,</span> <span class="s">&#39;DA&#39;</span><span class="p">,</span> <span class="s">&#39;FI&#39;</span><span class="p">,</span> <span class="s">&#39;FR&#39;</span><span class="p">,</span> <span class="s">&#39;GM&#39;</span><span class="p">,</span> <span class="s">&#39;GI&#39;</span><span class="p">,</span> <span class="s">&#39;EI&#39;</span><span class="p">,</span> 
         <span class="s">&#39;IT&#39;</span><span class="p">,</span> <span class="s">&#39;LS&#39;</span><span class="p">,</span> <span class="s">&#39;LU&#39;</span><span class="p">,</span> <span class="s">&#39;MN&#39;</span><span class="p">,</span> <span class="s">&#39;NL&#39;</span><span class="p">,</span> <span class="s">&#39;NO&#39;</span><span class="p">,</span> <span class="s">&#39;PO&#39;</span><span class="p">,</span> <span class="s">&#39;SM&#39;</span><span class="p">,</span> <span class="s">&#39;SP&#39;</span><span class="p">,</span> <span class="s">&#39;SW&#39;</span><span class="p">,</span> <span class="s">&#39;SZ&#39;</span><span class="p">,</span> <span class="s">&#39;UK&#39;</span><span class="p">,</span> <span class="s">&#39;VT&#39;</span><span class="p">]</span>
-    <span class="sd">&quot;&quot;&quot;FIPS codes of supported countries&quot;&quot;&quot;</span>
 
+    <span class="c">#: ISO-2 codes of supported countries</span>
     <span class="n">SUPPORTED_COUNTRIES_ISO2</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;AD&#39;</span><span class="p">,</span> <span class="s">&#39;AT&#39;</span><span class="p">,</span> <span class="s">&#39;BE&#39;</span><span class="p">,</span> <span class="s">&#39;DK&#39;</span><span class="p">,</span> <span class="s">&#39;FI&#39;</span><span class="p">,</span> <span class="s">&#39;FR&#39;</span><span class="p">,</span> <span class="s">&#39;DE&#39;</span><span class="p">,</span> <span class="s">&#39;GI&#39;</span><span class="p">,</span> <span class="s">&#39;IE&#39;</span><span class="p">,</span> 
         <span class="s">&#39;IT&#39;</span><span class="p">,</span> <span class="s">&#39;LI&#39;</span><span class="p">,</span> <span class="s">&#39;LU&#39;</span><span class="p">,</span> <span class="s">&#39;MC&#39;</span><span class="p">,</span> <span class="s">&#39;NL&#39;</span><span class="p">,</span> <span class="s">&#39;NO&#39;</span><span class="p">,</span> <span class="s">&#39;PT&#39;</span><span class="p">,</span> <span class="s">&#39;SM&#39;</span><span class="p">,</span> <span class="s">&#39;ES&#39;</span><span class="p">,</span> <span class="s">&#39;SE&#39;</span><span class="p">,</span> <span class="s">&#39;CH&#39;</span><span class="p">,</span> <span class="s">&#39;GB&#39;</span><span class="p">,</span> <span class="s">&#39;VC&#39;</span><span class="p">]</span>
-    <span class="sd">&quot;&quot;&quot;ISO-2 codes of supported countries&quot;&quot;&quot;</span>
 
+    <span class="c">#: Map of FIPS to ISO-2 codes, if they are different.</span>
     <span class="n">MAP_FIPS_TO_ISO2</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s">&#39;AN&#39;</span><span class="p">:</span><span class="s">&#39;AD&#39;</span><span class="p">,</span>
         <span class="s">&#39;AU&#39;</span><span class="p">:</span><span class="s">&#39;AT&#39;</span><span class="p">,</span>
@@ -349,8 +350,8 @@
         <span class="s">&#39;UK&#39;</span><span class="p">:</span><span class="s">&#39;GB&#39;</span><span class="p">,</span>
         <span class="s">&#39;VT&#39;</span><span class="p">:</span><span class="s">&#39;VC&#39;</span><span class="p">,</span>
         <span class="p">}</span>
-    <span class="sd">&quot;&quot;&quot;Map of FIPS to ISO-2 codes, if they are different.&quot;&quot;&quot;</span>
 
+    <span class="c">#: Map to standardize locator</span>
     <span class="n">LOCATOR_MAP</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s">&#39;EU_Street_Addr&#39;</span><span class="p">:</span> <span class="s">&#39;interpolation&#39;</span><span class="p">,</span>
     <span class="p">}</span>
@@ -360,7 +361,6 @@
             <span class="n">SUPPORTED_COUNTRIES_ISO2</span><span class="p">,</span>
             <span class="n">MAP_FIPS_TO_ISO2</span><span class="p">),</span>
         <span class="n">ParseSingleLine</span><span class="p">(),</span>
-        <span class="n">RequireCountry</span><span class="p">(</span><span class="s">&#39;GB&#39;</span><span class="p">),</span>
     <span class="p">]</span>
         
     <span class="n">DEFAULT_POSTPROCESSORS</span> <span class="o">=</span> <span class="p">[</span>
@@ -532,8 +532,7 @@
                 <span class="k">return</span> <span class="p">[]</span>
 
         <span class="k">return</span> <span class="n">candidates</span>
-        
-        </div>
+         </div>
 <div class="viewcode-block" id="EsriNA"><a class="viewcode-back" href="../../index.html#omgeo.services.EsriNA">[docs]</a><span class="k">class</span> <span class="nc">EsriNA</span><span class="p">(</span><span class="n">EsriGeocodeService</span><span class="p">,</span> <span class="n">EsriNAGeocodeService</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Esri REST Geocoder for North America&quot;&quot;&quot;</span>
     <span class="n">_task_endpoint</span> <span class="o">=</span> <span class="s">&#39;/rest/services/Locators/TA_Address_NA_10/GeocodeServer/findAddressCandidates&#39;</span>
@@ -546,7 +545,6 @@
             <span class="k">if</span> <span class="n">postprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">postprocessors</span>
         
         <span class="n">EsriGeocodeService</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
-
 
     <span class="k">def</span> <span class="nf">_geocode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
         <span class="n">query</span> <span class="o">=</span> <span class="p">{</span>
@@ -568,8 +566,8 @@
             <span class="k">pass</span>
         
         <span class="n">returned_candidates</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># this will be the list returned</span>
-        <span class="k">for</span> <span class="n">rc</span> <span class="ow">in</span> <span class="n">response_obj</span><span class="p">[</span><span class="s">&#39;candidates&#39;</span><span class="p">]:</span>         
-            <span class="k">try</span><span class="p">:</span> 
+        <span class="k">try</span><span class="p">:</span> 
+            <span class="k">for</span> <span class="n">rc</span> <span class="ow">in</span> <span class="n">response_obj</span><span class="p">[</span><span class="s">&#39;candidates&#39;</span><span class="p">]:</span>         
                 <span class="n">c</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">()</span>
                 <span class="n">c</span><span class="o">.</span><span class="n">locator</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">][</span><span class="s">&#39;Loc_name&#39;</span><span class="p">]</span>
                 <span class="n">c</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">]</span>
@@ -579,10 +577,149 @@
                 <span class="n">c</span><span class="o">.</span><span class="n">wkid</span> <span class="o">=</span> <span class="n">wkid</span>
                 <span class="n">c</span><span class="o">.</span><span class="n">geoservice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
                 <span class="n">returned_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="k">pass</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
         <span class="k">return</span> <span class="n">returned_candidates</span>
     </div>
+<div class="viewcode-block" id="EsriWGS"><a class="viewcode-back" href="../../index.html#omgeo.services.EsriWGS">[docs]</a><span class="k">class</span> <span class="nc">EsriWGS</span><span class="p">(</span><span class="n">GeocodeService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to geocode using the ESRI World Geocoding service</span>
+<span class="sd">    &lt;http://geocode.arcgis.com/arcgis/geocoding.html&gt;.</span>
+
+<span class="sd">    This uses two endpoints -- one for single-line addresses,</span>
+<span class="sd">    and one for multi-part addresses.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">LOCATOR_MAP</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;PointAddress&#39;</span><span class="p">:</span> <span class="s">&#39;rooftop&#39;</span><span class="p">,</span>
+        <span class="s">&#39;StreetAddress&#39;</span><span class="p">:</span> <span class="s">&#39;interpolation&#39;</span><span class="p">,</span>
+        <span class="s">&#39;PostalExt&#39;</span><span class="p">:</span> <span class="s">&#39;postal_specific&#39;</span><span class="p">,</span> <span class="c"># accept ZIP+4</span>
+        <span class="s">&#39;Postal&#39;</span><span class="p">:</span> <span class="s">&#39;postal&#39;</span>
+    <span class="p">}</span>
+
+    <span class="n">DEFAULT_PREPROCESSORS</span> <span class="o">=</span> <span class="p">[</span><span class="n">CancelIfPOBox</span><span class="p">()]</span>
+
+    <span class="n">DEFAULT_POSTPROCESSORS</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">AttrFilter</span><span class="p">([</span><span class="s">&#39;PointAddress&#39;</span><span class="p">,</span> <span class="s">&#39;StreetAddress&#39;</span><span class="p">,</span> <span class="s">&#39;PostalExt&#39;</span><span class="p">,</span> <span class="s">&#39;Postal&#39;</span><span class="p">],</span> <span class="s">&#39;locator_type&#39;</span><span class="p">),</span>
+        <span class="n">AttrExclude</span><span class="p">([</span><span class="s">&#39;USA_Postal&#39;</span><span class="p">],</span> <span class="s">&#39;locator&#39;</span><span class="p">),</span> <span class="c">#accept postal from everywhere but US (need PostalExt)</span>
+        <span class="n">AttrSorter</span><span class="p">([</span><span class="s">&#39;PointAddress&#39;</span><span class="p">,</span> <span class="s">&#39;StreetAddress&#39;</span><span class="p">,</span> <span class="s">&#39;PostalExt&#39;</span><span class="p">,</span> <span class="s">&#39;Postal&#39;</span><span class="p">],</span> <span class="s">&#39;locator_type&#39;</span><span class="p">),</span>
+        <span class="n">AttrRename</span><span class="p">(</span><span class="s">&#39;locator&#39;</span><span class="p">,</span> <span class="n">LOCATOR_MAP</span><span class="p">),</span> <span class="c"># after filter to avoid searching things we toss out</span>
+        <span class="n">UseHighScoreIfAtLeast</span><span class="p">(</span><span class="mf">99.8</span><span class="p">),</span>
+        <span class="n">GroupBy</span><span class="p">(</span><span class="s">&#39;match_addr&#39;</span><span class="p">),</span>
+        <span class="n">GroupBy</span><span class="p">((</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">)),</span>
+
+        <span class="n">ScoreSorter</span><span class="p">(),</span>
+    <span class="p">]</span>
+
+    <span class="n">_endpoint</span> <span class="o">=</span> <span class="s">&#39;http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_geocode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :arg PlaceQuery pq: PlaceQuery object to use for geocoding</span>
+<span class="sd">        :returns: list of location Candidates</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#: List of desired output fields</span>
+        <span class="c">#: See `ESRI docs &lt;http://geocode.arcgis.com/arcgis/geocoding.html#output&gt;_` for details</span>
+        <span class="n">outFields</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;Loc_name&#39;</span><span class="p">,</span>
+                     <span class="c">#&#39;Shape&#39;,</span>
+                     <span class="s">&#39;Score&#39;</span><span class="p">,</span>
+                     <span class="c">#&#39;Match_Addr&#39;, #based on address standards for the country</span>
+                     <span class="c">#&#39;Address&#39;, # returned by default</span>
+                     <span class="c">#&#39;Country&#39; # 3-digit ISO 3166-1 code for a country. Example: Canada = &quot;CAN&quot;</span>
+                     <span class="c">#&#39;Admin&#39;,</span>
+                     <span class="c">#&#39;DepAdmin&#39;,</span>
+                     <span class="c">#&#39;SubAdmin&#39;,</span>
+                     <span class="c">#&#39;Locality&#39;,</span>
+                     <span class="c">#&#39;Postal&#39;,</span>
+                     <span class="c">#&#39;PostalExt&#39;,</span>
+                     <span class="s">&#39;Addr_Type&#39;</span><span class="p">,</span>
+                     <span class="c">#&#39;Type&#39;,</span>
+                     <span class="c">#&#39;Rank&#39;,</span>
+                     <span class="c">#&#39;AddNum&#39;,</span>
+                     <span class="c">#&#39;StPreDir&#39;,</span>
+                     <span class="c">#&#39;StPreType&#39;,</span>
+                     <span class="c">#&#39;StName&#39;,</span>
+                     <span class="c">#&#39;StType&#39;,</span>
+                     <span class="c">#&#39;StDir&#39;,</span>
+                     <span class="c">#&#39;Side&#39;,</span>
+                     <span class="c">#&#39;AddNumFrom&#39;,</span>
+                     <span class="c">#&#39;AddNumTo&#39;,</span>
+                     <span class="c">#&#39;AddBldg&#39;,</span>
+                     <span class="c">#&#39;Ymax&#39;,</span>
+                     <span class="c">#&#39;Ymin&#39;,</span>
+                     <span class="c">#&#39;Xmin&#39;,</span>
+                     <span class="c">#&#39;Xmax&#39;,</span>
+                     <span class="c">#&#39;X&#39;,</span>
+                     <span class="c">#&#39;Y&#39;,</span>
+                     <span class="s">&#39;DisplayX&#39;</span><span class="p">,</span>
+                     <span class="s">&#39;DisplayY&#39;</span><span class="p">,</span>
+                     <span class="c">#&#39;LangCode&#39;,</span>
+                     <span class="c">#&#39;Status&#39;,</span>
+                    <span class="p">)</span>
+        <span class="n">outFields</span> <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outFields</span><span class="p">)</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="s">&#39;json&#39;</span><span class="p">,</span> <span class="c"># default HTML. Other options are JSON and KMZ.</span>
+                     <span class="n">outFields</span><span class="o">=</span><span class="n">outFields</span><span class="p">,</span>
+                     <span class="c">#outSR=WKID, defaults to 4326</span>
+                     <span class="n">maxLocations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="c"># default 1; max is 20</span>
+                     <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">query</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span> <span class="c"># multipart</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="s">&#39;findAddressCandidates&#39;</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span>
+                         <span class="n">Address</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="c"># commonly represents the house number and street name of a complete address</span>
+                         <span class="n">Admin1</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">city</span><span class="p">,</span>
+                         <span class="n">Admin2</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+                         <span class="c">#Admin3=</span>
+                         <span class="c">#Admin4=</span>
+                         <span class="n">Postal</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">postal</span><span class="p">,</span>
+                         <span class="c">#PostalExt=</span>
+                         <span class="n">CountryCode</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">country</span><span class="p">,</span> <span class="c"># full country name or ISO 3166-1 2- or 3-digit country code</span>
+                         <span class="p">)</span>
+            <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">searchExtent</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span><span class="o">.</span><span class="n">to_esri_wgs_json</span><span class="p">())</span>            
+        <span class="k">else</span><span class="p">:</span> <span class="c"># single-line</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="s">&#39;find&#39;</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span>
+                         <span class="n">text</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">query</span><span class="p">,</span> <span class="c"># This can be a street address, place name, postal code, or POI.</span>
+                         <span class="n">sourceCountry</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">country</span><span class="p">,</span> <span class="c"># full country name or ISO 3166-1 2- or 3-digit country code</span>
+                         <span class="p">)</span>
+            <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">bbox</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">viewbox</span><span class="o">.</span><span class="n">to_esri_wgs_json</span><span class="p">())</span>
+
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span> <span class="o">+</span> <span class="s">&#39;/&#39;</span> <span class="o">+</span> <span class="n">method</span>
+        <span class="n">response_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_json_obj</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+        <span class="n">returned_candidates</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># this will be the list returned</span>
+        <span class="k">try</span><span class="p">:</span> 
+            <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">response_obj</span><span class="p">[</span><span class="s">&#39;locations&#39;</span><span class="p">]:</span>         
+                <span class="n">c</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">()</span>
+                <span class="n">attributes</span> <span class="o">=</span> <span class="n">location</span><span class="p">[</span><span class="s">&#39;feature&#39;</span><span class="p">][</span><span class="s">&#39;attributes&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">locator</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;Loc_name&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">locator_type</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;Addr_Type&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;Score&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">match_addr</span> <span class="o">=</span> <span class="n">location</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+                <span class="c">#: &quot;represents the actual location of the address. It differs from the X value&quot;</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;DisplayX&#39;</span><span class="p">]</span> 
+                <span class="c">#: &quot;represents the actual location of the address. It differs from the Y value&quot;</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;DisplayY&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">wkid</span> <span class="o">=</span> <span class="n">response_obj</span><span class="p">[</span><span class="s">&#39;spatialReference&#39;</span><span class="p">][</span><span class="s">&#39;wkid&#39;</span><span class="p">]</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">geoservice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+                <span class="n">returned_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">returned_candidates</span>   
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">postprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">preprocessors</span> <span class="o">=</span> <span class="n">EsriWGS</span><span class="o">.</span><span class="n">DEFAULT_PREPROCESSORS</span> <span class="k">if</span> <span class="n">preprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">preprocessors</span>
+        <span class="n">postprocessors</span> <span class="o">=</span> <span class="n">EsriWGS</span><span class="o">.</span><span class="n">DEFAULT_POSTPROCESSORS</span> <span class="k">if</span> <span class="n">postprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">postprocessors</span>
+        <span class="n">GeocodeService</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="EsriWGSSSL"><a class="viewcode-back" href="../../index.html#omgeo.services.EsriWGSSSL">[docs]</a><span class="k">class</span> <span class="nc">EsriWGSSSL</span><span class="p">(</span><span class="n">EsriWGS</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Class to geocode using the ESRI World Geocoding service over SSL</span>
+<span class="sd">    &lt;https://geocode.arcgis.com/arcgis/geocoding.html&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_endpoint</span> <span class="o">=</span> <span class="s">&#39;https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer&#39;</span>
+</div>
 <div class="viewcode-block" id="MapQuest"><a class="viewcode-back" href="../../index.html#omgeo.services.MapQuest">[docs]</a><span class="k">class</span> <span class="nc">MapQuest</span><span class="p">(</span><span class="n">GeocodeService</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class to geocode using MapQuest licensed services.</span>
@@ -660,8 +797,8 @@
     <span class="sd">&quot;&quot;&quot;Postprocessors to use with this geocoder service, in order of desired execution.&quot;&quot;&quot;</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">postprocessors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="n">preprocessors</span> <span class="o">=</span> <span class="n">Bing</span><span class="o">.</span><span class="n">DEFAULT_PREPROCESSORS</span> <span class="k">if</span> <span class="n">preprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">preprocessors</span>
-        <span class="n">postprocessors</span> <span class="o">=</span> <span class="n">Bing</span><span class="o">.</span><span class="n">DEFAULT_POSTPROCESSORS</span> <span class="k">if</span> <span class="n">postprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">postprocessors</span>
+        <span class="n">preprocessors</span> <span class="o">=</span> <span class="n">Nominatim</span><span class="o">.</span><span class="n">DEFAULT_PREPROCESSORS</span> <span class="k">if</span> <span class="n">preprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">preprocessors</span>
+        <span class="n">postprocessors</span> <span class="o">=</span> <span class="n">Nominatim</span><span class="o">.</span><span class="n">DEFAULT_POSTPROCESSORS</span> <span class="k">if</span> <span class="n">postprocessors</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">postprocessors</span>
         <span class="n">GeocodeService</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_geocode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>

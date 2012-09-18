@@ -71,6 +71,7 @@
 <span class="sd">    Required arguments:</span>
 <span class="sd">    ===================</span>
 <span class="sd">    geoservice       -- name of the upstream provider used</span>
+<span class="sd">    processed_pq     -- Processed PlaceQuery object</span>
 <span class="sd">    </span>
 <span class="sd">    Optional arguments:</span>
 <span class="sd">    ===================</span>
@@ -82,6 +83,7 @@
 <span class="sd">                        (default True)</span>
 <span class="sd">    errors           -- a list of human-readable error descriptions</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="nf">set_response_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response_code</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">response_code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">response_code</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;response_code must be an integer.&#39;</span><span class="p">)</span>
@@ -105,9 +107,12 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="n">success</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geoservice</span><span class="p">,</span> <span class="n">response_code</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">response_time</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
-                 <span class="n">success</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geoservice</span><span class="p">,</span> <span class="n">processed_pq</span><span class="p">,</span> <span class="n">response_code</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">response_time</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+                 <span class="n">success</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">errors</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">geoservice</span> <span class="o">=</span> <span class="n">geoservice</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processed_pq</span> <span class="o">=</span> <span class="n">processed_pq</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_response_code</span><span class="p">(</span><span class="n">response_code</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_response_time</span><span class="p">(</span><span class="n">response_time</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_success</span><span class="p">(</span><span class="n">success</span><span class="p">)</span>
@@ -188,12 +193,14 @@
                                <span class="n">timeout</span><span class="o">=</span><span class="n">timeout_secs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span> <span class="o">==</span> <span class="n">socket</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;API request timed out after </span><span class="si">%s</span><span class="s"> seconds.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">timeout_secs</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;API request timed out after </span><span class="si">%s</span><span class="s"> seconds.&#39;</span> <span class="o">%</span> <span class="n">timeout_secs</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ex</span>
         <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Received status code </span><span class="si">%s</span><span class="s"> for </span><span class="si">%s</span><span class="s">. Content is:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&#39;</span>
-                            <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_service_name</span><span class="p">(),</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Received status code </span><span class="si">%s</span><span class="s"> from </span><span class="si">%s</span><span class="s">. Content is:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&#39;</span>
+                            <span class="o">%</span> <span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">code</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">get_service_name</span><span class="p">(),</span>
+                               <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span>
         <span class="k">return</span> <span class="n">response</span>
     
     <span class="k">def</span> <span class="nf">_get_json_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
@@ -206,7 +213,8 @@
         <span class="k">try</span><span class="p">:</span>  
             <span class="k">return</span> <span class="n">loads</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Could not decode content to JSON:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Could not decode content to JSON:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&#39;</span>
+                            <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_xml_doc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -246,33 +254,25 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">processed_pq</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">pq</span><span class="p">)</span>
         <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">: BEGINNING PREPROCESSING FOR </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">,</span>
-                                                             <span class="bp">self</span><span class="o">.</span><span class="n">get_service_name</span><span class="p">()))</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preprocessors</span><span class="p">:</span>
             <span class="n">processed_pq</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">processed_pq</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">: Preprocessed through </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">processed_pq</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">[],</span> <span class="bp">None</span>
-        <span class="n">upstream_response_info</span> <span class="o">=</span> <span class="n">UpstreamResponseInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_service_name</span><span class="p">())</span>
+        <span class="n">upstream_response_info</span> <span class="o">=</span> <span class="n">UpstreamResponseInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_service_name</span><span class="p">(),</span>
+                                                      <span class="n">processed_pq</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
             <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_geocode</span><span class="p">(</span><span class="n">processed_pq</span><span class="p">)</span>
             <span class="n">end</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-            <span class="n">upstream_response_info</span><span class="o">.</span><span class="n">set_response_time</span><span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;GEOCODER: </span><span class="si">%s</span><span class="s">; results </span><span class="si">%d</span><span class="s">; time </span><span class="si">%s</span><span class="s">;&#39;</span> <span class="o">%</span>
-                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_service_name</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">),</span> <span class="n">upstream_response_info</span><span class="o">.</span><span class="n">response_time</span><span class="p">))</span>
+            <span class="n">response_time_sec</span> <span class="o">=</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+            <span class="n">upstream_response_info</span><span class="o">.</span><span class="n">set_response_time</span><span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">response_time_sec</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="n">upstream_response_info</span><span class="o">.</span><span class="n">set_success</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
             <span class="n">upstream_response_info</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_exc</span><span class="p">())</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;GEOCODER: </span><span class="si">%s</span><span class="s">; EXCEPTION:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span>
-                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_service_name</span><span class="p">(),</span> <span class="n">format_exc</span><span class="p">()))</span>
             <span class="k">return</span> <span class="p">[],</span> <span class="n">upstream_response_info</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">: BEGINNING POSTPROCESSING FOR </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">,</span>
-                                                                  <span class="bp">self</span><span class="o">.</span><span class="n">get_service_name</span><span class="p">()))</span>
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocessors</span><span class="p">:</span> <span class="c"># apply universal candidate postprocessing</span>
                 <span class="n">candidates</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="c"># merge lists</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">: Postprocessed through </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">upstream_response_info</span>
     </div>
     <span class="k">def</span> <span class="nf">get_service_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

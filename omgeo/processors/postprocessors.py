@@ -6,8 +6,7 @@ class LocatorFilter(PostProcessor):
     """
     PostProcessor used to ditch results with lousy locators.
 
-    Arguments:
-    ==========
+
     good_locators   --  A list of locators to
                         accept results from (default [])
     """
@@ -63,8 +62,7 @@ class AttrRename(PostProcessor):
     PostProcessor used to rename the given attribute, with unspecified
     attributes appearing at the end of the list.
 
-    Arguments:
-    ==========
+
     attr            -- Name of the attribute
     attr_map        -- Dictionary of old names : new names.
     exact_match
@@ -112,8 +110,7 @@ class ScoreSorter(PostProcessor):
     """
     PostProcessor class to sort candidate scores.
 
-    Arguments:
-    ==========
+
     reverse  --  Boolean indicating if the scores should be sorted 
                  descending (e.g. 100, 90, 80, ...) (default True)
     """
@@ -129,8 +126,7 @@ class AttrSorter(PostProcessor):
     PostProcessor used to sort by a the given attribute, with unspecified
     attributes appearing at the end of the list.
 
-    Arguments:
-    ==========
+
     ordered_values   --  A list of values placed in the desired order.
     attr             --  The attribute on which to sort.
     """
@@ -159,8 +155,7 @@ class AttrReverseSorter(PostProcessor):
     and you are too lazy to use the reverse() function, or don't want
     to in order to maintain more readable code.
 
-    Arguments:
-    ==========
+
     ordered_values   -- A list of values placed in the reverse 
                         of the desired order.
     """
@@ -179,8 +174,7 @@ class AttrMigrator(PostProcessor):
     PostProcessor used to migrate the given attribute
     to another attribute.
 
-    Arguments:
-    ==========
+
     attr_from       -- Name of the input attribute
     attr_to         -- Name of the input attribute to overwrite
     attr_map        -- Dictionary of old names : new names.
@@ -212,8 +206,7 @@ class AttrFilter(PostProcessor):
     """
     PostProcessor used to ditch results with unwanted attribute values.
 
-    Arguments:
-    ==========
+
     good_values   --  A list of values whose candidates we will
                       accept results from (default [])
     
@@ -239,8 +232,7 @@ class AttrExclude(PostProcessor):
     """
     PostProcessor used to ditch results with unwanted attribute values.
 
-    Arguments:
-    ==========
+
     bad_values   --  A list of values whose candidates we will
                      not accept results from (default [])
 
@@ -273,8 +265,7 @@ class DupePicker(PostProcessor):
 
     * When comparing attribute values, case and commas do not count.
 
-    Arguments:
-    ==========
+
     attr_dupes      -- Property on which to look for duplicates.
     attr_sort       -- Property on which to sort using ordered_list
     ordered_list    -- A list of property values, from most desirable
@@ -374,8 +365,7 @@ class GroupBy(PostProcessor):
     first occurrence in the list (this means you will want
     to sort ahead of time).
 
-    Arguments:
-    ==========
+
     attr   --  The attribute on which to combine results
                or a list or tuple of attributes where all
                attributes must match between candidates.
@@ -402,8 +392,7 @@ class GroupByMultiple(PostProcessor):
     first occurrence in the list of candidates 
     (this means you will want to sort ahead of time).
 
-    Arguments:
-    ==========
+
     attrs   --  A list or tuple of attributes on which to combine results
     """
     
@@ -427,8 +416,7 @@ class SnapPoints(PostProcessor):
     Chooses the first of two or more points where they are within the given
     sphere-based great circle distance.
     
-    Arguments:
-    ==========
+
     pnt 1       -- (x, y) tuple
     pnt 2       -- (x, y) tuple    
     distance    -- maximum distance (in metres) between two points in which

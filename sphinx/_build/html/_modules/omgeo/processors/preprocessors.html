@@ -53,34 +53,62 @@
 <span class="kn">from</span> <span class="nn">omgeo.processors</span> <span class="kn">import</span> <span class="n">PreProcessor</span>
 <span class="kn">import</span> <span class="nn">re</span>
 
-<span class="k">class</span> <span class="nc">ReplaceRangeWithNumber</span><span class="p">(</span><span class="n">PreProcessor</span><span class="p">):</span>
-    <span class="n">re_street_number</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&#39;\d+\w*-\d*\w*&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+<div class="viewcode-block" id="ReplaceRangeWithNumber"><a class="viewcode-back" href="../../../index.html#omgeo.processors.preprocessors.ReplaceRangeWithNumber">[docs]</a><span class="k">class</span> <span class="nc">ReplaceRangeWithNumber</span><span class="p">(</span><span class="n">PreProcessor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Regular expression to represent ranges like:</span>
-<span class="sd">     * 789-791 </span>
-<span class="sd">     * 789-91</span>
-<span class="sd">     * 201A-201B</span>
-<span class="sd">     * 201A-B</span>
+<span class="sd">    Class to take only the first part of an address range</span>
+<span class="sd">    or hyphenated house number to use for geocoding.</span>
+
+<span class="sd">    This affects the query and address PlaceQuery attributes.</span>
+
+<span class="sd">    =============================== ========================================</span>
+<span class="sd">    Input                           Output</span>
+<span class="sd">    =============================== ========================================</span>
+<span class="sd">    ``4109-4113 Main St``           ``4109 Main St``</span>
+<span class="sd">    ``4109-13 Main St``             ``4109 Main St``</span>
+<span class="sd">    ``322-1/2 Water Street``        ``322 Water Street``</span>
+<span class="sd">    ``123-2 Maple Lane``            ``123 Maple Lane``</span>
+<span class="sd">    ``272-B Greenough St, 19127``   ``272 Greenough St, 19127``</span>
+<span class="sd">    ``272 Greenough St 19127-1112`` ``272 Greenough St 19127-1112``</span>
+<span class="sd">    ``19127-1112``                  ``19127-1112`` (not affected)</span>
+<span class="sd">    ``76-20 34th Ave, Queens NY``   ``76 34th Ave, Queens NY`` (see warning)</span>
+<span class="sd">    =============================== ========================================</span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">       This may also cause problems with addresses presented in the </span>
+<span class="sd">       hyphenated Queens-style format, where the part before the</span>
+<span class="sd">       hyphen indicates the cross street, and the part after</span>
+<span class="sd">       indicates the house number.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="c">#: Regular expression to represent ranges like:</span>
+    <span class="c">#:  * 789-791 </span>
+    <span class="c">#:  * 789-91</span>
+    <span class="c">#:  * 201A-201B</span>
+    <span class="c">#:  * 201A-B</span>
+    <span class="n">RE_STREET_NUMBER</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&#39;^\d+\w*-\d*\w*\s+[^\s]+&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">replace_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr_str</span><span class="p">):</span>
-        <span class="n">match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">re_street_number</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">addr_str</span><span class="p">)</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">RE_STREET_NUMBER</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">addr_str</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">old</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">new</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">addr_str</span> <span class="o">=</span> <span class="n">addr_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">addr_str</span>
 
-    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+<div class="viewcode-block" id="ReplaceRangeWithNumber.process"><a class="viewcode-back" href="../../../index.html#omgeo.processors.preprocessors.ReplaceRangeWithNumber.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return a PlaceQuery with ranges truncated to the first street number</span>
-<span class="sd">        for its query and address properties.</span>
+<span class="sd">        :arg PlaceQuery pq: PlaceQuery instance</span>
+<span class="sd">        :returns: PlaceQuery instance with truncated address range / number</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">pq</span><span class="o">.</span><span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">replace_range</span><span class="p">(</span><span class="n">pq</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
         <span class="n">pq</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">replace_range</span><span class="p">(</span><span class="n">pq</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>                       
         <span class="k">return</span> <span class="n">pq</span>
-
-<span class="k">class</span> <span class="nc">ParseSingleLine</span><span class="p">(</span><span class="n">PreProcessor</span><span class="p">):</span>
+</div></div>
+<div class="viewcode-block" id="ParseSingleLine"><a class="viewcode-back" href="../../../index.html#omgeo.processors.preprocessors.ParseSingleLine">[docs]</a><span class="k">class</span> <span class="nc">ParseSingleLine</span><span class="p">(</span><span class="n">PreProcessor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adapted from `Cicero Live &lt;http://azavea.com/packages/azavea_cicero/blocks/cicero_live/view.js&gt;`_</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c"># Some Regexes:</span>
     <span class="n">re_unit_numbered</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&#39;(su?i?te|p\W*[om]\W*b(?:ox)?|(?:ap|dep)(?:ar)?t(?:me?nt)?|ro*m|flo*r?|uni?t|bu?i?ldi?n?g|ha?nga?r|lo?t|pier|slip|spa?ce?|stop|tra?i?le?r|bo?x|no\.?)\s+|#&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
     <span class="n">re_unit_not_numbered</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&#39;ba?se?me?n?t|fro?nt|lo?bby|lowe?r|off?i?ce?|pe?n?t?ho?u?s?e?|rear|side|uppe?r&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
@@ -93,12 +121,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+<div class="viewcode-block" id="ParseSingleLine.process"><a class="viewcode-back" href="../../../index.html#omgeo.processors.preprocessors.ParseSingleLine.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Takes QueryString object, breaks query out into address pieces,</span>
-<span class="sd">        returns improved QueryString object.</span>
-
-<span class="sd">        Adapted from azavea.com/packages/azavea_cicero/blocks/cicero_live/view.js</span>
+<span class="sd">        :arg PlaceQuery pq: PlaceQuery instance</span>
+<span class="sd">        :returns: PlaceQuery instance with :py:attr:`query`</span>
+<span class="sd">                  converted to individual elements</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">query</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
             <span class="n">postcode</span> <span class="o">=</span> <span class="n">address</span> <span class="o">=</span> <span class="n">city</span> <span class="o">=</span> <span class="s">&#39;&#39;</span> <span class="c"># define the vars we&#39;ll use</span>
@@ -141,35 +168,40 @@
             <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">city</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span> <span class="n">pq</span><span class="o">.</span><span class="n">city</span> <span class="o">=</span> <span class="n">city</span>
 
         <span class="k">return</span> <span class="n">pq</span>
-    
+    </div></div>
 <div class="viewcode-block" id="CountryPreProcessor"><a class="viewcode-back" href="../../../index.html#omgeo.processors.preprocessors.CountryPreProcessor">[docs]</a><span class="k">class</span> <span class="nc">CountryPreProcessor</span><span class="p">(</span><span class="n">PreProcessor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Arguments</span>
-<span class="sd">    =========</span>
-<span class="sd">    acceptable_countries -- A list of acceptable countries.</span>
-<span class="sd">                            [] is used to indicate that all countries are acceptable.</span>
-
-<span class="sd">                            An empty string is also an acceptable country. To require</span>
-<span class="sd">                            a country, use the `RequireCountry` preprocessor.</span>
-
-
-<span class="sd">    country_map          -- A map of the input PlaceQuery.country property</span>
-<span class="sd">                            to the country value accepted by the geocoding service.</span>
-
-<span class="sd">                            Example:</span>
-<span class="sd">                            ========</span>
-<span class="sd">                            Suppose that the geocoding service recognizes &#39;GB&#39;, but not &#39;UK&#39;,</span>
-<span class="sd">                            and &#39;US&#39;, but not &#39;USA&#39;:</span>
-<span class="sd">                                country_map = {&#39;UK&#39;:&#39;GB&#39;, &#39;USA&#39;:&#39;US&#39;}</span>
+<span class="sd">    Used to filter acceptable countries</span>
+<span class="sd">    and standardize country names or codes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acceptable_countries</span><span class="o">=</span><span class="p">[],</span> <span class="n">country_map</span><span class="o">=</span><span class="p">{}):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_init_helper</span><span class="p">(</span><span class="nb">vars</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acceptable_countries</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">country_map</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        :arg list acceptable_countries: A list of acceptable countries.</span>
+<span class="sd">                                        None is used to indicate that all countries are acceptable.</span>
+<span class="sd">                                        (default [])</span>
 
-    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+<span class="sd">                                        An empty string is also an acceptable country. To require</span>
+<span class="sd">                                        a country, use the `RequireCountry` preprocessor.</span>
+
+<span class="sd">        :arg dict country_map: A map of the input PlaceQuery.country property</span>
+<span class="sd">                               to the country value accepted by the geocoding service.</span>
+
+<span class="sd">                               For example, suppose that the geocoding service recognizes</span>
+<span class="sd">                               &#39;GB&#39;, but not &#39;UK&#39; -- and &#39;US&#39;, but not &#39;USA&#39;::</span>
+
+<span class="sd">                                    country_map = {&#39;UK&#39;:&#39;GB&#39;, &#39;USA&#39;:&#39;US&#39;}        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acceptable_countries</span> <span class="o">=</span> <span class="n">acceptable_countries</span> <span class="k">if</span> <span class="n">acceptable_countries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">country_map</span> <span class="o">=</span> <span class="n">country_map</span> <span class="k">if</span> <span class="n">country_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="CountryPreProcessor.process"><a class="viewcode-back" href="../../../index.html#omgeo.processors.preprocessors.CountryPreProcessor.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :arg PlaceQuery pq: PlaceQuery instance</span>
+<span class="sd">        :returns: modified PlaceQuery, or ``False`` if country is not acceptable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c"># Map country, but don&#39;t let map overwrite</span>
-        <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptable_countries</span> <span class="ow">and</span> \
-           <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">country_map</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptable_countries</span> <span class="ow">and</span> <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">country_map</span><span class="p">:</span>
             <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">country_map</span><span class="p">[</span><span class="n">pq</span><span class="o">.</span><span class="n">country</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span> <span class="ow">and</span> \
            <span class="bp">self</span><span class="o">.</span><span class="n">acceptable_countries</span> <span class="o">!=</span> <span class="p">[]</span> <span class="ow">and</span> \
@@ -177,21 +209,20 @@
             <span class="k">return</span> <span class="bp">False</span>
         <span class="k">return</span> <span class="n">pq</span>
     
-    </div>
+    </div></div>
 <div class="viewcode-block" id="CancelIfRegexInAttr"><a class="viewcode-back" href="../../../index.html#omgeo.processors.preprocessors.CancelIfRegexInAttr">[docs]</a><span class="k">class</span> <span class="nc">CancelIfRegexInAttr</span><span class="p">(</span><span class="n">PreProcessor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return False if given regex is found in ANY of the given</span>
 <span class="sd">    PlaceQuery attributes, otherwise return original PlaceQuery instance.</span>
 <span class="sd">    In the event that a given attribute does not exist in the given</span>
 <span class="sd">    PlaceQuery, no exception will be raised.</span>
-<span class="sd">    </span>
-<span class="sd">    Arguments</span>
-<span class="sd">    =========</span>
-<span class="sd">    regex         -- a regex string to match (represents what you do NOT want)</span>
-<span class="sd">    attrs         -- a list or tuple of strings of attribute names to look through</span>
-<span class="sd">    ignorecase    -- set to False for a case-sensitive match (default True)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regex</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">ignorecase</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :arg str regex: a regex string to match (represents what you do *not* want)</span>
+<span class="sd">        :arg attrs: a list or tuple of strings of attribute names to look through</span>
+<span class="sd">        :arg bool ignorecase: set to ``False`` for a case-sensitive match (default ``True``)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">regex_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;First param &quot;regex&quot; must be a regex of type&#39;</span>\
@@ -216,11 +247,12 @@
     
 </div>
 <div class="viewcode-block" id="CancelIfPOBox"><a class="viewcode-back" href="../../../index.html#omgeo.processors.preprocessors.CancelIfPOBox">[docs]</a><span class="k">class</span> <span class="nc">CancelIfPOBox</span><span class="p">(</span><span class="n">PreProcessor</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Return False if the address is starts with any variation of &quot;PO Box&quot;.</span>
-<span class="sd">    Otherwise, return original PlaceQuery.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :arg PlaceQuery pq: PlaceQuery instance</span>
+<span class="sd">        :returns: ``False`` if the address is starts with any variation of &quot;PO Box&quot;.</span>
+<span class="sd">                  Otherwise, return original :py:class:`PlaceQuery`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">regex</span> <span class="o">=</span> <span class="s">r&#39;^\s*P\.?\s*O\.?\s*B\.?O?X?[\s\d]&#39;</span>
         <span class="k">return</span> <span class="n">CancelIfRegexInAttr</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;address&#39;</span><span class="p">,</span> <span class="s">&#39;query&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">pq</span><span class="p">)</span>
     
@@ -231,13 +263,30 @@
 <span class="sd">    Otherwise, return the default country if country is empty.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default_country</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_init_helper</span><span class="p">(</span><span class="nb">vars</span><span class="p">())</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :arg str default_country: default country to use if there is </span>
+<span class="sd">        no country set in the PlaceQuery instance sent to this processor.</span>
+<span class="sd">        If this argument is not set or empty and PlaceQuery instance does</span>
+<span class="sd">        not have a country (pq.country == &#39;&#39;), the processor will return</span>
+<span class="sd">        False and the PlaceQuery will be rejected during geocoding. </span>
+<span class="sd">        (default &#39;&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_country</span> <span class="o">=</span> <span class="n">default_country</span>
 
-    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+<div class="viewcode-block" id="RequireCountry.process"><a class="viewcode-back" href="../../../index.html#omgeo.processors.preprocessors.RequireCountry.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :arg PlaceQuery pq: PlaceQuery instance</span>
+<span class="sd">        :returns: One of the three following values:</span>
+<span class="sd">                   * unmodified PlaceQuery instance if pq.country is not empty</span>
+<span class="sd">                   * PlaceQuery instance with pq.country changed to default country.</span>
+<span class="sd">                   * ``False`` if pq.country is empty and self.default_country == &#39;&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">pq</span><span class="o">.</span><span class="n">country</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_country</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span> <span class="k">return</span> <span class="bp">False</span>
-            <span class="k">else</span><span class="p">:</span> <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_country</span>
-        <span class="k">return</span> <span class="n">pq</span></div>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_country</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pq</span><span class="o">.</span><span class="n">country</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_country</span>
+        <span class="k">return</span> <span class="n">pq</span></div></div>
 </pre></div>
 
           </div>
