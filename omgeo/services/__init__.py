@@ -187,10 +187,10 @@ class EsriGeocodeService(GeocodeService):
         """
         :arg list preprocessors: preprocessors
         :arg list postprocessors: postprocessors
-        :arg dict settings: Settings used by an EsriGeocodeService object may include:
-                             * ``api_key``: The API key used to access ESRI premium services.  
-                               If this key is present, the object's endpoint will be
-                               set to use premium tasks.
+        :arg dict settings: Settings used by an EsriGeocodeService object may include
+                            the ``api_key`` used to access ESRI premium services.  
+                            If this key is present, the object's endpoint will be
+                            set to use premium tasks.
 
         """
         GeocodeService.__init__(self, preprocessors, postprocessors, settings)
