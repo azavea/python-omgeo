@@ -107,8 +107,8 @@ class UseHighScoreIfAtLeast(PostProcessor):
         """
         :arg list candidates: list of Candidates
         :returns: list of Candidates where score is at least min_score,
-        if and only if one or more Candidates have at least min_score.
-        Otherwise, returns original list of Candidates.
+                  if and only if one or more Candidates have at least min_score.
+                  Otherwise, returns original list of Candidates.
         """
         high_score_candidates = [c for c in candidates if c.score >= self.min_score]
         if high_score_candidates != []:
@@ -121,7 +121,7 @@ class ScoreSorter(PostProcessor):
     def __init__(self, reverse=True):
         """
         :arg bool reverse: indicates if the scores should be sorted in descending
-        order (e.g. 100, 90, 80, ...) (default ``True``)
+                           order (e.g. 100, 90, 80, ...) (default ``True``)
         """
         self.reverse = reverse
 
@@ -185,13 +185,6 @@ class AttrMigrator(PostProcessor):
     """
     PostProcessor used to migrate the given attribute
     to another attribute.
-
-
-    attr_from       -- Name of the input attribute
-    attr_to         -- Name of the input attribute to overwrite
-    attr_map        -- Dictionary of old names : new names.
-    exact_match     -- Boolean
-    case_sensitive  -- Boolean
     """
     def __init__(self, attr_from, attr_to, attr_map=None, exact_match=False, case_sensitive=False):
         self.attr_from = attr_from
@@ -229,10 +222,10 @@ class AttrFilter(PostProcessor):
                                accept results from (default [])
         :arg string attr: The attribute type on which to filter
         :arg bool exact_match: True if attribute must match a good value exactly.
-        False if the attribute can be a substring in a
-        good value. In other words, if our Candidate
-        attribute is 'US_Rooftop' and one of the good_values
-        is 'Rooftop', we will keep this candidate.
+                               False if the attribute can be a substring in a
+                               good value. In other words, if our Candidate
+                               attribute is 'US_Rooftop' and one of the good_values
+                               is 'Rooftop', we will keep this candidate.
         """
         self._init_helper(vars())
 
@@ -275,7 +268,6 @@ class DupePicker(PostProcessor):
     such as an address. 
 
     * When comparing attribute values, case and commas do not count.
-
 
     attr_dupes      -- Property on which to look for duplicates.
     attr_sort       -- Property on which to sort using ordered_list

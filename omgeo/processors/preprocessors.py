@@ -34,7 +34,7 @@ class ReplaceRangeWithNumber(PreProcessor):
     #:  * 789-91
     #:  * 201A-201B
     #:  * 201A-B
-    RE_STREET_NUMBER = re.compile('^\d+\w*-\d*\w*\s+[^\s]+', re.IGNORECASE)
+    RE_STREET_NUMBER = re.compile('^\d+\w*-\d*\w*\s', re.IGNORECASE)
 
     def replace_range(self, addr_str):
         match = self.RE_STREET_NUMBER.match(addr_str)

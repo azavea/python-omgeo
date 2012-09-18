@@ -15,21 +15,6 @@ class UpstreamResponseInfo():
     """
     Class describing the API call result from an upstream provider.
     For cleaning and consistency, set attributes using the given methods.
-    
-    Required arguments:
-    ===================
-    geoservice       -- name of the upstream provider used
-    processed_pq     -- Processed PlaceQuery object
-    
-    Optional arguments:
-    ===================
-    response_code    -- HTTP response code (default None)
-    response_time    -- time in milliseconds that it takes to get a
-                        response (default None)
-    success          -- indicates if the API call was successful. A 200 response
-                        with no candidates is still considered a success.
-                        (default True)
-    errors           -- a list of human-readable error descriptions
     """
 
     def set_response_code(self, response_code):
@@ -57,6 +42,18 @@ class UpstreamResponseInfo():
     
     def __init__(self, geoservice, processed_pq, response_code=None, response_time=None, 
                  success=True, errors=None):
+        """
+        :arg str geoservice: name of the upstream provider used (required)
+        :arg PlaceQuery processed_pq: Processed PlaceQuery object (required)
+        :arg response_code: HTTP response code (default None)
+        :arg response_time: time in milliseconds that it takes to get a
+                            response (default None)
+        :arg bool success: indicates if the API call was successful. A 200 response
+                           with no candidates is still considered a success.
+                           (default True)
+        :arg list errors: human-readable error descriptions
+        """
+
         if errors is None:
             errors = []
         self.geoservice = geoservice
@@ -73,10 +70,8 @@ class GeocodeService():
     to find addresses for the given locations
     """
 
+    #: API base endpoint URL to use
     _endpoint = ''
-    """
-    API endpoint URL to use
-    """
 
     def __init__(self, preprocessors=None, postprocessors=None,
                  settings=None):
@@ -113,17 +108,13 @@ class GeocodeService():
         and make sure they are set. This can be added to a custom
         constructor in a subclass and tested to see if it returns ``True``.
 
-        Arguments:
-        ==========
-        required_settings   -- A list of required keys to look for.
-        accept_none         -- Boolean set to True if None is an acceptable
+        :arg list required_settings: A list of required keys to look for.
+        :arg bool accept_none: Boolean set to True if None is an acceptable
                                setting. Set to False if None is not an
                                acceptable setting.
 
-        Return values:
-        ==============
-         * bool ``True`` if all required settings exist, OR
-         * str ``keyname`` for the first key that is not found in _settings.
+        :returns: * bool ``True`` if all required settings exist, OR
+                  * str <key name> for the first key missing from _settings.
         """
         if required_settings is not None:
             for keyname in required_settings:
@@ -182,23 +173,29 @@ class GeocodeService():
 
     def geocode(self, pq):
         """
-        Given an unprocessed PlaceQuery object, return a two-part tuple
-        including a post-processed list of Candidate objects 
-        and an UpstreamResponseInfo object if an API call was made.
+        :arg PlaceQuery pq: PlaceQuery instance
+        :rtype: tuple
+        :returns: post-processed list of Candidate objects and
+                  and UpstreamResponseInfo object if an API call was made.
         
-        Examples:
-        =========
-        Preprocessor throws out request:
-            ([], None)
-            
-        Postprocessor throws out some candidates:
-            ([<Candidate obj>, <Candidate obj>], <UpstreamResponseInfo obj>)
-            
-        Postprocessor throws out all candidates:
-            ([], <UpstreamResponseInfo obj>)
-            
-        An exception occurs while making the API call:
-            ([], <UpstreamResponseInfo obj>)
+                  Examples:
+
+                  Preprocessor throws out request::
+
+                      ([], None)
+                    
+                  Postprocessor throws out some candidates::
+
+                      ([<Candidate obj>, <Candidate obj>, ...], <UpstreamResponseInfo obj>)``
+                    
+                  Postprocessor throws out all candidates::
+
+                      ([], <UpstreamResponseInfo obj>)
+                    
+                  An exception occurs while making the API call::
+
+                      ([], <UpstreamResponseInfo obj>)
+
         """
         processed_pq = copy.copy(pq)
         start_time = time.time()
