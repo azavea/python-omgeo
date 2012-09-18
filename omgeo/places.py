@@ -123,7 +123,7 @@ class Candidate():
     Class representing a candidate address returned from geocoders.
     Accepts arguments defined below, plus informal keyword arguments.
 
-    Usage Example:
+    Usage Example::
 
         c = Candidate('US_RoofTop', 91.5, '340 N 12th St, Philadelphia, PA, 19107',
             '-75.16', '39.95', some_key_foo='bar')
@@ -133,11 +133,12 @@ class Candidate():
         wkid=4326, **kwargs):
         """
         :arg locator: Locator used for geocoding (default '')
+
                       We try to standardize this to
-                       * `rooftop`,
-                       * `interpolated`,
-                       * `postal_specific`, and 
-                       * `postal`.
+                       * ``rooftop``,
+                       * ``interpolated``,
+                       * ``postal_specific``, and 
+                       * ``postal``.
 
         :arg score: Standardized score (default 0)
         :arg str match_addr: Address returned by geocoder (default '')
@@ -146,7 +147,7 @@ class Candidate():
         :arg wkid: Well-known ID for spatial reference system (default 4326)
 
         Keyword arguments can be added in order to be able to use postprocessors
-        with API output fields are not well-fitting for one of the definitions
+        with API output fields are not well-fitted for one of the definitions
         above
         """
 
