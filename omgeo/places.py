@@ -43,9 +43,10 @@ class Viewbox():
     def to_mapquest_str(self):
         """
         Convert Viewbox object to a string that can be used by
-        MapQuest as a query parameter.
+        `MapQuest <http://www.mapquestapi.com/geocoding/#options>`_
+        as a query parameter.
         """
-        
+
         vb = self.convert_srs(4326)
         return '%s,%s,%s,%s' % (vb.left, vb.top, vb.right, vb.bottom)
 
@@ -115,6 +116,7 @@ class PlaceQuery():
     def __unicode__(self):
         return '%s%s' % (self.query, self.address)
     __str__ = __unicode__
+
 
 class Candidate():
     """
