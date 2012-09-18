@@ -56,11 +56,11 @@ class Geocoder():
         :arg dict sources: a dictionary of GeocodeServiceConfig() parameters,
                            keyed by module name for the GeocodeService to use, e.g.::
 
-                               ex: {'esri_wgs':{}, 
-                                    'bing': {'settings': {},
-                                             'preprocessors': [],
-                                             'postprocessors': []},
-                                    ...}
+                               {'esri_wgs':{}, 
+                                'bing': {'settings': {},
+                                         'preprocessors': [],
+                                         'postprocessors': []},
+                                 ...}
 
         :arg list preprocessors: list of universal preprocessors to use
         :arg list postprocessors: list of universal postprocessors to use
