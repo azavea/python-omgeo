@@ -21,11 +21,11 @@ class Viewbox():
 
     def __init__(self, left=-180, top=90, right=180, bottom=-90, wkid=4326):
         """
-        :arg left: Minimum X value (default -180)
-        :arg top: Maximum Y value (default 90)
-        :arg right: Maximum X value (default 180)
-        :arg bottom: Minimum Y value (default -90)
-        :arg wkid: Well-known ID for spatial reference system (default 4326)
+        :arg left: Minimum X value (default ``-180``)
+        :arg top: Maximum Y value (default ``90``)
+        :arg right: Maximum X value (default ``180``)
+        :arg bottom: Minimum Y value (default ``-90``)
+        :arg wkid: Well-known ID for spatial reference system (default ``4326``)
         """
         for k in locals().keys():
             if k != 'self': setattr(self, k, locals()[k])
@@ -94,9 +94,9 @@ class PlaceQuery():
                           this is strongly recommended for efficency. ISO alpha-2 is
                           preferred, and is required by some geocoder services.
         :arg Viewbox viewbox: A Viewbox object indicating the preferred area
-                              to find search results (default None)
+                              to find search results (default ``None``)
         :arg bool bounded: Boolean indicating whether or not to only
-                           return candidates within the given Viewbox (default False)
+                           return candidates within the given Viewbox (default ``False``)
 
         :key float user_lat: A float representing the Latitude of the end-user.
         :key float user_lon: A float representing the Longitude of the end-user.
@@ -132,7 +132,7 @@ class Candidate():
     def __init__(self, locator='', score=0, match_addr='', x=None, y=None,
         wkid=4326, **kwargs):
         """
-        :arg locator: Locator used for geocoding (default '')
+        :arg locator: Locator used for geocoding (default ``''``)
 
                       We try to standardize this to
                        * ``rooftop``,
@@ -140,11 +140,11 @@ class Candidate():
                        * ``postal_specific``, and 
                        * ``postal``.
 
-        :arg score: Standardized score (default 0)
-        :arg str match_addr: Address returned by geocoder (default '')
-        :arg x: X-coordinate (longitude for lat-lon SRS) (default None)
-        :arg y: Y-coordinate (latitude for lat-lon SRS) (default None)
-        :arg wkid: Well-known ID for spatial reference system (default 4326)
+        :arg score: Standardized score (default ``0``)
+        :arg str match_addr: Address returned by geocoder (default ``''``)
+        :arg x: X-coordinate (longitude for lat-lon SRS) (default ``None``)
+        :arg y: Y-coordinate (latitude for lat-lon SRS) (default ``None``)
+        :arg wkid: Well-known ID for spatial reference system (default ``4326``)
 
         Keyword arguments can be added in order to be able to use postprocessors
         with API output fields are not well-fitted for one of the definitions

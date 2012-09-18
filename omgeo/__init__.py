@@ -44,11 +44,6 @@ class Geocoder():
     def set_sources(self, sources):
         """
         Creates GeocodeServiceConfigs from each str source
-        
-        Argument:
-        =========
-        sources --  list of source-settings pairs
-                    ex. "[['EsriWGS', {}], ['Nominatim', {}]]"
         """
         if len(sources) == 0:
             raise Exception('Must declare at least one source for a geocoder')
@@ -61,16 +56,17 @@ class Geocoder():
         """
         Geocoder() constructor
         :arg dict sources: a dictionary of GeocodeServiceConfig() parameters,
-                           keyed by module name for the GeocodeService to use
-                           ex: {'esri_wgs':{}, 
-                                'bing': {'settings': {},
-                                         'preprocessors': [],
-                                         'postprocessors': []},
-                                ...}
+                           keyed by module name for the GeocodeService to use, e.g.::
+
+                               ex: {'esri_wgs':{}, 
+                                    'bing': {'settings': {},
+                                             'preprocessors': [],
+                                             'postprocessors': []},
+                                    ...}
 
         :arg list preprocessors: list of universal preprocessors to use
         :arg list postprocessors: list of universal postprocessors to use
-        :arg bool waterfall: sets default for waterfall on geocode() method (default False)
+        :arg bool waterfall: sets default for waterfall on geocode() method (default ``False``)
         """
 
         self._preprocessors = Geocoder.DEFAULT_PREPROCESSORS \
