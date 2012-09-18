@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class UpstreamResponseInfo():
     """
-    Class describing the API call result from an upstream provider.
+    Description of API call result from an upstream provider.
     For cleaning and consistency, set attributes using the given methods.
     """
 
@@ -66,8 +66,7 @@ class UpstreamResponseInfo():
 
 class GeocodeService():
     """
-    A tuple of classes representing the geocoders that will be used
-    to find addresses for the given locations
+    Base class for geocoding API wrappers
     """
 
     #: API base endpoint URL to use
