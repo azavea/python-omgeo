@@ -6,20 +6,19 @@ class LocatorFilter(PostProcessor):
     """
     PostProcessor used to ditch results with lousy locators.
 
-
-    good_locators   --  A list of locators to
-                        accept results from (default [])
+    :arg list good_locators:  A list of locators to accept results from (default [])
     """
-
-    good_locators = []
-    """
-    A list of Candidate.locator values that are good enough for what we need.
-    """
-    
-    def __init__(self, good_locators=[]):
-        self._init_helper(vars())
+   
+    def __init__(self, good_locators):
+        """
+        :arg list good_locators:  A list of locators to accept results from (default None)
+        """
+        self.good_locators = good_locators
 
     def process(self, candidates):
+        """
+        :arg list candidates: list of Candidate instances
+        """
         for c in candidates[:]:
             if c.locator not in self.good_locators:
                 #TODO: search string, i.e. find "EU_Street_Name" in "EU_Street_Name.GBR_StreetName"
@@ -32,19 +31,17 @@ class LocatorSorter(PostProcessor):
     PostProcessor used to sort by locators
     """
 
-    ordered_locators = []
-    """
-    A list of Candidate.locator values placed in the desired order.
-    
-    *Examples*:
-
-        ['rooftop', 'address', 'street', 'city']
-    """
-
-    def __init__(self, ordered_locators=[]):
-        self._init_helper(vars())
+    def __init__(self, ordered_locators):
+        """
+        :arg list ordered_locators: a list of :py:attr:`Candidate.locator` values
+        placed in the desired order, such as ``rooftop``, ``interpolation``, or ``postal``.
+        """
+        self.ordered_locators = ordered_locators
     
     def process(self, unordered_candidates):
+        """
+        :arg list candidates: list of Candidate instances
+        """
         ordered_candidates = []
         # make a new list of candidates in order of ordered_locators
         for locator in self.ordered_locators:
@@ -61,18 +58,26 @@ class AttrRename(PostProcessor):
     """
     PostProcessor used to rename the given attribute, with unspecified
     attributes appearing at the end of the list.
-
-
-    attr            -- Name of the attribute
-    attr_map        -- Dictionary of old names : new names.
-    exact_match
-    case_sensitive
     """
 
-    def __init__(self, attr, attr_map={}, exact_match=False, case_sensitive=False):
-        self._init_helper(vars())
+    def __init__(self, str attr, attr_map=None, bool exact_match=False, bool case_sensitive=False):
+        """
+        :arg str attr: Name of the attribute
+        :arg dict attr_map: Map of old names : new names.
+        :arg bool exact_match:
+        :arg bool case_sensitive:
+        """
+        self.attr = attr
+        self.attr_map = attr_map if attr_map is not None else {}
+            self.attr_map = {}
+        self.exact_match = exact_match
+        self.case_sensitive = case_sensitive
 
     def process(self, candidates):
+        """
+        :arg list candidates: list of Candidate instances
+        :returns: list of Candidate instances with modified values for the given attribute
+        """
         def _cc(str_): #change case
             if self.case_sensitive is False: return str_.lower()
             return str_      
@@ -98,27 +103,35 @@ class UseHighScoreIfAtLeast(PostProcessor):
     all of the original results are returned intact.
     """
     def __init__(self, min_score):
-        self._init_helper(vars())
+        self.min_score = min_score
 
     def process(self, candidates):
+        """
+        :arg list candidates: list of Candidates
+        :returns: list of Candidates where score is at least min_score,
+        if and only if one or more Candidates have at least min_score.
+        Otherwise, returns original list of Candidates.
+        """
         high_score_candidates = [c for c in candidates if c.score >= self.min_score]
         if high_score_candidates != []:
             return high_score_candidates
         return candidates
 
 class ScoreSorter(PostProcessor):
-    """
-    PostProcessor class to sort candidate scores.
-
-
-    reverse  --  Boolean indicating if the scores should be sorted 
-                 descending (e.g. 100, 90, 80, ...) (default True)
-    """
+    """PostProcessor class to sort :py:class:`Candidate` scores."""
     
     def __init__(self, reverse=True):
-        self._init_helper(vars())
+        """
+        :arg bool reverse: indicates if the scores should be sorted in descending
+        order (e.g. 100, 90, 80, ...) (default ``True``)
+        """
+        self.reverse = reverse
 
     def process(self, candidates):
+        """
+        :arg list candidates: list of Candidates
+        :returns: score-sorted list of Candidates
+        """
         return sorted(candidates, key=attrgetter('score'), reverse=self.reverse)
 
 class AttrSorter(PostProcessor):
@@ -126,13 +139,13 @@ class AttrSorter(PostProcessor):
     PostProcessor used to sort by a the given attribute, with unspecified
     attributes appearing at the end of the list.
 
-
-    ordered_values   --  A list of values placed in the desired order.
-    attr             --  The attribute on which to sort.
+    :arg list ordered_values: A list of values placed in the desired order.
+    :arg str attr: The attribute on which to sort.
     """
 
-    def __init__(self, ordered_values=[], attr='locator'):
-        self._init_helper(vars())
+    def __init__(self, ordered_values=None, attr='locator'):
+        self.ordered_values = [] if ordered_values is None else ordered_values
+        self.attr = attr
     
     def process(self, unordered_candidates):
         ordered_candidates = []
@@ -154,19 +167,20 @@ class AttrReverseSorter(PostProcessor):
     This is good to use when a list has already been defined in a script
     and you are too lazy to use the reverse() function, or don't want
     to in order to maintain more readable code.
-
-
-    ordered_values   -- A list of values placed in the reverse 
-                        of the desired order.
     """
 
-    def __init__(self, ordered_values=[], attr='locator'):
-        self._init_helper(vars())
+    def __init__(self, ordered_values=None, attr='locator'):
+        """
+        :arg list ordered_values: A list of values placed in the reverse of the desired order.
+        :arg str attribute: The attribute on which to sort
+        """
+        self.ordered_values = [] if ordered_values is None else ordered_values
+        self.attr = attr
     
     def process(self, unordered_candidates):
         ordered_values = self.ordered_values
         ordered_values.reverse()
-        sorter = AttrSorter(ordered_values)
+        sorter = AttrSorter(ordered_values, self.attr)
         return sorter.process(unordered_candidates)
 
 class AttrMigrator(PostProcessor):
@@ -181,8 +195,12 @@ class AttrMigrator(PostProcessor):
     exact_match     -- Boolean
     case_sensitive  -- Boolean
     """
-    def __init__(self, attr_from, attr_to, attr_map={}, exact_match=False, case_sensitive=False):
-        self._init_helper(vars())
+    def __init__(self, attr_from, attr_to, attr_map=None, exact_match=False, case_sensitive=False):
+        self.attr_from = attr_from
+        self.attr_to = attr_to
+        self.attr_map = {} if attr_map is None else attr_map
+        self.exact_match = exact_match
+        self.case_sensitive = case_sensitive
 
     def process(self, candidates):
         def _cc(str_): #change case
@@ -205,21 +223,19 @@ class AttrMigrator(PostProcessor):
 class AttrFilter(PostProcessor):
     """
     PostProcessor used to ditch results with unwanted attribute values.
-
-
-    good_values   --  A list of values whose candidates we will
-                      accept results from (default [])
-    
-    attr          --  The attribute type on which to filter
-
-    exact_match   --  True if attribute must match a good value exactly.
-                      False if the attribute can be a substring in a
-                      good value. In other words, if our Candidate
-                      attribute is 'US_Rooftop' and one of the good_values
-                      is 'Rooftop', we will keep this candidate.
     """
 
     def __init__(self, good_values=[], attr='locator', exact_match=True):
+        """
+        :arg list good_values: A list of values whose candidates we will
+                               accept results from (default [])
+        :arg string attr: The attribute type on which to filter
+        :arg bool exact_match: True if attribute must match a good value exactly.
+        False if the attribute can be a substring in a
+        good value. In other words, if our Candidate
+        attribute is 'US_Rooftop' and one of the good_values
+        is 'Rooftop', we will keep this candidate.
+        """
         self._init_helper(vars())
 
     def process(self, candidates):
@@ -231,23 +247,20 @@ class AttrFilter(PostProcessor):
 class AttrExclude(PostProcessor):
     """
     PostProcessor used to ditch results with unwanted attribute values.
-
-
-    bad_values   --  A list of values whose candidates we will
-                     not accept results from (default [])
-
-    attr         --  The attribute type on which to filter
-
-    exact_match  --  True if attribute must match a bad value exactly.
-                     False if the bad value can be a substring of the
-                     attribute value. In other words, if our Candidate
-                     attribute is 'Postcode3' and one of the bad values
-                     is 'Postcode' because we want something more precise,
-                     like 'Address', we will not keep this candidate.
-                     
     """
 
     def __init__(self, bad_values=[], attr='locator', exact_match=True):
+        """
+        :arg list bad_values: A list of values whose candidates we will
+                              not accept results from (default [])
+        :arg string attr: The attribute type on which to filter
+        :arg bool exact_match: True if attribute must match a bad value exactly.
+                               False if the bad value can be a substring of the
+                               attribute value. In other words, if our Candidate
+                               attribute is 'Postcode3' and one of the bad values
+                               is 'Postcode' because we want something more precise,
+                               like 'Address', we will not keep this candidate.
+        """
         self._init_helper(vars())
 
     def process(self, candidates):
