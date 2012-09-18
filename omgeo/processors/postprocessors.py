@@ -41,6 +41,7 @@ class LocatorSorter(PostProcessor):
     def process(self, unordered_candidates):
         """
         :arg list candidates: list of Candidate instances
+
         """
         ordered_candidates = []
         # make a new list of candidates in order of ordered_locators
@@ -268,14 +269,6 @@ class DupePicker(PostProcessor):
     such as an address. 
 
     * When comparing attribute values, case and commas do not count.
-
-    attr_dupes      -- Property on which to look for duplicates.
-    attr_sort       -- Property on which to sort using ordered_list
-    ordered_list    -- A list of property values, from most desirable
-                       to least desirable.
-    return_clean    -- Boolean indicating whether or not to
-                       homogenize string values into uppercase
-                       without commas.
     
     Usage Example:
 
@@ -325,7 +318,18 @@ class DupePicker(PostProcessor):
     123 S WOOD ST    85    roof
     ================ ===== =======  
     """
+    
     def __init__(self, attr_dupes, attr_sort, ordered_list, return_clean=False):
+        """
+        :arg str attr_dupes: Property on which to look for duplicates.
+        :arg str attr_sort: Property on which to sort using ordered_list
+        :arg list ordered_list: A list of property values, from most desirable
+                                to least desirable.
+        :arg bool return_clean: Boolean indicating whether or not to
+                                homogenize string values into uppercase
+                                without commas.
+
+        """
         self._init_helper(vars())
 
     def process(self, candidates):
@@ -417,16 +421,16 @@ class SnapPoints(PostProcessor):
     """
     Chooses the first of two or more points where they are within the given
     sphere-based great circle distance.
-    
-
-    pnt 1       -- (x, y) tuple
-    pnt 2       -- (x, y) tuple    
-    distance    -- maximum distance (in metres) between two points in which
-                   the the first will be kept and the second thrown out
-                   (default 1).
     """
     
     def __init__(self, distance=50):
+        """
+        :arg tuple pnt1: x,y coordinate pair for first location 
+        :arg tuple pnt2: x,y coordinate pair for second location 
+        :arg distance: maximum distance (in metres) between two points in which
+                       the the first will be kept and the second thrown out
+                       (default 50).
+        """
         self._init_helper(vars())
         
     def _get_distance(self, pnt1, pnt2):
