@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Contents &mdash; python-omgeo 1.5.0 documentation</title>
+    <title>Introduction &mdash; python-omgeo 1.5.0 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -45,11 +45,30 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="contents">
-<h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p><strong>The Oatmeal Geocoder - Python Edition</strong></p>
+<p><tt class="docutils literal"><span class="pre">python-omgeo</span></tt> is a geocoding abstraction layer written in python.  Currently
+supported geocoders:</p>
 <ul class="simple">
+<li>Bing</li>
+<li>Citizen Atlas (Washington DC)</li>
+<li>ESRI North American locator (REST &amp; SOAP)</li>
+<li>ESRI European address locator (REST &amp; SOAP)</li>
+<li>MapQuest Licensed Data API</li>
+<li>MapQuest-hosted Nominatim Open Data API</li>
 </ul>
+<p>See the source for more info.  Here&#8217;s a quick example.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">omgeo</span> <span class="kn">import</span> <span class="n">Geocoder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">geocode</span><span class="p">(</span><span class="s">&#39;340 12th St, Philadelphia PA&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">candidates</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;candidates&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+<span class="gp">... </span>  <span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">match_addr</span>
+<span class="gp">...</span>
+<span class="go">-75.15843 39.95872 340 N 12th St, Philadelphia, PA, 19107</span>
+<span class="go">-75.16136 39.94531 340 S 12th St, Philadelphia, PA, 19107</span>
+</pre></div>
 </div>
 </div>
 <div class="section" id="module-omgeo">
@@ -60,7 +79,9 @@
 <dd><p>The base geocode class.  This class can be initialized with settings
 for each geocoder and/or settings for the geocoder itself.</p>
 <dl class="docutils">
-<dt>sources         &#8211; a dictionary of GeocodeServiceConfig() parameters,</dt>
+<dt>Args:</dt>
+<dd><dl class="first docutils">
+<dt>sources (dict): a dictionary of GeocodeServiceConfig() parameters,</dt>
 <dd><p class="first">keyed by module name for the GeocodeService to use
 ex: {&#8216;esri_wgs&#8217;:{},</p>
 <blockquote class="last">
@@ -76,8 +97,10 @@ ex: {&#8216;esri_wgs&#8217;:{},</p>
 <p>preprocessors   &#8211; list of universal preprocessors to use
 postprocessors  &#8211; list of universal postprocessors to use
 waterfall       &#8211; sets default for waterfall on geocode() method</p>
-<blockquote>
+<blockquote class="last">
 <div>(default False)</div></blockquote>
+</dd>
+</dl>
 <dl class="method">
 <dt id="omgeo.Geocoder.geocode">
 <tt class="descname">geocode</tt><big>(</big><em>pq</em>, <em>waterfall=None</em><big>)</big><a class="reference internal" href="_modules/omgeo.html#Geocoder.geocode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.Geocoder.geocode" title="Permalink to this definition">¶</a></dt>
@@ -114,21 +137,25 @@ the first geocoding service with valid candidates
 <span id="places"></span><h1>places<a class="headerlink" href="#module-omgeo.places" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="omgeo.places.Candidate">
-<em class="property">class </em><tt class="descclassname">omgeo.places.</tt><tt class="descname">Candidate</tt><big>(</big><em>locator=''</em>, <em>score=0</em>, <em>match_addr=''</em>, <em>x=None</em>, <em>y=None</em>, <em>wkid=4326</em>, <em>entity=''</em>, <em>confidence=''</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/places.html#Candidate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.places.Candidate" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">omgeo.places.</tt><tt class="descname">Candidate</tt><big>(</big><em>locator=''</em>, <em>score=0</em>, <em>match_addr=''</em>, <em>x=None</em>, <em>y=None</em>, <em>wkid=4326</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/places.html#Candidate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.places.Candidate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class representing a candidate address returned from geocoders.
 Accepts arguments defined below, plus informal keyword arguments.</p>
-<p>locator     &#8211; Locator used for geocoding (default &#8216;&#8217;)
-score       &#8211; Standardized score (default 0)
+<dl class="docutils">
+<dt>locator     &#8211; Locator used for geocoding (default &#8216;&#8217;)</dt>
+<dd>We try to standardize this to &#8216;rooftop&#8217;, &#8216;interpolated&#8217;,
+&#8216;postal_specific&#8217;, and &#8216;postal&#8217;.</dd>
+</dl>
+<p>score       &#8211; Standardized score (default 0)
 match_addr  &#8211; Address returned by geocoder (default &#8216;&#8217;)
 x           &#8211; X-coordinate (longitude for lat-lon SRS) (default None)
 y           &#8211; Y-coordinate (latitude for lat-lon SRS) (default None)
-wkid        &#8211; Well-known ID for spatial reference system (default 4326)
-entity      &#8211; Used by Bing, Nominatim (default &#8216;&#8217;)
-confidence  &#8211; Used by Bing (default &#8216;&#8217;)
-geoservice  &#8211; GeocodeService used for geocoding (default &#8216;&#8217;)</p>
+wkid        &#8211; Well-known ID for spatial reference system (default 4326)</p>
+<p>Keyword arguments can be added in order to be able to use postprocessors
+with API output fields are not well-fitting for one of the definitions
+above</p>
 <dl class="docutils">
 <dt>c = Candidate(&#8216;US_RoofTop&#8217;, 91.5, &#8216;340 N 12th St, Philadelphia, PA, 19107&#8217;,</dt>
-<dd>&#8216;-75.16&#8217;, &#8216;39.95&#8217;, some_extra_data=&#8217;yellow&#8217;)</dd>
+<dd>&#8216;-75.16&#8217;, &#8216;39.95&#8217;, some_key_foo=&#8217;bar&#8217;)</dd>
 </dl>
 </dd></dl>
 
@@ -361,13 +388,13 @@ and one for multi-part addresses.</p>
 by MapQuest</a>.</p>
 <dl class="attribute">
 <dt id="omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS">
-<tt class="descname">DEFAULT_POSTPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.postprocessors.AttrFilter instance at 0x30e5248&gt;, &lt;omgeo.processors.postprocessors.AttrExclude instance at 0x30e5290&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">DEFAULT_POSTPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.postprocessors.AttrFilter instance at 0x1d5f1b8&gt;, &lt;omgeo.processors.postprocessors.AttrExclude instance at 0x1dae3b0&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Postprocessors to use with this geocoder service, in order of desired execution.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="omgeo.services.Nominatim.DEFAULT_PREPROCESSORS">
-<tt class="descname">DEFAULT_PREPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.preprocessors.ReplaceRangeWithNumber instance at 0x30e51b8&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_PREPROCESSORS" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">DEFAULT_PREPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.preprocessors.ReplaceRangeWithNumber instance at 0x1d61dd0&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_PREPROCESSORS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Preprocessors to use with this geocoder service, in order of desired execution.</p>
 </dd></dl>
 
@@ -733,9 +760,7 @@ all of the original results are returned intact.</p>
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Contents</a><ul>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Introduction</a></li>
 <li><a class="reference internal" href="#module-omgeo">omgeo</a></li>
 <li><a class="reference internal" href="#module-omgeo.places">places</a></li>
 <li><a class="reference internal" href="#module-omgeo.services.base">services</a></li>

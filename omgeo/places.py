@@ -2,15 +2,6 @@ class Viewbox():
     """
     Class representing a bounding box.
     Defaults to maximum bounds for WKID 4326.
-
-    Arguments:
-    ==========
-    left    -- Minimum X value (default -180)
-    top     -- Maximum Y value (default 90)
-    right   -- Maximum X value (default 180)
-    bottom  -- Minimum Y value (default -90)
-    wkid    -- Well-known ID for spatial reference system (default 4326)
-    
     """
 
     def _validate(self):
@@ -29,6 +20,13 @@ class Viewbox():
         return self # TODO: convert SRS
 
     def __init__(self, left=-180, top=90, right=180, bottom=-90, wkid=4326):
+        """
+        :arg left: Minimum X value (default -180)
+        :arg top: Maximum Y value (default 90)
+        :arg right:    Maximum X value (default 180)
+        :arg bottom:   Minimum Y value (default -90)
+        :arg wkid:     Well-known ID for spatial reference system (default 4326)
+        """
         for k in locals().keys():
             if k != 'self': setattr(self, k, locals()[k])
         self._validate() 

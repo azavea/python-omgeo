@@ -555,8 +555,9 @@ class EsriWGS(GeocodeService):
         AttrSorter(['PointAddress', 'StreetAddress', 'PostalExt', 'Postal'], 'locator_type'),
         AttrRename('locator', LOCATOR_MAP), # after filter to avoid searching things we toss out
         UseHighScoreIfAtLeast(99.8),
-        GroupBy(('x', 'y')),
         GroupBy('match_addr'),
+        GroupBy(('x', 'y')),
+        
         ScoreSorter(),
     ]
 
