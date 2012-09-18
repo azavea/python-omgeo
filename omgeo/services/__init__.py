@@ -19,8 +19,8 @@ class Bing(GeocodeService):
      * `Find a Location by Address <http://msdn.microsoft.com/en-us/library/ff701714.aspx>`_
 
     Settings used by the Bing GeocodeService object may include:
-    ============================================================
-    api_key --  The API key used to access Bing services.
+     * api_key --  The API key used to access Bing services.
+
     """
     _endpoint = 'http://dev.virtualearth.net/REST/v1/Locations'
 
@@ -180,18 +180,17 @@ class CitizenAtlas(GeocodeService):
 
 class EsriGeocodeService(GeocodeService):
     """
-    Settings used by an EsriGeocodeService object may include:
-    ============================================================
-    api_key --  The API key used to access ESRI premium services.  If this
-                key is present, the object's endpoint will be set to use
-                premium tasks.
+    Base class for older ESRI geocoders (EsriEU, EsriNA).
     """
 
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         """
-        ESRI services can be used as free services or "premium tasks".  If an
-        ESRI service is created with an api_key in the settings, we'll set this
-        service up with the premium task URL.
+        :arg list preprocessors: preprocessors
+        :arg list postprocessors: postprocessors
+        :arg dict settings: Settings used by an EsriGeocodeService object may include:
+                             * ``api_key``: The API key used to access ESRI premium services.  
+                               If this key is present, the object's endpoint will be
+                               set to use premium tasks.
         """
         GeocodeService.__init__(self, preprocessors, postprocessors, settings)
         
@@ -267,7 +266,7 @@ class EsriSoapGeocodeService(EsriGeocodeService):
 
 class EsriEUGeocodeService():
     """
-    Defaults for Esri EU Geocoders
+    Base class including for Esri EU REST and SOAP Geocoders
 
     As of 29 Dec 2011, the ESRI website claims to support Andorra, Austria, 
     Belgium, Denmark, Finland, France, Germany, Gibraltar, Ireland, Italy,
@@ -276,14 +275,15 @@ class EsriEUGeocodeService():
     """
     _wkid = 4326
 
+    #: FIPS codes of supported countries
     SUPPORTED_COUNTRIES_FIPS = ['AN', 'AU', 'BE', 'DA', 'FI', 'FR', 'GM', 'GI', 'EI', 
         'IT', 'LS', 'LU', 'MN', 'NL', 'NO', 'PO', 'SM', 'SP', 'SW', 'SZ', 'UK', 'VT']
-    """FIPS codes of supported countries"""
 
+    #: ISO-2 codes of supported countries
     SUPPORTED_COUNTRIES_ISO2 = ['AD', 'AT', 'BE', 'DK', 'FI', 'FR', 'DE', 'GI', 'IE', 
         'IT', 'LI', 'LU', 'MC', 'NL', 'NO', 'PT', 'SM', 'ES', 'SE', 'CH', 'GB', 'VC']
-    """ISO-2 codes of supported countries"""
 
+    #: Map of FIPS to ISO-2 codes, if they are different.
     MAP_FIPS_TO_ISO2 = {
         'AN':'AD',
         'AU':'AT',
@@ -299,8 +299,8 @@ class EsriEUGeocodeService():
         'UK':'GB',
         'VT':'VC',
         }
-    """Map of FIPS to ISO-2 codes, if they are different."""
 
+    #: Map to standardize locator
     LOCATOR_MAP = {
         'EU_Street_Addr': 'interpolation',
     }
@@ -310,7 +310,6 @@ class EsriEUGeocodeService():
             SUPPORTED_COUNTRIES_ISO2,
             MAP_FIPS_TO_ISO2),
         ParseSingleLine(),
-        RequireCountry('GB'),
     ]
         
     DEFAULT_POSTPROCESSORS = [
@@ -557,14 +556,17 @@ class EsriWGS(GeocodeService):
         UseHighScoreIfAtLeast(99.8),
         GroupBy('match_addr'),
         GroupBy(('x', 'y')),
-        
+
         ScoreSorter(),
     ]
 
     _endpoint = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
 
     def _geocode(self, pq):
-        """Return a list of Candidates given a PlaceQuery instance."""
+        """
+        :arg PlaceQuery pq: PlaceQuery object to use for geocoding
+        :returns: list of location Candidates
+        """
         #: List of desired output fields
         #: See `ESRI docs <http://geocode.arcgis.com/arcgis/geocoding.html#output>_` for details
         outFields = ('Loc_name',
