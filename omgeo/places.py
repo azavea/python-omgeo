@@ -23,9 +23,9 @@ class Viewbox():
         """
         :arg left: Minimum X value (default -180)
         :arg top: Maximum Y value (default 90)
-        :arg right:    Maximum X value (default 180)
-        :arg bottom:   Minimum Y value (default -90)
-        :arg wkid:     Well-known ID for spatial reference system (default 4326)
+        :arg right: Maximum X value (default 180)
+        :arg bottom: Minimum Y value (default -90)
+        :arg wkid: Well-known ID for spatial reference system (default 4326)
         """
         for k in locals().keys():
             if k != 'self': setattr(self, k, locals()[k])

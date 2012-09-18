@@ -10,20 +10,6 @@ class Geocoder():
     """
     The base geocode class.  This class can be initialized with settings
     for each geocoder and/or settings for the geocoder itself.
-
-    Args:
-        sources (dict): a dictionary of GeocodeServiceConfig() parameters,
-                           keyed by module name for the GeocodeService to use
-                           ex: {'esri_wgs':{}, 
-                                'bing': {'settings': {},
-                                         'preprocessors': [],
-                                         'postprocessors': []},
-                                ...}
-
-        preprocessors   -- list of universal preprocessors to use
-        postprocessors  -- list of universal postprocessors to use
-        waterfall       -- sets default for waterfall on geocode() method
-                           (default False)
     """
 
     DEFAULT_SOURCES = [['omgeo.services.EsriWGS', {}],
@@ -72,6 +58,21 @@ class Geocoder():
 
     def __init__(self, sources=None, preprocessors=None, postprocessors=None,
                  waterfall=False):
+        """
+        Geocoder() constructor
+        :arg dict sources: a dictionary of GeocodeServiceConfig() parameters,
+                           keyed by module name for the GeocodeService to use
+                           ex: {'esri_wgs':{}, 
+                                'bing': {'settings': {},
+                                         'preprocessors': [],
+                                         'postprocessors': []},
+                                ...}
+
+        :arg list preprocessors: list of universal preprocessors to use
+        :arg list postprocessors: list of universal postprocessors to use
+        :arg bool waterfall: sets default for waterfall on geocode() method (default False)
+        """
+
         self._preprocessors = Geocoder.DEFAULT_PREPROCESSORS \
             if preprocessors is None else preprocessors
         self._postprocessors = Geocoder.DEFAULT_POSTPROCESSORS \
@@ -86,13 +87,12 @@ class Geocoder():
          * candidates - list of Candidate objects
          * upstream_response_info - list of UpstreamResponseInfo objects
 
-        Arguments:
-        ==========
-        pq          --  A PlaceQuery object (required).
-        waterfall   --  Boolean set to True if all geocoders listed should
-                        be used to find results, instead of stopping after
-                        the first geocoding service with valid candidates
-                        (defaults to <Geocoder instance>.waterfall).
+        :arg PlaceQuery pq:  PlaceQuery object (required).
+        :arg bool waterfall: Boolean set to True if all geocoders listed should
+                             be used to find results, instead of stopping after
+                             the first geocoding service with valid candidates
+                             (defaults to self.waterfall).
+        :rtype: dict
         """          
         start_time = time.time()
         waterfall = self.waterfall if waterfall is None else waterfall
