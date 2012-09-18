@@ -79,20 +79,17 @@ class GeocodeService():
         if they are set.
         """
 
+        #: Preprocessor classes to apply to the given PlaceQuery, usually
+        #: overwritten in subclass.
         self._preprocessors = []
-        """
-        Preprocessor classes to apply to the given PlaceQuery, usually
-        overwritten in subclass.
-        """
+
+        #: Postprocessor classes to apply to the list of Candidates obtained, 
+        #: usually overwritten in subclass.
         self._postprocessors = []
-        """
-        Postprocessor classes to apply to the list of Candidates obtained, 
-        usually overwritten in subclass.
-        """
+
+        #: Settings for this geocoder, usually overwritten by subclass
         self._settings = {}
-        """
-        Settings for this geocoder, usually overwritten in subclass
-        """
+ 
         if preprocessors is not None:
             self._preprocessors = preprocessors
         if postprocessors is not None:
