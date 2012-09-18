@@ -186,7 +186,7 @@ class GeocodeService():
                     
                   Postprocessor throws out some candidates::
 
-                      ([<Candidate obj>, <Candidate obj>, ...], <UpstreamResponseInfo obj>)``
+                      ([<Candidate obj>, <Candidate obj>, ...], <UpstreamResponseInfo obj>)
                     
                   Postprocessor throws out all candidates::
 
