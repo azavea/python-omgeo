@@ -45,6 +45,7 @@ class Viewbox():
         Convert Viewbox object to a string that can be used by
         MapQuest as a query parameter.
         """
+        
         vb = self.convert_srs(4326)
         return '%s,%s,%s,%s' % (vb.left, vb.top, vb.right, vb.bottom)
 
@@ -120,30 +121,33 @@ class Candidate():
     Class representing a candidate address returned from geocoders.
     Accepts arguments defined below, plus informal keyword arguments.
 
-    Arguments:
-    ==========
-    locator     -- Locator used for geocoding (default '')
-                   We try to standardize this to 'rooftop', 'interpolated',
-                   'postal_specific', and 'postal'.
-    score       -- Standardized score (default 0)
-    match_addr  -- Address returned by geocoder (default '')
-    x           -- X-coordinate (longitude for lat-lon SRS) (default None)
-    y           -- Y-coordinate (latitude for lat-lon SRS) (default None)
-    wkid        -- Well-known ID for spatial reference system (default 4326)
-
-    Keyword Arguments:
-    ==================
-    Keyword arguments can be added in order to be able to use postprocessors
-    with API output fields are not well-fitting for one of the definitions
-    above
-
     Usage Example:
-    ==============
-    c = Candidate('US_RoofTop', 91.5, '340 N 12th St, Philadelphia, PA, 19107',
-        '-75.16', '39.95', some_key_foo='bar')
+
+        c = Candidate('US_RoofTop', 91.5, '340 N 12th St, Philadelphia, PA, 19107',
+            '-75.16', '39.95', some_key_foo='bar')
     """
+
     def __init__(self, locator='', score=0, match_addr='', x=None, y=None,
         wkid=4326, **kwargs):
+        """
+        :arg locator: Locator used for geocoding (default '')
+                      We try to standardize this to
+                       * `rooftop`,
+                       * `interpolated`,
+                       * `postal_specific`, and 
+                       * `postal`.
+
+        :arg score: Standardized score (default 0)
+        :arg str match_addr: Address returned by geocoder (default '')
+        :arg x: X-coordinate (longitude for lat-lon SRS) (default None)
+        :arg y: Y-coordinate (latitude for lat-lon SRS) (default None)
+        :arg wkid: Well-known ID for spatial reference system (default 4326)
+
+        Keyword arguments can be added in order to be able to use postprocessors
+        with API output fields are not well-fitting for one of the definitions
+        above
+        """
+
         for k in locals().keys():
             if k not in ['self', 'kwargs']: setattr(self, k, locals()[k])
         for k in kwargs:
