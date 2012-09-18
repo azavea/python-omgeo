@@ -196,11 +196,11 @@ class CancelIfRegexInAttr(PreProcessor):
 
 class CancelIfPOBox(PreProcessor):
     def process(self, pq):
-    """
-    :arg PlaceQuery pq: PlaceQuery instance
-    :returns: ``False`` if the address is starts with any variation of "PO Box".
-              Otherwise, return original :py:class:`PlaceQuery`.
-    """
+        """
+        :arg PlaceQuery pq: PlaceQuery instance
+        :returns: ``False`` if the address is starts with any variation of "PO Box".
+                  Otherwise, return original :py:class:`PlaceQuery`.
+        """
         regex = r'^\s*P\.?\s*O\.?\s*B\.?O?X?[\s\d]'
         return CancelIfRegexInAttr(regex, ('address', 'query')).process(pq)
     

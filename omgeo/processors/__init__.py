@@ -10,12 +10,11 @@ class _Processor():
 
     def __init__(self, **kwargs):
         """
-        Constructor for Processor.
-        
         In a subclass, arguments may be formally defined to avoid the use of keywords
-        (and to throw errors when bogus keyword arguments are passed):
+        (and to throw errors when bogus keyword arguments are passed)::
 
             def __init__(self, arg1='foo', arg2='bar')
+
         """
         self._init_helper(vars())
 

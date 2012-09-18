@@ -18,8 +18,8 @@ class Geocoder():
     DEFAULT_POSTPROCESSORS = [
         SnapPoints(),
         DupePicker('match_addr', 'locator',
-                   ['rooftop', 'parcel', 'interpolation_offset', 'interpolation'])3
-        ]
+                   ['rooftop', 'parcel', 'interpolation_offset', 'interpolation'])
+            ]
     
     def _get_service_by_name(self, service_name):
         try:
