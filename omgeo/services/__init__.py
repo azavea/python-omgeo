@@ -191,6 +191,7 @@ class EsriGeocodeService(GeocodeService):
                              * ``api_key``: The API key used to access ESRI premium services.  
                                If this key is present, the object's endpoint will be
                                set to use premium tasks.
+                               
         """
         GeocodeService.__init__(self, preprocessors, postprocessors, settings)
         

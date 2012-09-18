@@ -139,7 +139,7 @@ class CountryPreProcessor(PreProcessor):
                                'GB', but not 'UK' -- and 'US', but not 'USA'::
 
                                     country_map = {'UK':'GB', 'USA':'US'}      
-                                      
+
         """
         self.acceptable_countries = acceptable_countries if acceptable_countries is not None else []
         self.country_map = country_map if country_map is not None else {}
@@ -214,11 +214,12 @@ class RequireCountry(PreProcessor):
     def __init__(self, default_country=''):
         """
         :arg str default_country: default country to use if there is 
-        no country set in the PlaceQuery instance sent to this processor.
-        If this argument is not set or empty and PlaceQuery instance does
-        not have a country (pq.country == ''), the processor will return
-        False and the PlaceQuery will be rejected during geocoding. 
-        (default '')
+                                  no country set in the PlaceQuery instance sent to this processor.
+                                  If this argument is not set or empty and PlaceQuery instance does
+                                  not have a country (pq.country == ''), the processor will return
+                                  False and the PlaceQuery will be rejected during geocoding. 
+                                  (default '')
+
         """
         self.default_country = default_country
 
@@ -229,6 +230,7 @@ class RequireCountry(PreProcessor):
                    * unmodified PlaceQuery instance if pq.country is not empty
                    * PlaceQuery instance with pq.country changed to default country.
                    * ``False`` if pq.country is empty and self.default_country == ''.
+                   
         """
         if pq.country.strip() == '':
             if self.default_country == '':

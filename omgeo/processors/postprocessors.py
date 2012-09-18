@@ -34,7 +34,9 @@ class LocatorSorter(PostProcessor):
     def __init__(self, ordered_locators):
         """
         :arg list ordered_locators: a list of :py:attr:`Candidate.locator` values
-        placed in the desired order, such as ``rooftop``, ``interpolation``, or ``postal``.
+                                    placed in the desired order, such as ``rooftop``,
+                                    ``interpolation``, or ``postal``.
+                                    
         """
         self.ordered_locators = ordered_locators
     
@@ -318,7 +320,7 @@ class DupePicker(PostProcessor):
     123 S WOOD ST    85    roof
     ================ ===== =======  
     """
-    
+
     def __init__(self, attr_dupes, attr_sort, ordered_list, return_clean=False):
         """
         :arg str attr_dupes: Property on which to look for duplicates.
