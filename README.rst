@@ -10,6 +10,16 @@ supported geocoders:
 * MapQuest Licensed Data API
 * MapQuest-hosted Nominatim Open Data API
 
+**Installation**::
+
+    sudo pip install python-omgeo
+
+**Documentation**
+
+`Click here to view the documentation. <http://readthedocs.org/projects/python-omgeo/>`_
+
+**Usage Example**
+
 See the source for more info.  Here's a quick example.
 
 >>> from omgeo import Geocoder 
