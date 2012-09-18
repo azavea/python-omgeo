@@ -8,19 +8,18 @@ stats_logger = logging.getLogger('omgeo.stats')
 
 class Geocoder():
     """
-    The base geocode class.  This class can be initialized with settings
-    for each geocoder and/or settings for the geocoder itself.
+    Class for building a custom geocoder using external APIs.
     """
 
     DEFAULT_SOURCES = [['omgeo.services.EsriWGS', {}],
-                       ['omgeo.services.Nominatim', {}]]
+                       ['omgeo.services.Nominatim', {}]
+                      ]
     DEFAULT_PREPROCESSORS = []
-    DEFAULT_POSTPROCESSORS = [SnapPoints(),
-                              DupePicker('match_addr', 'locator',
-                                         ['rooftop',
-                                          'parcel',
-                                          'interpolation_offset',
-                                          'interpolation'])]
+    DEFAULT_POSTPROCESSORS = [
+        SnapPoints(),
+        DupePicker('match_addr', 'locator',
+                   ['rooftop', 'parcel', 'interpolation_offset', 'interpolation'])3
+        ]
     
     def _get_service_by_name(self, service_name):
         try:
@@ -54,7 +53,6 @@ class Geocoder():
     def __init__(self, sources=None, preprocessors=None, postprocessors=None,
                  waterfall=False):
         """
-        Geocoder() constructor
         :arg dict sources: a dictionary of GeocodeServiceConfig() parameters,
                            keyed by module name for the GeocodeService to use, e.g.::
 
@@ -66,7 +64,7 @@ class Geocoder():
 
         :arg list preprocessors: list of universal preprocessors to use
         :arg list postprocessors: list of universal postprocessors to use
-        :arg bool waterfall: sets default for waterfall on geocode() method (default ``False``)
+        :arg bool waterfall: sets default ``for waterfall on geocode() method (default ``False````)
         """
 
         self._preprocessors = Geocoder.DEFAULT_PREPROCESSORS \
@@ -79,17 +77,16 @@ class Geocoder():
         
     def geocode(self, pq, waterfall=None):
         """
-        Returns a dictionary including:
-         * candidates - list of Candidate objects
-         * upstream_response_info - list of UpstreamResponseInfo objects
-
         :arg PlaceQuery pq:  PlaceQuery object (required).
         :arg bool waterfall: Boolean set to True if all geocoders listed should
                              be used to find results, instead of stopping after
                              the first geocoding service with valid candidates
                              (defaults to self.waterfall).
-        :rtype: dict
-        """          
+        :returns: Returns a dictionary including:
+                   * candidates - list of Candidate objects
+                   * upstream_response_info - list of UpstreamResponseInfo objects
+        """      
+
         start_time = time.time()
         waterfall = self.waterfall if waterfall is None else waterfall
         if type(pq) in (str, unicode):
@@ -134,4 +131,3 @@ class Geocoder():
         uri_set = [get_uri_dict(uri_item) for uri_item in result['upstream_response_info']]
         return dict(candidates=[candidate.__dict__ for candidate in result['candidates']],
                     upstream_response_info=uri_set)
-        
