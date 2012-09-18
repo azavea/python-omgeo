@@ -54,7 +54,7 @@
 <span class="kn">from</span> <span class="nn">omgeo.processors.postprocessors</span> <span class="kn">import</span> <span class="n">DupePicker</span><span class="p">,</span> <span class="n">SnapPoints</span>
 <span class="kn">import</span> <span class="nn">time</span>
 
-<span class="n">stats_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;omgeo.stats&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Geocoder"><a class="viewcode-back" href="../index.html#omgeo.Geocoder">[docs]</a><span class="k">class</span> <span class="nc">Geocoder</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -65,7 +65,7 @@
 <span class="sd">    ==========</span>
 <span class="sd">    sources         -- a dictionary of GeocodeServiceConfig() parameters,</span>
 <span class="sd">                       keyed by module name for the GeocodeService to use</span>
-<span class="sd">                       ex: {&#39;esri_wgs&#39;:{}, </span>
+<span class="sd">                       ex: {&#39;esri_na&#39;:{}, </span>
 <span class="sd">                            &#39;bing&#39;: {&#39;settings&#39;: {},</span>
 <span class="sd">                                     &#39;preprocessors&#39;: [],</span>
 <span class="sd">                                     &#39;postprocessors&#39;: []},</span>
@@ -76,7 +76,8 @@
 <span class="sd">                       (default False)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">DEFAULT_SOURCES</span> <span class="o">=</span> <span class="p">[[</span><span class="s">&#39;omgeo.services.EsriWGS&#39;</span><span class="p">,</span> <span class="p">{}],</span>
+    <span class="n">DEFAULT_SOURCES</span> <span class="o">=</span> <span class="p">[[</span><span class="s">&#39;omgeo.services.EsriNA&#39;</span><span class="p">,</span> <span class="p">{}],</span>
+                       <span class="p">[</span><span class="s">&#39;omgeo.services.EsriEU&#39;</span><span class="p">,</span> <span class="p">{}],</span>
                        <span class="p">[</span><span class="s">&#39;omgeo.services.Nominatim&#39;</span><span class="p">,</span> <span class="p">{}]]</span>
     <span class="n">DEFAULT_PREPROCESSORS</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">DEFAULT_POSTPROCESSORS</span> <span class="o">=</span> <span class="p">[</span><span class="n">SnapPoints</span><span class="p">(),</span>
@@ -112,7 +113,7 @@
 <span class="sd">        Argument:</span>
 <span class="sd">        =========</span>
 <span class="sd">        sources --  list of source-settings pairs</span>
-<span class="sd">                    ex. &quot;[[&#39;EsriWGS&#39;, {}], [&#39;Nominatim&#39;, {}]]&quot;</span>
+<span class="sd">                    ex. &quot;[[&#39;EsriNA&#39;, {}], [&#39;Nominatim&#39;, {}]]&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Must declare at least one source for a geocoder&#39;</span><span class="p">)</span>
@@ -143,7 +144,12 @@
 <span class="sd">                        be used to find results, instead of stopping after</span>
 <span class="sd">                        the first geocoding service with valid candidates</span>
 <span class="sd">                        (defaults to &lt;Geocoder instance&gt;.waterfall).</span>
-<span class="sd">        &quot;&quot;&quot;</span>          
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">get_result</span><span class="p">(</span><span class="n">candidates</span><span class="o">=</span><span class="p">[],</span> <span class="n">upstream_response_info</span><span class="o">=</span><span class="p">[]):</span>
+            <span class="c">#TODO: validate</span>
+            <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">candidates</span><span class="o">=</span><span class="n">candidates</span><span class="p">,</span>
+                        <span class="n">upstream_response_info</span><span class="o">=</span><span class="n">upstream_response_info_list</span><span class="p">)</span>
+            
         <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">waterfall</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">waterfall</span> <span class="k">if</span> <span class="n">waterfall</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">waterfall</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pq</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">):</span>
@@ -158,6 +164,7 @@
         <span class="n">upstream_response_info_list</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">processed_candidates</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">gs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sources</span><span class="p">:</span> <span class="c"># iterate through each GeocodeService</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">: Geocoding using </span><span class="si">%s</span><span class="s">...&#39;</span> <span class="o">%</span> <span class="p">((</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">),</span> <span class="n">gs</span><span class="p">))</span>
             <span class="n">candidates</span><span class="p">,</span> <span class="n">upstream_response_info</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">geocode</span><span class="p">(</span><span class="n">processed_pq</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">upstream_response_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="n">upstream_response_info_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">upstream_response_info</span><span class="p">)</span>
@@ -168,27 +175,15 @@
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocessors</span><span class="p">:</span> <span class="c"># apply univ. candidate postprocessing</span>
             <span class="k">if</span> <span class="n">processed_candidates</span> <span class="o">==</span> <span class="p">[]:</span>
                 <span class="k">break</span><span class="p">;</span> <span class="c"># avoid post-processing empty list</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">: Applying universal postprocessor </span><span class="si">%s</span><span class="s">...&#39;</span> <span class="o">%</span> <span class="p">((</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">),</span> <span class="n">p</span><span class="p">))</span>
             <span class="n">processed_candidates</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">processed_candidates</span><span class="p">)</span>
             
-        <span class="n">result</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">candidates</span><span class="o">=</span><span class="n">processed_candidates</span><span class="p">,</span>
-                      <span class="n">upstream_response_info</span><span class="o">=</span><span class="n">upstream_response_info_list</span><span class="p">)</span>
-        <span class="n">stats_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_geocode_result_to_nested_dicts</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-        <span class="n">stats_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">stats_dict</span><span class="p">,</span> <span class="n">original_pq</span><span class="o">=</span><span class="n">pq</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
-        <span class="n">stats_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">stats_dict</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">get_result</span><span class="p">(</span><span class="n">candidates</span><span class="o">=</span><span class="n">processed_candidates</span><span class="p">,</span>
+                            <span class="n">upstream_response_info</span><span class="o">=</span><span class="n">upstream_response_info_list</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">result</span>
     </div>
     <span class="k">def</span> <span class="nf">get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">,</span> <span class="n">waterfall</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">geocode</span><span class="p">(</span><span class="n">pq</span><span class="p">,</span> <span class="n">waterfall</span><span class="p">)[</span><span class="s">&#39;candidates&#39;</span><span class="p">]</span>
-    
-    <span class="k">def</span> <span class="nf">convert_geocode_result_to_nested_dicts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
-        <span class="k">def</span> <span class="nf">get_uri_dict</span><span class="p">(</span><span class="n">uri_item</span><span class="p">):</span>
-            <span class="n">uri_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">uri_item</span><span class="p">)</span><span class="o">.</span><span class="n">__dict__</span>
-            <span class="n">uri_dict</span><span class="p">[</span><span class="s">&#39;processed_pq&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">uri_dict</span><span class="p">[</span><span class="s">&#39;processed_pq&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">__dict__</span>
-            <span class="k">return</span> <span class="n">uri_dict</span>
-        <span class="n">uri_set</span> <span class="o">=</span> <span class="p">[</span><span class="n">get_uri_dict</span><span class="p">(</span><span class="n">uri_item</span><span class="p">)</span> <span class="k">for</span> <span class="n">uri_item</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;upstream_response_info&#39;</span><span class="p">]]</span>
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">candidates</span><span class="o">=</span><span class="p">[</span><span class="n">candidate</span><span class="o">.</span><span class="n">__dict__</span> <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;candidates&#39;</span><span class="p">]],</span>
-                    <span class="n">upstream_response_info</span><span class="o">=</span><span class="n">uri_set</span><span class="p">)</span>
-        </div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">geocode</span><span class="p">(</span><span class="n">pq</span><span class="p">,</span> <span class="n">waterfall</span><span class="p">)[</span><span class="s">&#39;candidates&#39;</span><span class="p">]</span></div>
 </pre></div>
 
           </div>

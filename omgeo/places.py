@@ -71,42 +71,39 @@ class Viewbox():
     
 class PlaceQuery():
     """
-    Class representing an address or place passed to geocoders.
-
-    Arguments:
-    ==========
-    query       --  A string containing the query to parse
-                    and match to a coordinate on the map.
-                    *ex: "340 N 12th St Philadelphia PA 19107"
-                    or "Wolf Building, Philadelphia"*
-    address     --  A string for the street line of an address.
-                    *ex: "340 N 12th St"*
-    city        --  A string specifying the populated place for the address.
-                    This commonly refers to a city, but may refer to a suburb
-                    or neighborhood in certain countries.
-    state       --  A string for the state, province, territory, etc.
-    postal      --  A string for the postal / ZIP Code
-    country     --  A string for the country or region. Because the geocoder
-                    uses the country to determine which geocoding service to use,
-                    this is strongly recommended for efficency. ISO alpha-2 is
-                    preferred, and is required by some geocoder services.
-    viewbox     --  A Viewbox object indicating the preferred area
-                    to find search results (default None)
-    bounded     --  Boolean indicating whether or not to only
-                    return candidates within the given Viewbox (default False)
-
-    Keyword Arguments:
-    ==================
-    user_lat    --  A float representing the Latitude of the end-user.
-    user_lon    --  A float representing the Longitude of the end-user.
-    user_ip     --  A string representing the IP address of the end-user.
-    culture     --  Culture code to be used for the request (used by Bing).
-                    For example, if set to 'de', the country for a U.S. address
-                    would be returned as "Vereinigte Staaten Von Amerika"
-                    instead of "United States".
+    Class representing an address or place that will be passed to geocoders.
     """
     def __init__(self, query='', address='', city='', state='', postal='', country='', 
                 viewbox=None, bounded=False, **kwargs):
+        """
+        :arg str query: A string containing the query to parse
+                        and match to a coordinate on the map.
+                        *ex: "340 N 12th St Philadelphia PA 19107"
+                        or "Wolf Building, Philadelphia"*
+        :arg str address: A string for the street line of an address.
+                          *ex: "340 N 12th St"*
+        :arg str city: A string specifying the populated place for the address.
+                       This commonly refers to a city, but may refer to a suburb
+                       or neighborhood in certain countries.
+        :arg str state: A string for the state, province, territory, etc.
+        :arg str postal: A string for the postal / ZIP Code
+        :arg str country: A string for the country or region. Because the geocoder
+                          uses the country to determine which geocoding service to use,
+                          this is strongly recommended for efficency. ISO alpha-2 is
+                          preferred, and is required by some geocoder services.
+        :arg Viewbox viewbox: A Viewbox object indicating the preferred area
+                              to find search results (default None)
+        :arg bool bounded: Boolean indicating whether or not to only
+                           return candidates within the given Viewbox (default False)
+
+        :key float user_lat: A float representing the Latitude of the end-user.
+        :key float user_lon: A float representing the Longitude of the end-user.
+        :key str user_ip: A string representing the IP address of the end-user.
+        :key str culture: Culture code to be used for the request (used by Bing).
+                          For example, if set to 'de', the country for a U.S. address
+                          would be returned as "Vereinigte Staaten Von Amerika"
+                          instead of "United States".
+    """
         for k in locals().keys():
             if k not in ['self', 'kwargs']: setattr(self, k, locals()[k])
         if query == '' and address == '' and city == '' and state == '' and postal == '':

@@ -79,11 +79,9 @@ supported geocoders:</p>
 <dd><p>The base geocode class.  This class can be initialized with settings
 for each geocoder and/or settings for the geocoder itself.</p>
 <dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first docutils">
-<dt>sources (dict): a dictionary of GeocodeServiceConfig() parameters,</dt>
+<dt>sources         &#8211; a dictionary of GeocodeServiceConfig() parameters,</dt>
 <dd><p class="first">keyed by module name for the GeocodeService to use
-ex: {&#8216;esri_wgs&#8217;:{},</p>
+ex: {&#8216;esri_na&#8217;:{},</p>
 <blockquote class="last">
 <div><dl class="docutils">
 <dt>&#8216;bing&#8217;: {&#8216;settings&#8217;: {},</dt>
@@ -97,10 +95,8 @@ ex: {&#8216;esri_wgs&#8217;:{},</p>
 <p>preprocessors   &#8211; list of universal preprocessors to use
 postprocessors  &#8211; list of universal postprocessors to use
 waterfall       &#8211; sets default for waterfall on geocode() method</p>
-<blockquote class="last">
+<blockquote>
 <div>(default False)</div></blockquote>
-</dd>
-</dl>
 <dl class="method">
 <dt id="omgeo.Geocoder.geocode">
 <tt class="descname">geocode</tt><big>(</big><em>pq</em>, <em>waterfall=None</em><big>)</big><a class="reference internal" href="_modules/omgeo.html#Geocoder.geocode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.Geocoder.geocode" title="Permalink to this definition">¶</a></dt>
@@ -126,7 +122,7 @@ the first geocoding service with valid candidates
 <dd><p>Creates GeocodeServiceConfigs from each str source</p>
 <dl class="docutils">
 <dt>sources &#8211;  list of source-settings pairs</dt>
-<dd>ex. &#8220;[[&#8216;EsriWGS&#8217;, {}], [&#8216;Nominatim&#8217;, {}]]&#8221;</dd>
+<dd>ex. &#8220;[[&#8216;EsriNA&#8217;, {}], [&#8216;Nominatim&#8217;, {}]]&#8221;</dd>
 </dl>
 </dd></dl>
 
@@ -137,25 +133,21 @@ the first geocoding service with valid candidates
 <span id="places"></span><h1>places<a class="headerlink" href="#module-omgeo.places" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="omgeo.places.Candidate">
-<em class="property">class </em><tt class="descclassname">omgeo.places.</tt><tt class="descname">Candidate</tt><big>(</big><em>locator=''</em>, <em>score=0</em>, <em>match_addr=''</em>, <em>x=None</em>, <em>y=None</em>, <em>wkid=4326</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/places.html#Candidate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.places.Candidate" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">omgeo.places.</tt><tt class="descname">Candidate</tt><big>(</big><em>locator=''</em>, <em>score=0</em>, <em>match_addr=''</em>, <em>x=None</em>, <em>y=None</em>, <em>wkid=4326</em>, <em>entity=''</em>, <em>confidence=''</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/places.html#Candidate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.places.Candidate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class representing a candidate address returned from geocoders.
 Accepts arguments defined below, plus informal keyword arguments.</p>
-<dl class="docutils">
-<dt>locator     &#8211; Locator used for geocoding (default &#8216;&#8217;)</dt>
-<dd>We try to standardize this to &#8216;rooftop&#8217;, &#8216;interpolated&#8217;,
-&#8216;postal_specific&#8217;, and &#8216;postal&#8217;.</dd>
-</dl>
-<p>score       &#8211; Standardized score (default 0)
+<p>locator     &#8211; Locator used for geocoding (default &#8216;&#8217;)
+score       &#8211; Standardized score (default 0)
 match_addr  &#8211; Address returned by geocoder (default &#8216;&#8217;)
 x           &#8211; X-coordinate (longitude for lat-lon SRS) (default None)
 y           &#8211; Y-coordinate (latitude for lat-lon SRS) (default None)
-wkid        &#8211; Well-known ID for spatial reference system (default 4326)</p>
-<p>Keyword arguments can be added in order to be able to use postprocessors
-with API output fields are not well-fitting for one of the definitions
-above</p>
+wkid        &#8211; Well-known ID for spatial reference system (default 4326)
+entity      &#8211; Used by Bing, Nominatim (default &#8216;&#8217;)
+confidence  &#8211; Used by Bing (default &#8216;&#8217;)
+geoservice  &#8211; GeocodeService used for geocoding (default &#8216;&#8217;)</p>
 <dl class="docutils">
 <dt>c = Candidate(&#8216;US_RoofTop&#8217;, 91.5, &#8216;340 N 12th St, Philadelphia, PA, 19107&#8217;,</dt>
-<dd>&#8216;-75.16&#8217;, &#8216;39.95&#8217;, some_key_foo=&#8217;bar&#8217;)</dd>
+<dd>&#8216;-75.16&#8217;, &#8216;39.95&#8217;, some_extra_data=&#8217;yellow&#8217;)</dd>
 </dl>
 </dd></dl>
 
@@ -221,13 +213,6 @@ as a query parameter.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="omgeo.places.Viewbox.to_esri_wgs_json">
-<tt class="descname">to_esri_wgs_json</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/places.html#Viewbox.to_esri_wgs_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.places.Viewbox.to_esri_wgs_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert Viewbox object to a JSON string that can be used
-by the ESRI World Geocoding Service as a parameter.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="omgeo.places.Viewbox.to_mapquest_str">
 <tt class="descname">to_mapquest_str</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/places.html#Viewbox.to_mapquest_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.places.Viewbox.to_mapquest_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert Viewbox object to a string that can be used by
@@ -244,6 +229,8 @@ MapQuest as a query parameter.</p>
 <em class="property">class </em><tt class="descclassname">omgeo.services.base.</tt><tt class="descname">GeocodeService</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services/base.html#GeocodeService"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.base.GeocodeService" title="Permalink to this definition">¶</a></dt>
 <dd><p>A tuple of classes representing the geocoders that will be used
 to find addresses for the given locations</p>
+<p>Overwrite _preprocessors, _postprocessors, and _settings
+if they are set.</p>
 <dl class="method">
 <dt id="omgeo.services.base.GeocodeService.geocode">
 <tt class="descname">geocode</tt><big>(</big><em>pq</em><big>)</big><a class="reference internal" href="_modules/omgeo/services/base.html#GeocodeService.geocode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.base.GeocodeService.geocode" title="Permalink to this definition">¶</a></dt>
@@ -266,11 +253,10 @@ and an UpstreamResponseInfo object if an API call was made.</p>
 
 <dl class="class">
 <dt id="omgeo.services.base.UpstreamResponseInfo">
-<em class="property">class </em><tt class="descclassname">omgeo.services.base.</tt><tt class="descname">UpstreamResponseInfo</tt><big>(</big><em>geoservice</em>, <em>processed_pq</em>, <em>response_code=None</em>, <em>response_time=None</em>, <em>success=True</em>, <em>errors=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services/base.html#UpstreamResponseInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.base.UpstreamResponseInfo" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">omgeo.services.base.</tt><tt class="descname">UpstreamResponseInfo</tt><big>(</big><em>geoservice</em>, <em>response_code=None</em>, <em>response_time=None</em>, <em>success=True</em>, <em>errors=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/omgeo/services/base.html#UpstreamResponseInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.base.UpstreamResponseInfo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class describing the API call result from an upstream provider.
 For cleaning and consistency, set attributes using the given methods.</p>
-<p>geoservice       &#8211; name of the upstream provider used
-processed_pq     &#8211; Processed PlaceQuery object</p>
+<p>geoservice       &#8211; name of the upstream provider used</p>
 <p>response_code    &#8211; HTTP response code (default None)
 response_time    &#8211; time in milliseconds that it takes to get a</p>
 <blockquote>
@@ -301,6 +287,8 @@ response_time    &#8211; time in milliseconds that it takes to get a</p>
 <dt id="omgeo.services.CitizenAtlas">
 <em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">CitizenAtlas</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services.html#CitizenAtlas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.CitizenAtlas" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class to geocode using the Washington DC CitizenAtlas &lt;<a class="reference external" href="http://citizenatlas.dc.gov/newwebservices">http://citizenatlas.dc.gov/newwebservices</a>&gt;</p>
+<p>Overwrite _preprocessors, _postprocessors, and _settings
+if they are set.</p>
 </dd></dl>
 
 <dl class="class">
@@ -339,6 +327,9 @@ San Marino, Spain, Sweden, Switzerland, United Kingdom, and Vatican City.</p>
 <dd>key is present, the object&#8217;s endpoint will be set to use
 premium tasks.</dd>
 </dl>
+<p>ESRI services can be used as free services or &#8220;premium tasks&#8221;.  If an
+ESRI service is created with an api_key in the settings, we&#8217;ll set this
+service up with the premium task URL.</p>
 </dd></dl>
 
 <dl class="class">
@@ -360,25 +351,11 @@ premium tasks.</dd>
 </dd></dl>
 
 <dl class="class">
-<dt id="omgeo.services.EsriWGS">
-<em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">EsriWGS</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services.html#EsriWGS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.EsriWGS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to geocode using the ESRI World Geocoding service
-&lt;<a class="reference external" href="http://geocode.arcgis.com/arcgis/geocoding.html">http://geocode.arcgis.com/arcgis/geocoding.html</a>&gt;.</p>
-<p>This uses two endpoints &#8211; one for single-line addresses,
-and one for multi-part addresses.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="omgeo.services.EsriWGSSSL">
-<em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">EsriWGSSSL</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services.html#EsriWGSSSL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.EsriWGSSSL" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to geocode using the ESRI World Geocoding service over SSL
-&lt;<a class="reference external" href="https://geocode.arcgis.com/arcgis/geocoding.html">https://geocode.arcgis.com/arcgis/geocoding.html</a>&gt;</p>
-</dd></dl>
-
-<dl class="class">
 <dt id="omgeo.services.MapQuest">
 <em class="property">class </em><tt class="descclassname">omgeo.services.</tt><tt class="descname">MapQuest</tt><big>(</big><em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>settings=None</em><big>)</big><a class="reference internal" href="_modules/omgeo/services.html#MapQuest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.services.MapQuest" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class to geocode using MapQuest licensed services.</p>
+<p>Overwrite _preprocessors, _postprocessors, and _settings
+if they are set.</p>
 </dd></dl>
 
 <dl class="class">
@@ -388,13 +365,13 @@ and one for multi-part addresses.</p>
 by MapQuest</a>.</p>
 <dl class="attribute">
 <dt id="omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS">
-<tt class="descname">DEFAULT_POSTPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.postprocessors.AttrFilter instance at 0x1d5f1b8&gt;, &lt;omgeo.processors.postprocessors.AttrExclude instance at 0x1dae3b0&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">DEFAULT_POSTPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.postprocessors.AttrFilter instance at 0x3346c20&gt;, &lt;omgeo.processors.postprocessors.AttrExclude instance at 0x3346c68&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Postprocessors to use with this geocoder service, in order of desired execution.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="omgeo.services.Nominatim.DEFAULT_PREPROCESSORS">
-<tt class="descname">DEFAULT_PREPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.preprocessors.ReplaceRangeWithNumber instance at 0x1d61dd0&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_PREPROCESSORS" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">DEFAULT_PREPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.preprocessors.ReplaceRangeWithNumber instance at 0x3346b90&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_PREPROCESSORS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Preprocessors to use with this geocoder service, in order of desired execution.</p>
 </dd></dl>
 
@@ -407,12 +384,22 @@ by MapQuest</a>.</p>
 <dt id="omgeo.processors.PostProcessor">
 <em class="property">class </em><tt class="descclassname">omgeo.processors.</tt><tt class="descname">PostProcessor</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors.html#PostProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.PostProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Takes, processes, and returns list of geocoding.places.Candidate objects.</p>
+<p>Constructor for Processor.</p>
+<p>In a subclass, arguments may be formally defined to avoid the use of keywords
+(and to throw errors when bogus keyword arguments are passed):</p>
+<blockquote>
+<div>def __init__(self, arg1=&#8217;foo&#8217;, arg2=&#8217;bar&#8217;)</div></blockquote>
 </dd></dl>
 
 <dl class="class">
 <dt id="omgeo.processors.PreProcessor">
 <em class="property">class </em><tt class="descclassname">omgeo.processors.</tt><tt class="descname">PreProcessor</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors.html#PreProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.PreProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Takes, processes, and returns a geocoding.places.PlaceQuery object.</p>
+<p>Constructor for Processor.</p>
+<p>In a subclass, arguments may be formally defined to avoid the use of keywords
+(and to throw errors when bogus keyword arguments are passed):</p>
+<blockquote>
+<div>def __init__(self, arg1=&#8217;foo&#8217;, arg2=&#8217;bar&#8217;)</div></blockquote>
 </dd></dl>
 
 <span class="target" id="module-omgeo.processors.preprocessors"></span><dl class="class">
@@ -420,6 +407,11 @@ by MapQuest</a>.</p>
 <em class="property">class </em><tt class="descclassname">omgeo.processors.preprocessors.</tt><tt class="descname">CancelIfPOBox</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/preprocessors.html#CancelIfPOBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.preprocessors.CancelIfPOBox" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return False if the address is starts with any variation of &#8220;PO Box&#8221;.
 Otherwise, return original PlaceQuery.</p>
+<p>Constructor for Processor.</p>
+<p>In a subclass, arguments may be formally defined to avoid the use of keywords
+(and to throw errors when bogus keyword arguments are passed):</p>
+<blockquote>
+<div>def __init__(self, arg1=&#8217;foo&#8217;, arg2=&#8217;bar&#8217;)</div></blockquote>
 </dd></dl>
 
 <dl class="class">
