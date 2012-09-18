@@ -16,7 +16,8 @@ supported geocoders:
 
 **Documentation**
 
-`Click here to view the documentation. <http://readthedocs.org/projects/python-omgeo/>`_
+Docs are available in `HTML <http://python-omgeo.readthedocs.org/en/latest/>`_ 
+or `PDF <http://media.readthedocs.org/pdf/python-omgeo/latest/python-omgeo.pdf>`_ format.
 
 **Usage Example**
 
