@@ -62,7 +62,8 @@ supported geocoders:</p>
 <div class="highlight-python"><pre>sudo pip install python-omgeo</pre>
 </div>
 <p><strong>Documentation</strong></p>
-<p><a class="reference external" href="http://readthedocs.org/projects/python-omgeo/">Click here to view the documentation.</a></p>
+<p>Docs are available in <a class="reference external" href="http://python-omgeo.readthedocs.org/en/latest/">HTML</a>
+or <a class="reference external" href="http://media.readthedocs.org/pdf/python-omgeo/latest/python-omgeo.pdf">PDF</a> format.</p>
 <p><strong>Usage Example</strong></p>
 <p>See the source for more info.  Here&#8217;s a quick example.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">omgeo</span> <span class="kn">import</span> <span class="n">Geocoder</span>
@@ -78,7 +79,7 @@ supported geocoders:</p>
 </div>
 </div>
 <div class="section" id="module-omgeo">
-<span id="omgeo"></span><h1>omgeo<a class="headerlink" href="#module-omgeo" title="Permalink to this headline">¶</a></h1>
+<span id="geocoder"></span><h1>Geocoder<a class="headerlink" href="#module-omgeo" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="omgeo.Geocoder">
 <em class="property">class </em><tt class="descclassname">omgeo.</tt><tt class="descname">Geocoder</tt><big>(</big><em>sources=None</em>, <em>preprocessors=None</em>, <em>postprocessors=None</em>, <em>waterfall=False</em><big>)</big><a class="reference internal" href="_modules/omgeo.html#Geocoder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.Geocoder" title="Permalink to this definition">¶</a></dt>
@@ -487,42 +488,22 @@ if they are set.</p>
 by MapQuest</a>.</p>
 <dl class="attribute">
 <dt id="omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS">
-<tt class="descname">DEFAULT_POSTPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.postprocessors.AttrFilter instance at 0x23f8fc8&gt;, &lt;omgeo.processors.postprocessors.AttrExclude instance at 0x23f8c20&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">DEFAULT_POSTPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.postprocessors.AttrFilter instance at 0x32c0440&gt;, &lt;omgeo.processors.postprocessors.AttrExclude instance at 0x32c03b0&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Postprocessors to use with this geocoder service, in order of desired execution.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="omgeo.services.Nominatim.DEFAULT_PREPROCESSORS">
-<tt class="descname">DEFAULT_PREPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.preprocessors.ReplaceRangeWithNumber instance at 0x23f8f80&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_PREPROCESSORS" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">DEFAULT_PREPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.preprocessors.ReplaceRangeWithNumber instance at 0x32c0320&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_PREPROCESSORS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Preprocessors to use with this geocoder service, in order of desired execution.</p>
 </dd></dl>
 
 </dd></dl>
 
 </div>
-<div class="section" id="module-omgeo.processors">
-<span id="processors"></span><h1>processors<a class="headerlink" href="#module-omgeo.processors" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-omgeo.processors.preprocessors">
+<span id="preprocessors-for-cleaning-user-input"></span><h1>Preprocessors for cleaning user input<a class="headerlink" href="#module-omgeo.processors.preprocessors" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="omgeo.processors.PostProcessor">
-<em class="property">class </em><tt class="descclassname">omgeo.processors.</tt><tt class="descname">PostProcessor</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors.html#PostProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.PostProcessor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Takes, processes, and returns list of geocoding.places.Candidate objects.</p>
-<p>In a subclass, arguments may be formally defined to avoid the use of keywords
-(and to throw errors when bogus keyword arguments are passed):</p>
-<div class="highlight-python"><pre>def __init__(self, arg1='foo', arg2='bar')</pre>
-</div>
-</dd></dl>
-
-<dl class="class">
-<dt id="omgeo.processors.PreProcessor">
-<em class="property">class </em><tt class="descclassname">omgeo.processors.</tt><tt class="descname">PreProcessor</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors.html#PreProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.PreProcessor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Takes, processes, and returns a geocoding.places.PlaceQuery object.</p>
-<p>In a subclass, arguments may be formally defined to avoid the use of keywords
-(and to throw errors when bogus keyword arguments are passed):</p>
-<div class="highlight-python"><pre>def __init__(self, arg1='foo', arg2='bar')</pre>
-</div>
-</dd></dl>
-
-<span class="target" id="module-omgeo.processors.preprocessors"></span><dl class="class">
 <dt id="omgeo.processors.preprocessors.CancelIfRegexInAttr">
 <em class="property">class </em><tt class="descclassname">omgeo.processors.preprocessors.</tt><tt class="descname">CancelIfRegexInAttr</tt><big>(</big><em>regex</em>, <em>attrs</em>, <em>ignorecase=True</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/preprocessors.html#CancelIfRegexInAttr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.preprocessors.CancelIfRegexInAttr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return False if given regex is found in ANY of the given
@@ -672,7 +653,7 @@ indicates the house number.</p>
 </div>
 <dl class="attribute">
 <dt id="omgeo.processors.preprocessors.ReplaceRangeWithNumber.RE_STREET_NUMBER">
-<tt class="descname">RE_STREET_NUMBER</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x243d240&gt;</em><a class="headerlink" href="#omgeo.processors.preprocessors.ReplaceRangeWithNumber.RE_STREET_NUMBER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">RE_STREET_NUMBER</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x32fb2a0&gt;</em><a class="headerlink" href="#omgeo.processors.preprocessors.ReplaceRangeWithNumber.RE_STREET_NUMBER" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Regular expression to represent ranges like:</dt>
 <dd><ul class="first last simple">
@@ -740,7 +721,10 @@ False and the PlaceQuery will be rejected during geocoding.
 
 </dd></dl>
 
-<span class="target" id="module-omgeo.processors.postprocessors"></span><dl class="class">
+</div>
+<div class="section" id="module-omgeo.processors.postprocessors">
+<span id="postprocessors-for-filtering-and-sorting-results"></span><h1>Postprocessors for filtering and sorting results<a class="headerlink" href="#module-omgeo.processors.postprocessors" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
 <dt id="omgeo.processors.postprocessors.AttrExclude">
 <em class="property">class </em><tt class="descclassname">omgeo.processors.postprocessors.</tt><tt class="descname">AttrExclude</tt><big>(</big><em>bad_values=</em><span class="optional">[</span><span class="optional">]</span>, <em>attr='locator'</em>, <em>exact_match=True</em><big>)</big><a class="reference internal" href="_modules/omgeo/processors/postprocessors.html#AttrExclude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.processors.postprocessors.AttrExclude" title="Permalink to this definition">¶</a></dt>
 <dd><p>PostProcessor used to ditch results with unwanted attribute values.</p>
@@ -1175,10 +1159,11 @@ Otherwise, returns original list of Candidates.</td>
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Introduction</a></li>
-<li><a class="reference internal" href="#module-omgeo">omgeo</a></li>
+<li><a class="reference internal" href="#module-omgeo">Geocoder</a></li>
 <li><a class="reference internal" href="#module-omgeo.places">places</a></li>
 <li><a class="reference internal" href="#module-omgeo.services.base">services</a></li>
-<li><a class="reference internal" href="#module-omgeo.processors">processors</a></li>
+<li><a class="reference internal" href="#module-omgeo.processors.preprocessors">Preprocessors for cleaning user input</a></li>
+<li><a class="reference internal" href="#module-omgeo.processors.postprocessors">Postprocessors for filtering and sorting results</a></li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 

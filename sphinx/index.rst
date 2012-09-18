@@ -30,14 +30,15 @@ services
    :members:
 
 
-processors
-++++++++++
-
-.. automodule:: omgeo.processors
-   :members:
+Preprocessors for cleaning user input
++++++++++++++++++++++++++++++++++++++
 
 .. automodule:: omgeo.processors.preprocessors
    :members:
+
+
+Postprocessors for filtering and sorting results
+++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. automodule:: omgeo.processors.postprocessors
    :members:
