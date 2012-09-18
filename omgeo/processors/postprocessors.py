@@ -60,7 +60,7 @@ class AttrRename(PostProcessor):
     attributes appearing at the end of the list.
     """
 
-    def __init__(self, str attr, attr_map=None, bool exact_match=False, bool case_sensitive=False):
+    def __init__(self, attr, attr_map=None, exact_match=False, case_sensitive=False):
         """
         :arg str attr: Name of the attribute
         :arg dict attr_map: Map of old names : new names.
@@ -79,8 +79,7 @@ class AttrRename(PostProcessor):
         :returns: list of Candidate instances with modified values for the given attribute
         """
         def _cc(str_): #change case
-            if self.case_sensitive is False: return str_.lower()
-            return str_      
+            return str_ if self.case_sensitive else str_.lower()
   
         new_candidates = []
         for c in candidates[:]:
