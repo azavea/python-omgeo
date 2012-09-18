@@ -69,7 +69,6 @@ class AttrRename(PostProcessor):
         """
         self.attr = attr
         self.attr_map = attr_map if attr_map is not None else {}
-            self.attr_map = {}
         self.exact_match = exact_match
         self.case_sensitive = case_sensitive
 
