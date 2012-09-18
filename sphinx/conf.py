@@ -186,7 +186,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'python-omgeo.tex', u'python-omgeo Documentation',
-   u'Andrew Jennings, Joseph Tricarico, Justin Walgran', 'manual'),
+   u'Azavea Inc., Philadelphia, PA 19107', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
