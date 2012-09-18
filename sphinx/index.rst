@@ -8,8 +8,8 @@ Introduction
 
 .. include:: ../README.rst
 
-omgeo
-+++++
+Geocoder
+++++++++
 .. automodule:: omgeo
    :members:
 
