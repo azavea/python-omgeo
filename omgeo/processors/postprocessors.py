@@ -299,7 +299,7 @@ class DupePicker(PostProcessor):
     use those, because one of the two likely has the correct address.
     However, the second result does not have the most precise location
     for 123 S. Wood Street. While the fourth result does not score as
-    high as the first too, it's locator method is more desirable.
+    high as the first two, its locator method is more desirable.
     Since the addresses are the same, we can assume that the fourth result
     will provide better data than the second.
     

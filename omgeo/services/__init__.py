@@ -558,7 +558,6 @@ class EsriWGS(GeocodeService):
         GroupBy(('x', 'y')),
         GroupBy('match_addr'),
         ScoreSorter(),
-        #TODO: closeness filter
     ]
 
     _endpoint = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
