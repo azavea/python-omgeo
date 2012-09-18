@@ -278,11 +278,10 @@ class DupePicker(PostProcessor):
                        without commas.
     
     Usage Example:
-    ==============
 
     ================ ===== =======
     match_addr       score locator
-    ---------------- ----- -------  
+    ================ ===== =======  
     123 N Wood St    90    roof
     123 S Wood St    90    address
     123 N WOOD ST    77    address
@@ -299,7 +298,7 @@ class DupePicker(PostProcessor):
     
     We can get a narrowed list as described above by running the process()
     method in the DupePicker() PostProcessor class as follows, assuming
-    that the "candidates" is our list of candidates:
+    that the "candidates" is our list of candidates::
 
         dp = DupePicker(
             attr_dupes='match_addr',

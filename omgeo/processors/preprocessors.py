@@ -138,7 +138,8 @@ class CountryPreProcessor(PreProcessor):
                                For example, suppose that the geocoding service recognizes
                                'GB', but not 'UK' -- and 'US', but not 'USA'::
 
-                                    country_map = {'UK':'GB', 'USA':'US'}        
+                                    country_map = {'UK':'GB', 'USA':'US'}      
+                                      
         """
         self.acceptable_countries = acceptable_countries if acceptable_countries is not None else []
         self.country_map = country_map if country_map is not None else {}
