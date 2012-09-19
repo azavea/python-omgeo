@@ -1,3 +1,6 @@
+Release Notes
++++++++++++++
+
 v1.0, 2012-03-13
 ----------------
 Initial Release
@@ -91,3 +94,16 @@ v1.4.3, 2012-08-09
 v1.4.4, 2012-08-13
 ------------------
  * Add original PlaceQuery to nested dict method response
+
+v1.5.0, 2012-09-12
+------------------
+ * Add support for ESRI World Geocoder service
+ * Add documentation built in Sphinx
+   (available at python-omgeo.readthedocs.org)
+ * Add shell script to rebuild, set API keys, and run tests
+ * Move pre- and post-processor modules to package base
+ * Add validation on Viewbox initialization
+ * Add repr() methods for place objects, including graphical
+   Viewbox representation
+ * Modify ReplaceRangeWithNumber preprocessor to be friendly
+   to ZIP+4 postal codes.
