@@ -3,21 +3,9 @@ class Viewbox():
     Class representing a bounding box.
     Defaults to maximum bounds for WKID 4326.
     """
-
-    def _validate(self):
-        """
-        Make sure numbers are actually numbers
-        Return True if WKID is found and Viewbox is within maximum bounds.
-        Return True if WKID is not found.
-        Otherwise raise error.
-        """
-
-        return True #TODO: Find max bounds from WKID in PostGIS database
-
     def convert_srs(self, new_wkid):
         """Return a new Viewbox object with the specified SRS."""
-
-        return self # TODO: convert SRS
+        return self # not yet implemented
 
     def __init__(self, left=-180, top=90, right=180, bottom=-90, wkid=4326):
         """
@@ -27,16 +15,21 @@ class Viewbox():
         :arg bottom: Minimum Y value (default ``-90``)
         :arg wkid: Well-known ID for spatial reference system (default ``4326``)
         """
+        bounds = left, right, bottom, top
+        if not all([isinstance(x, (int, long, float)) for x in bounds]):
+            raise ValueError('One or more bounds (%s) is not a real number.' % bounds)
+        if left > right:
+            raise ValueError('Left x-coord must be less than right x-coord.')
+        if bottom > top:
+            raise ValueError('Bottom y-coord must be less than top y-coord.')
         for k in locals().keys():
             if k != 'self': setattr(self, k, locals()[k])
-        self._validate() 
 
     def to_bing_str(self):
         """
         Convert Viewbox object to a string that can be used by Bing
         as a query parameter.
         """
-
         vb = self.convert_srs(4326)
         return '%s,%s,%s,%s' % (vb.bottom, vb.left, vb.top, vb.right)
 
@@ -46,7 +39,6 @@ class Viewbox():
         `MapQuest <http://www.mapquestapi.com/geocoding/#options>`_
         as a query parameter.
         """
-
         vb = self.convert_srs(4326)
         return '%s,%s,%s,%s' % (vb.left, vb.top, vb.right, vb.bottom)
 
@@ -63,14 +55,42 @@ class Viewbox():
                     '"spatialReference" : {"wkid" : %d} }'
                     % (self.left,
                        self.bottom,
-                       self.top,
                        self.right,
+                       self.top,
                        self.wkid))
         except ValueError:
             raise Exception('One or more values could not be cast to a number. '
                             'Four bounding points must be real numbers. '
                             'WKID must be an integer.')
-    
+    def __repr__(self):
+        top = "y=%s" % self.top
+        right = "x=%s" % self.right
+        bottom = "y=%s" % self.bottom
+        left = "x=%s" % self.left
+
+        def lbl(str_, align='L'):
+            MAX_CHARS = 8
+            str_len = len(str_)
+            if str_len > MAX_CHARS:
+                return str_[:MAX_CHARS]
+            if align == 'L':
+                return str_
+            num_spaces = (MAX_CHARS - str_len) # num spaces to pad right-aligned
+            if align == 'C':
+                num_spaces = int(num_spaces / 2)
+            padding = num_spaces * ' '
+            return '%s%s' % (padding, str_) 
+
+        return    '          %s\n'\
+                  '        ------------\n'\
+                  '        |          |\n'\
+                  '%s|          |%s\n'\
+                  '        |          |\n'\
+                  '        ------------\n'\
+                  '          %s' % (lbl(top, 'C'), lbl(left, 'R'), lbl(right, 'L'), lbl(bottom, 'C'))
+
+
+
 class PlaceQuery():
     """
     Class representing an address or place that will be passed to geocoders.
@@ -113,9 +133,8 @@ class PlaceQuery():
         for k in kwargs:
             setattr(self, k, kwargs[k])
             
-    def __unicode__(self):
+    def __repr__(self):
         return '%s%s' % (self.query, self.address)
-    __str__ = __unicode__
 
 
 class Candidate():
@@ -156,7 +175,7 @@ class Candidate():
         for k in kwargs:
             setattr(self, k, kwargs[k])
 
-    def __unicode__(self):
+    def __repr__(self):
         if self.match_addr == '':
             match_addr = '(no address specified)'
         else:
@@ -174,6 +193,3 @@ class Candidate():
 
         geoservice = 'via %s' % getattr(self, 'geoservice', '(no geoservice specfied')
         return '%s (%s, %s) %s' % (match_addr, x, y, geoservice)
-
-    def __str__(self):
-        return unicode(self).encode('utf-8')

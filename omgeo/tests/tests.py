@@ -36,16 +36,18 @@ class GeocoderTest(OmgeoTestCase):
                                 'Keys can be obtained at http://developer.mapquest.com/.'
     
     def setUp(self):
-        # Viewbox objects
+        # Viewbox objects - callowhill is from BSS Spring Garden station to Wash. Sq.
         vb = {'callowhill': Viewbox(-75.162628, 39.962769, -75.150963, 39.956322)}
         # PlaceQuery objects
         self.pq = { 'azavea': PlaceQuery('340 N 12th St Ste 402 Philadelphia PA'),
                     'ambiguous_azavea': PlaceQuery('340 12th St Ste 402 Philadelphia PA'),
-                     # North American Addresses:
+                    # North American Addresses:
                     'wolf': PlaceQuery('Wolf Building'),
                     'wolf_philly': PlaceQuery('Wolf Building, Philadelphia PA'),
-                    'wolf_bounded': PlaceQuery('Wolf Building', viewbox=vb['callowhill']),
-                    'bounded_340_12th': PlaceQuery('340 12th St, Philadelphia PA', viewbox=vb['callowhill']),
+                    'wolf_bounded': PlaceQuery('Wolf Building',
+                        bounded=True, viewbox=vb['callowhill']),
+                    'bounded_340_12th': PlaceQuery('340 12th St, Philadelphia PA',
+                        bounded=True, viewbox=vb['callowhill']),
                     'alpha_774R_W_Central_Ave': PlaceQuery('774R W Central Ave Alpha NJ'),
                     'alpha_774_W_Central_Ave_Rear': PlaceQuery('774 W Central Ave Rear, Alpha NJ'),
                     '8_kirkbride': PlaceQuery('8 Kirkbride Rd 08822'),
@@ -137,6 +139,12 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
         self.assertEqual('340 N 12th' in candidates[0].match_addr, True,
                          '"340 N 12th" not found in match_addr. Got "%s"' % candidates[0].match_addr)
+
+    def test_bounded_no_viewbox(self):
+        """
+        Should return a nice error saying that PlaceQuery can't be bounded without Viewbox.
+        """
+        pass
 
     def test_geocode_esri_na_us_soap(self):
         """Test ESRI North America SOAP geocoder"""
