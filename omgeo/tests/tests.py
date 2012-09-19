@@ -75,8 +75,8 @@ class GeocoderTest(OmgeoTestCase):
 
         if MAPQUEST_API_KEY is not None:
             mapquest_settings = dict(api_key=MAPQUEST_API_KEY)
-            self.g_mapquest = Geocoder(['omgeo.services.MapQuest', {'settings': mapquest_settings}])
-            self.g_mapquest_ssl = Geocoder(['omgeo.services.MapQuestSSL', {'settings': mapquest_settings}])            
+            self.g_mapquest = Geocoder([['omgeo.services.MapQuest', {'settings': mapquest_settings}]])
+            self.g_mapquest_ssl = Geocoder([['omgeo.services.MapQuestSSL', {'settings': mapquest_settings}]])            
 
         #: main geocoder used for tests, using default APIs
         self.g = Geocoder() 
