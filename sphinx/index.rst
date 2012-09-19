@@ -38,13 +38,13 @@ services
 Preprocessors for cleaning user input
 +++++++++++++++++++++++++++++++++++++
 
-.. automodule:: omgeo.processors.preprocessors
+.. automodule:: omgeo.preprocessors
    :members:
 
 Postprocessors for filtering and sorting results
 ++++++++++++++++++++++++++++++++++++++++++++++++
 
-.. automodule:: omgeo.processors.postprocessors
+.. automodule:: omgeo.postprocessors
    :members:
 
 Indices and tables

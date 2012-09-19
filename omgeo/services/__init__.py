@@ -2,9 +2,9 @@ from base import GeocodeService
 import json
 import logging
 from omgeo.places import Candidate
-from omgeo.processors.preprocessors import CancelIfPOBox, CountryPreProcessor, RequireCountry, \
+from omgeo.preprocessors import CancelIfPOBox, CountryPreProcessor, RequireCountry, \
     ParseSingleLine, ReplaceRangeWithNumber
-from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename, AttrSorter, \
+from omgeo.postprocessors import AttrFilter, AttrExclude, AttrRename, AttrSorter, \
     AttrMigrator, UseHighScoreIfAtLeast, GroupBy, ScoreSorter
 from suds.client import Client
 import time

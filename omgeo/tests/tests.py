@@ -6,9 +6,9 @@ import sys
 import unittest
 from omgeo import Geocoder
 from omgeo.places import Viewbox, PlaceQuery, Candidate
-from omgeo.processors.preprocessors import CancelIfPOBox, CancelIfRegexInAttr, CountryPreProcessor,\
+from omgeo.preprocessors import CancelIfPOBox, CancelIfRegexInAttr, CountryPreProcessor,\
                                            RequireCountry, ParseSingleLine, ReplaceRangeWithNumber
-from omgeo.processors.postprocessors import AttrFilter, AttrExclude, AttrRename,\
+from omgeo.postprocessors import AttrFilter, AttrExclude, AttrRename,\
                                             AttrSorter, AttrReverseSorter, UseHighScoreIfAtLeast,\
                                             GroupBy, GroupByMultiple, ScoreSorter, SnapPoints
 

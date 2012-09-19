@@ -1,8 +1,14 @@
+from omgeo.processor import _Processor
 import math
-from omgeo.processors import PostProcessor
 from operator import attrgetter
 
-class LocatorFilter(PostProcessor):
+class _PostProcessor(_Processor):
+    """Takes, processes, and returns list of geocoding.places.Candidate objects."""
+    def process(self, candidates):
+        raise NotImplementedError(
+            'PostProcessor subclasses must implement process().')
+
+class LocatorFilter(_PostProcessor):
     """
     PostProcessor used to ditch results with lousy locators.
 
@@ -26,7 +32,7 @@ class LocatorFilter(PostProcessor):
          
         return candidates
 
-class LocatorSorter(PostProcessor):
+class LocatorSorter(_PostProcessor):
     """
     PostProcessor used to sort by locators
     """
@@ -57,7 +63,7 @@ class LocatorSorter(PostProcessor):
         # and return the new list
         return ordered_candidates + unordered_candidates
 
-class AttrRename(PostProcessor):
+class AttrRename(_PostProcessor):
     """
     PostProcessor used to rename the given attribute, with unspecified
     attributes appearing at the end of the list.
@@ -96,7 +102,7 @@ class AttrRename(PostProcessor):
             new_candidates.append(c)
         return new_candidates
 
-class UseHighScoreIfAtLeast(PostProcessor):
+class UseHighScoreIfAtLeast(_PostProcessor):
     """
     Limit results to results with at least the given score,
     if and only if one or more results has, at least, the
@@ -118,7 +124,7 @@ class UseHighScoreIfAtLeast(PostProcessor):
             return high_score_candidates
         return candidates
 
-class ScoreSorter(PostProcessor):
+class ScoreSorter(_PostProcessor):
     """PostProcessor class to sort :py:class:`Candidate` scores."""
     
     def __init__(self, reverse=True):
@@ -135,7 +141,7 @@ class ScoreSorter(PostProcessor):
         """
         return sorted(candidates, key=attrgetter('score'), reverse=self.reverse)
 
-class AttrSorter(PostProcessor):
+class AttrSorter(_PostProcessor):
     """
     PostProcessor used to sort by a the given attribute, with unspecified
     attributes appearing at the end of the list.
@@ -160,7 +166,7 @@ class AttrSorter(PostProcessor):
         # and return the new list
         return ordered_candidates + unordered_candidates
 
-class AttrReverseSorter(PostProcessor):
+class AttrReverseSorter(_PostProcessor):
     """
     PostProcessor used to sort by the given attributes in reverse order,
     with unspecified attributes appearing at the end of the list.
@@ -184,7 +190,7 @@ class AttrReverseSorter(PostProcessor):
         sorter = AttrSorter(ordered_values, self.attr)
         return sorter.process(unordered_candidates)
 
-class AttrMigrator(PostProcessor):
+class AttrMigrator(_PostProcessor):
     """
     PostProcessor used to migrate the given attribute
     to another attribute.
@@ -214,7 +220,7 @@ class AttrMigrator(PostProcessor):
             new_candidates.append(c)
         return new_candidates
 
-class AttrFilter(PostProcessor):
+class AttrFilter(_PostProcessor):
     """
     PostProcessor used to ditch results with unwanted attribute values.
     """
@@ -238,7 +244,7 @@ class AttrFilter(PostProcessor):
         else:
             return [c for c in candidates if any(gv in getattr(c, self.attr) for gv in self.good_values)]
 
-class AttrExclude(PostProcessor):
+class AttrExclude(_PostProcessor):
     """
     PostProcessor used to ditch results with unwanted attribute values.
     """
@@ -263,7 +269,7 @@ class AttrExclude(PostProcessor):
         else:
             return [c for c in candidates if not any(bv in getattr(c, self.attr) for bv in self.bad_values)]
 
-class DupePicker(PostProcessor):
+class DupePicker(_PostProcessor):
     """
     PostProcessor used to choose the best candidate(s)
     where there are duplicates (or more than one result
@@ -367,7 +373,7 @@ class DupePicker(PostProcessor):
                     new_candidates.append(nc)
         return new_candidates
 
-class GroupBy(PostProcessor):
+class GroupBy(_PostProcessor):
     """
     Groups results by a certain attribute by choosing the
     first occurrence in the list (this means you will want
@@ -394,7 +400,7 @@ class GroupBy(PostProcessor):
                     candidates.remove(m)
         return keepers
     
-class GroupByMultiple(PostProcessor):
+class GroupByMultiple(_PostProcessor):
     """
     Groups results by a certain attribute by choosing the
     first occurrence in the list of candidates 
@@ -419,7 +425,7 @@ class GroupByMultiple(PostProcessor):
                     candidates.remove(m)
         return keepers   
     
-class SnapPoints(PostProcessor):
+class SnapPoints(_PostProcessor):
     """
     Chooses the first of two or more points where they are within the given
     sphere-based great circle distance.

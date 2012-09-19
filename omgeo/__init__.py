@@ -1,7 +1,7 @@
 import copy
 import logging
 from omgeo.places import PlaceQuery
-from omgeo.processors.postprocessors import DupePicker, SnapPoints
+from omgeo.postprocessors import DupePicker, SnapPoints
 import time
 
 stats_logger = logging.getLogger('omgeo.stats')

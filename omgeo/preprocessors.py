@@ -1,7 +1,13 @@
-from omgeo.processors import PreProcessor
+from omgeo.processor import _Processor
 import re
 
-class ReplaceRangeWithNumber(PreProcessor):
+class _PreProcessor(_Processor):
+    """Takes, processes, and returns a geocoding.places.PlaceQuery object."""
+    def process(self, pq):
+        raise NotImplementedError(
+            'PreProcessor subclasses must implement process().')
+
+class ReplaceRangeWithNumber(_PreProcessor):
     """
     Class to take only the first part of an address range
     or hyphenated house number to use for geocoding.
@@ -53,7 +59,7 @@ class ReplaceRangeWithNumber(PreProcessor):
         pq.address = self.replace_range(pq.address)                       
         return pq
 
-class ParseSingleLine(PreProcessor):
+class ParseSingleLine(_PreProcessor):
     """
     Adapted from `Cicero Live <http://azavea.com/packages/azavea_cicero/blocks/cicero_live/view.js>`_
     """
@@ -117,7 +123,7 @@ class ParseSingleLine(PreProcessor):
 
         return pq
     
-class CountryPreProcessor(PreProcessor):
+class CountryPreProcessor(_PreProcessor):
     """
     Used to filter acceptable countries
     and standardize country names or codes.
@@ -159,7 +165,7 @@ class CountryPreProcessor(PreProcessor):
         return pq
     
     
-class CancelIfRegexInAttr(PreProcessor):
+class CancelIfRegexInAttr(_PreProcessor):
     """
     Return False if given regex is found in ANY of the given
     PlaceQuery attributes, otherwise return original PlaceQuery instance.
@@ -195,7 +201,7 @@ class CancelIfRegexInAttr(PreProcessor):
         return pq
     
 
-class CancelIfPOBox(PreProcessor):
+class CancelIfPOBox(_PreProcessor):
     def process(self, pq):
         """
         :arg PlaceQuery pq: PlaceQuery instance
@@ -206,7 +212,7 @@ class CancelIfPOBox(PreProcessor):
         return CancelIfRegexInAttr(regex, ('address', 'query')).process(pq)
     
 
-class RequireCountry(PreProcessor):
+class RequireCountry(_PreProcessor):
     """
     Return False if no default country is set in first parameter.
     Otherwise, return the default country if country is empty.

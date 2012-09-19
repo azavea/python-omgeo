@@ -17,15 +17,3 @@ class _Processor():
 
         """
         self._init_helper(vars())
-
-class PreProcessor(_Processor):
-    """Takes, processes, and returns a geocoding.places.PlaceQuery object."""
-    def process(self, pq):
-        raise NotImplementedError(
-            'PreProcessor subclasses must implement process().')
-
-class PostProcessor(_Processor):
-    """Takes, processes, and returns list of geocoding.places.Candidate objects."""
-    def process(self, candidates):
-        raise NotImplementedError(
-            'PostProcessor subclasses must implement process().')
