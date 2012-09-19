@@ -171,7 +171,8 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g_esri_na.get_candidates(self.pq['karori'])
         self.assertEqual(len(candidates) > 0, False,
                          'Found New Zealand address when this should only'
-                         'be using the North American ESRI geocoder.')
+                         'be using the North American ESRI geocoder. '
+                         'Candidates are %s.' % candidates)
 
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_bing(self):
