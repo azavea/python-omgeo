@@ -1,0 +1,109 @@
+Release Notes
++++++++++++++
+
+v1.0, 2012-03-13
+----------------
+Initial Release
+
+v1.1, 2012-03-22
+----------------
+Add ability to use ESRI premium tasks.
+
+v1.2, 2012-04-04
+----------------
+Add Citizen Atlas (Washington DC) as a supported geocoder.
+
+v1.3, 2012-04-20
+----------------
+Add ESRI SOAP locators as supported geocoders. Added suds
+dependency. Remove default rejected entities from BING setting to a
+postprocessor. Refactor constructors to fix bugs caused by mutable default
+values.
+
+v1.3.1, 2012-04-23
+------------------
+Refactor test runner. Support multiple fields in GroupBy
+processor.
+
+v1.3.2, 2012-04-25
+------------------
+Fix bug in ESRI geocoders in which defaults were appended
+rather than overwritten.
+
+v1.3.3, 2012-04-27
+------------------
+ * Add SnapPoints postprocessor.
+ * Fix bug in tests (Bing was not being used even if the environment
+   variable BING_MAPS_API_KEY was set.
+ * Simplify ESRI ZIP processing
+ * Improve logging
+
+v1.3.4, 2012-05-11
+------------------
+ * Cast Nominatim coordinates returned in JSON from string to float.
+   This was causing an error in the SnapPoints postprocessor added
+   in v1.3.3, as the processor was attempting to evaluate mathematical
+   equations using strings instead of numbers. A test was added to
+   check that the types of the coordinates are successfully converted
+   to floats.
+ * Add test for SnapPoints postprocessor.
+ * Change __unicode__() method for places.Candidate to display info
+   indicating null or empty values, instead of just displaying "None".
+   
+v1.3.5, 2012-05-21
+------------------
+ * Geocoder().geocode() method can take one-line string OR PlaceQuery instance.
+ * Improve speed by avoiding postprocessing of empty list
+ * Add support for MapQuest licensed geocoding API using NAVTEQ data
+
+v1.3.6, 2012-05-22
+------------------
+ * Add SSH support for MapQuest
+ * Add CancelIfRegexInAttr preprocessor to avoid geocoding attempts if
+   a PlaceQuery instance attribute matches the given regex (such as a 
+   PO Box)
+ * Add timeout option that can be included in the GeocodeService settings
+   parameter. There is now a default timeout of 10 seconds.
+ 
+v1.3.7, 2012-05-23
+------------------
+ * Add CancelIfPOBox preprocessor and tests
+ * Add __unicode__() / __str__() method to PlaceQuery for string representation
+
+v1.4.0, 2012-06-13
+------------------
+ * IMPORTANT: the Geocoder.geocode() method now returns a dictionary instead
+   of a list of candidates. To just get a list of candidates, use
+   Geocoder.get_candidates(). This functions the same the Geocoder.geocode()
+   method in version 1.3.7.
+ * New dictionary return type includes a list of candidates as well as a
+   list of UpstreamResponseInfo objects, which include information about
+   the upstream API call, including response time and errors.
+ * Simplify error handling
+
+v1.4.1, 2012-06-20
+------------------
+ * Wrap entire JSON result processing from geocoder in try/catch
+ * Add separate logger for stats from geocoder
+
+v1.4.3, 2012-08-09
+------------------
+ * Expand information in UpstreamResponseInfo object
+ * Enhance logging
+
+v1.4.4, 2012-08-13
+------------------
+ * Add original PlaceQuery to nested dict method response
+
+v1.5.0, 2012-09-12
+------------------
+ * Add support for ESRI World Geocoder service
+ * Add documentation built in Sphinx
+   (available at python-omgeo.readthedocs.org)
+ * Add shell script to rebuild, set API keys, and run tests
+ * Move pre- and post-processor modules to package base
+ * Add validation on Viewbox initialization
+ * Add repr() methods for place objects, including graphical
+   Viewbox representation
+ * Modify ReplaceRangeWithNumber preprocessor to be friendly
+   to ZIP+4 postal codes.

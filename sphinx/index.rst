@@ -9,14 +9,13 @@ Table of Contents
    :maxdepth: 2
    
    User Documentation (you are here) <self>
+   Release Notes <changes>
    Test Documentation for Developers <tests>
 
 Introduction
 ++++++++++++
 
 .. include:: ../README.rst
-
-.. include:: ../CHANGES.txt
 
 Geocoder
 ++++++++
