@@ -502,11 +502,6 @@ class GeocoderProcessorTest(OmgeoTestCase):
         place_out = ReplaceRangeWithNumber().process(place_in)
         self.assertEqual_(place_out.query, zip_plus_4)
 
-        zip_plus_4 = '19127-1112'
-        place_in = PlaceQuery(zip_plus_4) # sets PlaceQuery.query to zip_plus_4 on init
-        place_out = ReplaceRangeWithNumber().process(place_in)
-        self.assertEqual_(place_out.query, zip_plus_4)
-        
     def test_pro_SnapPoints(self):
         """This test should take two candidates within 50 metres and eliminate one."""
         candidates_in = [Candidate(match_addr='340 N 12th St, Philadelphia, PA, 19107',
