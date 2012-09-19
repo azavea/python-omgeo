@@ -344,6 +344,7 @@ class GeocoderProcessorTest(OmgeoTestCase):
 
 
     def test_pro_country_CountryPreProcessor(self):
+        """Test CountryPreProcessor"""
         acceptable_countries = ['US', 'UK']
         country_map = {'GB':'UK'} # 'from':'to'
         place_in = self.pq_uk_with_country_GB
@@ -352,24 +353,28 @@ class GeocoderProcessorTest(OmgeoTestCase):
         self.assertEqual_(place_out.country, country_exp)
 
     def test_pro_country_RequireCountry(self):
+        """Test RequireCountry preprocessor."""
         place_in = self.pq_us
         place_out = RequireCountry().process(place_in)
         place_exp = False
         self.assertEqual_(place_out, place_exp)
         
     def test_pro_CancelIfRegexInAttr(self):
+        """Test CancelIfRegexInAttr preprocessor."""
         place_in = PlaceQuery('PO Box 123, Philadelphia, PA')
         place_out = CancelIfRegexInAttr(regex="po box", attrs=('query',)).process(place_in)
         place_exp = False
         self.assertEqual_(place_out, place_exp)
         
     def test_pro_CancelIfRegexInAttr_case_sensitive(self):
+        """Test CancelIfRegexInAttr preprocessor using case-sensitive option."""
         place_in = PlaceQuery('PO Box 123, Philadelphia, PA')
         place_out = CancelIfRegexInAttr(regex="PO BOX", attrs=('query',), ignorecase=False).process(place_in)
         place_exp = place_in # we should still have it because PO BOX does not match exactly
         self.assertEqual_(place_out, place_exp)
         
     def test_pro_CancelIfPOBox(self):
+        """Test CancelIfPOBox preprocessor."""
         place_in = PlaceQuery('PO Box 123, Philadelphia, PA')
         place_out = CancelIfPOBox().process(place_in)
         self.assertEqual_(place_out, False)
@@ -419,6 +424,7 @@ class GeocoderProcessorTest(OmgeoTestCase):
         self.assertEqual_(place_out, place_in) # should still geocode because we a physical address
 
     def test_pro_filter_AttrFilter_exact(self):
+        """Test AttrFilter postprocessor."""
         good_values = ['roof', 'parcel']
         candidates_in = [self.best, self.good, self.better]
         candidates_exp = [self.better] # just the one with the parcel locator
@@ -426,6 +432,7 @@ class GeocoderProcessorTest(OmgeoTestCase):
         self.assertEqual_(candidates_out, candidates_exp)
 
     def test_pro_filter_AttrFilter_inexact(self):
+        """Test AttrFilter postprocessor with ``exact_match=False``."""
         good_values = ['roof', 'parcel']
         candidates_in = [self.best, self.good, self.better]
         candidates_exp = [self.best, self.better] # roof is a substr of rooftop
@@ -433,6 +440,7 @@ class GeocoderProcessorTest(OmgeoTestCase):
         self.assertEqual_(candidates_out, candidates_exp)
 
     def test_pro_filter_AttrExclude_exact(self):
+        """Test AttrExclude with ``exact_match=True``."""
         bad_values = ['address', 'parc']
         candidates_in = [self.best, self.good, self.better]
         candidates_exp = [self.best, self.better]
@@ -442,6 +450,7 @@ class GeocoderProcessorTest(OmgeoTestCase):
         self.assertEqual_(candidates_out, candidates_exp)
 
     def test_pro_filter_AttrExclude_inexact(self):
+        """Test AttrExclude with ``exact_match=False``."""
         bad_values = ['address', 'parc']
         candidates_in = [self.best, self.good, self.better]
         candidates_exp = [self.best]
@@ -451,6 +460,7 @@ class GeocoderProcessorTest(OmgeoTestCase):
         self.assertEqual_(candidates_out, candidates_exp)
 
     def test_postpro_GroupBy(self):
+        """Test GroupBy postprocessor."""
         candidates_in = [self.best, self.good, self.better, self.wolf_best, self.wolf_good]
         candidates_exp = [self.best, self.wolf_best]
         candidates_out = GroupBy('match_addr').process(candidates_in)
@@ -463,6 +473,7 @@ class GeocoderProcessorTest(OmgeoTestCase):
         self.assertEqual_(candidates_out, candidates_exp)
 
     def test_pro_parsing_ParseSingleLine(self):
+        """Test ParseSingleLine preprocessor using single-line UK address."""
         place_in = PlaceQuery('32 Bond Road, Surbiton, Surrey KT6 7SH')
         place_out = ParseSingleLine().process(place_in)
         self.assertEqual_(place_out.address, '32 Bond Road')
@@ -470,48 +481,56 @@ class GeocoderProcessorTest(OmgeoTestCase):
         self.assertEqual_(place_out.postal, 'KT6 7SH')
 
     def test_pro_rename_AttrRename_inexact(self):
+        """Test AttrRename postprocessor using partial search string."""
         candidates_in = [self.best]
         locator_exp = 'el_techo'
         candidates_out = AttrRename('locator', {'oofto': 'el_techo'}).process(candidates_in)
         self.assertEqual_(candidates_out[0].locator, locator_exp)
 
     def test_pro_rename_AttrRename_exact(self):
+        """Test AttrRename postprocessor using exact search string."""
         candidates_in = [self.best]
         locator_exp = 'el_techo'
         candidates_out = AttrRename('locator', {'rooftop': 'el_techo'}).process(candidates_in)
         self.assertEqual_(candidates_out[0].locator, locator_exp)
 
     def test_pro_scoring_UseHighScoreIfAtLeast(self):
+        """Test UseHighScoreIfAtLeast postprocessor."""
         candidates_in = [self.best, self.good, self.better]
         candidates_exp = [self.best, self.better]
         candidates_out = UseHighScoreIfAtLeast(90).process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
 
     def test_pro_scoring_ScoreSorter(self):
+        """Test ScoreSorter postprocessor."""
         candidates_in = [self.best, self.good, self.better]
         candidates_exp = [self.best, self.better, self.good]
         candidates_out = ScoreSorter().process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
 
     def test_pro_scoring_ScoreSorter_asc(self):
+        """Test ScoreSorter postprocessor with ``reverse=False``."""
         candidates_in = [self.best, self.good, self.better]
         candidates_exp = [self.good, self.better, self.best]
         candidates_out = ScoreSorter(reverse=False).process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
 
     def test_pro_sort_AttrSorter(self):
+        """Test AttrSorter postprocessor."""
         candidates_in = [self.better, self.best, self.good]
         candidates_exp = [self.good, self.better, self.best]
         candidates_out = AttrSorter(self.locators_worse_to_better).process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
 
     def test_pro_sort_AttrReverseSorter(self):
+        """Test AttrReverseSorter postprocessor."""
         candidates_in = [self.better, self.best, self.good]
         candidates_exp = [self.best, self.better, self.good] # reverse order of self.locators_worse_to_better
         candidates_out = AttrReverseSorter(self.locators_worse_to_better).process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
 
     def test_pro_streetnumber_ReplaceRangeWithNumber(self):
+        """Test ReplaceRangeWithNumber preprocessor."""
         place_in = PlaceQuery('4452-54 Main Street, Philadelphia') #Mom's Pizza in Manayunk
         place_out = ReplaceRangeWithNumber().process(place_in)
         query_exp = '4452 Main Street, Philadelphia'
@@ -523,7 +542,7 @@ class GeocoderProcessorTest(OmgeoTestCase):
         self.assertEqual_(place_out.query, zip_plus_4)
 
     def test_pro_SnapPoints(self):
-        """This test should take two candidates within 50 metres and eliminate one."""
+        """Take two candidates within 50 metres and eliminate one."""
         candidates_in = [Candidate(match_addr='340 N 12th St, Philadelphia, PA, 19107',
                                    x=-75.158433167, y=39.958727992),
                          Candidate(match_addr='1200 Callowhill St, Philadelphia, PA, 19123',
