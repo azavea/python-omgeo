@@ -132,7 +132,7 @@ class GeocoderTest(OmgeoTestCase):
         for both ``340 N 12th St`` and ``340 S 12th St``. Using a bounding box around Callowhill,
         we should only get the former.
         """
-        candidates = self.g.get_candidates(self.pq['bounded_340_12th'])
+        candidates = self.g_esri_wgs.get_candidates(self.pq['bounded_340_12th'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
         self.assertEqual('340 N 12th' in candidates[0].match_addr, True,
