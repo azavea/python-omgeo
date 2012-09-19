@@ -6,3 +6,4 @@ dist
 python_omgeo.egg-info
 docs
 .idea
+test.sh

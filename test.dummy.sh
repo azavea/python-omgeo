@@ -1,0 +1,3 @@
+export BING_MAPS_API_KEY=Ao12I7zupu_o-QYpVB-rRCwKFO55w9Ick38MLxorfQ5ULiQoiiZZyywKPVIsgUMS
+export MAPQUEST_API_KEY=Fmjtd%7Cluua2g02nq%2C7w%3Do5-hf1ll
+python setup.py test
