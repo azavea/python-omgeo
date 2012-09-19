@@ -546,14 +546,23 @@ class EsriWGS(GeocodeService):
     DEFAULT_PREPROCESSORS = [CancelIfPOBox()]
 
     DEFAULT_POSTPROCESSORS = [
-        AttrFilter(['PointAddress', 'StreetAddress', 'PostalExt', 'Postal'], 'locator_type'),
-        AttrExclude(['USA_Postal'], 'locator'), #accept postal from everywhere but US (need PostalExt)
-        AttrSorter(['PointAddress', 'StreetAddress', 'PostalExt', 'Postal'], 'locator_type'),
+        AttrFilter(['PointAddress',
+                    'StreetAddress',
+                    #'PostalExt',
+                    #'Postal'
+                   ],
+                   'locator_type'),
+        #AttrExclude(['USA_Postal'], 'locator'), #accept postal from everywhere but US (need PostalExt)
+        AttrSorter(['PointAddress',
+                    'StreetAddress',
+                    #'PostalExt',
+                    #'Postal'
+                   ],
+                   'locator_type'),
         AttrRename('locator', LOCATOR_MAP), # after filter to avoid searching things we toss out
         UseHighScoreIfAtLeast(99.8),
         GroupBy('match_addr'),
         GroupBy(('x', 'y')),
-
         ScoreSorter(),
     ]
 

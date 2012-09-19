@@ -213,6 +213,7 @@ class GeocodeService():
             return [], upstream_response_info
         if len(candidates) > 0:
             for p in self._postprocessors: # apply universal candidate postprocessing
+                import IPython; IPython.embed()
                 candidates = p.process(candidates) # merge lists
         return candidates, upstream_response_info
     
