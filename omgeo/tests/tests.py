@@ -107,32 +107,46 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(len(candidates) == 0, True, 'Candidates were unexpectedly returned in under 10ms.')
         
     def test_geocode_snap_points_1(self):
+        """
+        Geocoder expected to return the same place twice -- one with city as Flemington,
+        and one with city as Readington Twp. This test checks that only one is picked.
+        """
         candidates = self.g.get_candidates(self.pq['8_kirkbride'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
         
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_snap_points_2(self):
+        """
+        Bing geocoder expected to return the same place twice -- one with city as Alpha,
+        and one with city as Phillipsburg. This test checks that only one is picked.
+        """
         candidates = self.g.get_candidates(self.pq['alpha_774_W_Central_Ave_Rear'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
 
     def test_geocode_esri_na_us_soap(self):
+        """Test ESRI North America SOAP geocoder"""
         location = '340 N 12th St., Philadelphia, PA, US'
         candidates = self.g_esri_na_soap.get_candidates(location)
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned for %s.' % location)
 
     def test_geocode_esri_na_us(self):
+        """Test ESRI North America REST geocoder"""
         location = '340 N 12th St., Philadelphia, PA, US'
         candidates = self.g_esri_na.get_candidates(location)
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned for %s.' % location)
 
     def test_geocode_esri_eu_soap(self):
+        """Test ESRI Europe SOAP geocoder"""
         candidates = self.g_esri_eu_soap.get_candidates(PlaceQuery(
             address='31 Maiden Lane', city='London', country='UK'))
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     def test_geocode_esri_na_nz(self):
+        """
+        Test ESRI North America REST geocoder using a city in New Zealand.
+        """
         candidates = self.g_esri_na.get_candidates(self.pq['karori'])
         self.assertEqual(len(candidates) > 0, False,
                          'Found New Zealand address when this should only'
@@ -140,21 +154,27 @@ class GeocoderTest(OmgeoTestCase):
 
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_bing(self):
+        """Test Azavea's address using Bing geocoder"""
         candidates = self.g_bing.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         
     @unittest.skipIf(MAPQUEST_API_KEY is None, MAPQUEST_KEY_REQUIRED_MSG)
     def test_geocode_mapquest(self):
+        """Test Azavea's address using MapQuest geocoder."""
         candidates = self.g_mapquest.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     @unittest.skipIf(MAPQUEST_API_KEY is None, MAPQUEST_KEY_REQUIRED_MSG)
-    def test_geocode_mapquest(self):
+    def test_geocode_mapquest_ssl(self):
+        """Test Azavea's address using secure MapQuest geocoder."""
         candidates = self.g_mapquest_ssl.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         
-        
     def test_geocode_nom(self):
+        """
+        Test 1200 Callowhill Street using Nominatim geocoder.
+        Also check to make sure coordinate values are floats and not some other data type.
+        """
         candidates = self.g_nom.get_candidates(PlaceQuery('1200 Callowhill St, Philadelphia, PA, 19123'))
         x_type = type(candidates[0].x)
         y_type = type(candidates[0].y)
@@ -163,23 +183,36 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
     
     def test_geocode_dc_address(self):
+        """
+        Check that '1600 Pennsylvania' returns first result using DC address locator.
+        """
         candidates = self.g_dc.get_candidates(PlaceQuery('1600 pennsylvania'))
         self.assertTrue(len(candidates) > 0, 'No candidates returned.')
         self.assertTrue(candidates[0].locator == 'DC Address',
                         'Expected 1600 pennsylvania to be an address match')
 
     def test_geocode_dc_intersection(self):
+        """
+        Check that 'H and 15th' returns first result using DC intersection locator.
+        """
         candidates = self.g_dc.get_candidates(PlaceQuery('h and 15th'))
         self.assertTrue(len(candidates) > 0, 'No candidates returned.')
         self.assertTrue(candidates[0].locator == 'DC Intersection',
                         'h and 15th to be an intersection match')
 
     def test_geocode_dupepicker(self):
+        """
+        Check that '340 12th St returns results'
+        """
         candidates = self.g.get_candidates(self.pq['ambiguous_azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_karori(self):
+        """
+        Check that '102 Karori Road Karori Wellington' returns an address
+        with the correct house number and postcode.
+        """
         def bldg_no_and_postal_in_addr(c):
             return ('102' in c.match_addr and '6012' in c.match_addr)
         candidates = self.g.get_candidates(self.pq['karori'])
@@ -190,8 +223,8 @@ class GeocoderTest(OmgeoTestCase):
     def _test_geocode_results_all_(self, verbosity=0, geocoder=Geocoder(),
                                    expected_results=16):
         """
-        Geocode a list of addresses.  Some of these only work with Bing so 
-        fewer results are expected when Bing is not used as a geocoder
+        Geocode a list of addresses. Some of these only work with Bing so 
+        fewer results are expected when Bing is not used as a geocoder.
         """
         if verbosity > 1: 
             logger.setLevel(logging.INFO)
@@ -224,8 +257,10 @@ class GeocoderTest(OmgeoTestCase):
         self._test_geocode_results_all_(geocoder=self.g, expected_results=len(self.pq))
 
     def test_esri_geocoder_na_default_override(self):
-        # Bug in 3.1 - the EsriNA and EsriEU append processors rather than
-        # replace
+        """
+        Test for default argument bug in 3.1 --
+        EsriNA and EsriEU append processors rather than replace them
+        """
         geocoder = Geocoder([['omgeo.services.EsriNA',
                             {'postprocessors': [AttrFilter([
                                 'rooftop',
@@ -240,8 +275,10 @@ class GeocoderTest(OmgeoTestCase):
             'EsriNA geocoder incorrectly processed defaults')
 
     def test_esri_geocoder_eu_default_override(self):
-        # Bug in 3.1 - the EsriNA and EsriEU append processors rather than
-        # replace
+        """
+        Test for default argument bug in 3.1 --
+        EsriNA and EsriEU append processors rather than replace them
+        """
         geocoder = Geocoder([['omgeo.services.EsriEU',
                             {'postprocessors': [AttrFilter([
                                 'rooftop',
