@@ -5,8 +5,9 @@ supported geocoders:
 
 * Bing
 * Citizen Atlas (Washington DC)
-* ESRI North American locator (REST & SOAP)
 * ESRI European address locator (REST & SOAP)
+* ESRI North American locator (REST & SOAP)
+* ESRI `World Geocoding Service <http://geocode.arcgis.com/arcgis/geocoding.html>`_
 * MapQuest Licensed Data API
 * MapQuest-hosted Nominatim Open Data API
 
