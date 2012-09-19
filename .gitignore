@@ -2,6 +2,7 @@
 *.swp
 *.py~
 build
+sphinx/_build
 dist
 python_omgeo.egg-info
 docs
