@@ -178,7 +178,7 @@ class CitizenAtlas(GeocodeService):
 
         return candidates
 
-class EsriGeocodeService(GeocodeService):
+class _EsriGeocodeService(GeocodeService):
     """
     Base class for older ESRI geocoders (EsriEU, EsriNA).
     """
@@ -187,7 +187,7 @@ class EsriGeocodeService(GeocodeService):
         """
         :arg list preprocessors: preprocessors
         :arg list postprocessors: postprocessors
-        :arg dict settings: Settings used by an EsriGeocodeService object may include
+        :arg dict settings: Settings used by an _EsriGeocodeService object may include
                             the ``api_key`` used to access ESRI premium services.  
                             If this key is present, the object's endpoint will be
                             set to use premium tasks.
@@ -203,11 +203,11 @@ class EsriGeocodeService(GeocodeService):
             query_dict.update({'token': self._settings['api_key']})
         return query_dict
 
-class EsriSoapGeocodeService(EsriGeocodeService):
+class _EsriSoapGeocodeService(_EsriGeocodeService):
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         # First, initialize the usual geocoder stuff like settings and
         # processors
-        EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
+        _EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
         
         # Our suds client
         self._client = None
@@ -261,7 +261,7 @@ class EsriSoapGeocodeService(EsriGeocodeService):
             candidates.append(candidate)
         return candidates
 
-class EsriEUGeocodeService():
+class _EsriEUGeocodeService():
     """
     Base class including for Esri EU REST and SOAP Geocoders
 
@@ -317,17 +317,40 @@ class EsriEUGeocodeService():
         ScoreSorter(),
     ]
 
-class EsriEUSoap(EsriSoapGeocodeService, EsriEUGeocodeService):
+class _EsriNAGeocodeService():
+    """
+    Defaults for the _EsriNAGeocodeService
+    """
+
+    LOCATOR_MAP = {
+        'RoofTop': 'rooftop',
+        'Streets': 'interpolation',
+    }
+
+    DEFAULT_PREPROCESSORS = [
+        CountryPreProcessor(['US', 'CA'])
+    ]
+
+    DEFAULT_POSTPROCESSORS = [
+        AttrRename('locator', LOCATOR_MAP),
+        AttrFilter(['rooftop', 'interpolation'], 'locator'),
+        AttrSorter(['rooftop', 'interpolation'], 'locator'),
+        UseHighScoreIfAtLeast(99.8),
+        GroupBy('match_addr'),
+        ScoreSorter(),
+    ]
+
+class EsriEUSoap(_EsriSoapGeocodeService, _EsriEUGeocodeService):
     _task_endpoint = '/services/Locators/TA_Address_EU/GeocodeServer'
 
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
-        preprocessors = EsriEUGeocodeService.DEFAULT_PREPROCESSORS \
+        preprocessors = _EsriEUGeocodeService.DEFAULT_PREPROCESSORS \
             if preprocessors is None else preprocessors
         
-        postprocessors = EsriEUGeocodeService.DEFAULT_POSTPROCESSORS \
+        postprocessors = _EsriEUGeocodeService.DEFAULT_POSTPROCESSORS \
             if postprocessors is None else postprocessors
 
-        EsriSoapGeocodeService.__init__(self, preprocessors, postprocessors, settings)
+        _EsriSoapGeocodeService.__init__(self, preprocessors, postprocessors, settings)
         
         self._mapping = {
             'Loc_name': 'locator',
@@ -361,17 +384,17 @@ class EsriEUSoap(EsriSoapGeocodeService, EsriEUGeocodeService):
 
         return candidates
 
-class EsriEU(EsriGeocodeService, EsriEUGeocodeService):
+class EsriEU(_EsriGeocodeService, _EsriEUGeocodeService):
     _task_endpoint = '/rest/services/Locators/TA_Address_EU/GeocodeServer/findAddressCandidates'
             
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
-        preprocessors = EsriEUGeocodeService.DEFAULT_PREPROCESSORS \
+        preprocessors = _EsriEUGeocodeService.DEFAULT_PREPROCESSORS \
             if preprocessors is None else preprocessors
         
-        postprocessors = EsriEUGeocodeService.DEFAULT_POSTPROCESSORS \
+        postprocessors = _EsriEUGeocodeService.DEFAULT_POSTPROCESSORS \
             if postprocessors is None else postprocessors
 
-        EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
+        _EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
 
     def _geocode(self, location):
         query = {
@@ -403,30 +426,7 @@ class EsriEU(EsriGeocodeService, EsriEUGeocodeService):
             return []
         return returned_candidates
 
-class EsriNAGeocodeService():
-    """
-    Defaults for the EsriNAGeocodeService
-    """
-
-    LOCATOR_MAP = {
-        'RoofTop': 'rooftop',
-        'Streets': 'interpolation',
-    }
-
-    DEFAULT_PREPROCESSORS = [
-        CountryPreProcessor(['US', 'CA'])
-    ]
-
-    DEFAULT_POSTPROCESSORS = [
-        AttrRename('locator', LOCATOR_MAP),
-        AttrFilter(['rooftop', 'interpolation'], 'locator'),
-        AttrSorter(['rooftop', 'interpolation'], 'locator'),
-        UseHighScoreIfAtLeast(99.8),
-        GroupBy('match_addr'),
-        ScoreSorter(),
-    ]
-
-class EsriNASoap(EsriSoapGeocodeService, EsriNAGeocodeService):
+class EsriNASoap(_EsriSoapGeocodeService, _EsriNAGeocodeService):
     """
     Use the SOAP version of the ArcGIS-10-style Geocoder for North America
     """
@@ -434,13 +434,13 @@ class EsriNASoap(EsriSoapGeocodeService, EsriNAGeocodeService):
     _wkid = 4326
     
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
-        preprocessors = EsriNAGeocodeService.DEFAULT_PREPROCESSORS \
+        preprocessors = _EsriNAGeocodeService.DEFAULT_PREPROCESSORS \
             if preprocessors is None else preprocessors
         
-        postprocessors = EsriNAGeocodeService.DEFAULT_POSTPROCESSORS \
+        postprocessors = _EsriNAGeocodeService.DEFAULT_POSTPROCESSORS \
             if postprocessors is None else postprocessors
         
-        EsriSoapGeocodeService.__init__(self, preprocessors, postprocessors, settings)
+        _EsriSoapGeocodeService.__init__(self, preprocessors, postprocessors, settings)
 
         self._mapping = {
             'Loc_name': 'locator',
@@ -479,18 +479,18 @@ class EsriNASoap(EsriSoapGeocodeService, EsriNAGeocodeService):
 
         return candidates
          
-class EsriNA(EsriGeocodeService, EsriNAGeocodeService):
+class EsriNA(_EsriGeocodeService, _EsriNAGeocodeService):
     """Esri REST Geocoder for North America"""
     _task_endpoint = '/rest/services/Locators/TA_Address_NA_10/GeocodeServer/findAddressCandidates'
             
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
-        preprocessors = EsriNAGeocodeService.DEFAULT_PREPROCESSORS \
+        preprocessors = _EsriNAGeocodeService.DEFAULT_PREPROCESSORS \
             if preprocessors is None else preprocessors
         
-        postprocessors = EsriNAGeocodeService.DEFAULT_POSTPROCESSORS \
+        postprocessors = _EsriNAGeocodeService.DEFAULT_POSTPROCESSORS \
             if postprocessors is None else postprocessors
         
-        EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
+        _EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
 
     def _geocode(self, location):
         query = {
