@@ -235,12 +235,10 @@ class GeocoderTest(OmgeoTestCase):
         Check that '102 Karori Road Karori Wellington' returns an address
         with the correct house number and postcode.
         """
-        def bldg_no_and_postal_in_addr(c):
-            return ('102' in c.match_addr and '6012' in c.match_addr)
-        candidates = self.g.get_candidates(self.pq['karori'])
+        candidates = self.g_bing.get_candidates(self.pq['karori'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
-        self.assertEqual(any([bldg_no_and_postal_in_addr(c) for c in candidates]), True,
-                         'Could not find bldg. no. "102" and postcode "6012" in any address.')
+        self.assertEqual(any([('102' in c.match_addr and '6012' in c.match_addr) for c in candidates]),
+            True, 'Could not find bldg. no. "102" and postcode "6012" in any address.')
 
     def _test_geocode_results_all_(self, verbosity=0, geocoder=Geocoder(),
                                    expected_results=16):
