@@ -29,7 +29,7 @@ class ReplaceRangeWithNumber(_PreProcessor):
 
     .. warning::
 
-       This may also cause problems with addresses presented in the 
+       This may cause problems with addresses presented in the 
        hyphenated Queens-style format, where the part before the
        hyphen indicates the cross street, and the part after
        indicates the house number.
@@ -133,7 +133,7 @@ class CountryPreProcessor(_PreProcessor):
         """ 
         :arg list acceptable_countries: A list of acceptable countries.
                                         None is used to indicate that all countries are acceptable.
-                                        (default [])
+                                        (default ``[]``)
 
                                         An empty string is also an acceptable country. To require
                                         a country, use the `RequireCountry` preprocessor.
@@ -224,7 +224,7 @@ class RequireCountry(_PreProcessor):
                                   If this argument is not set or empty and PlaceQuery instance does
                                   not have a country (pq.country == ''), the processor will return
                                   False and the PlaceQuery will be rejected during geocoding. 
-                                  (default '')
+                                  (default ``''``)
 
         """
         self.default_country = default_country

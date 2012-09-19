@@ -95,7 +95,7 @@ v1.4.4, 2012-08-13
 ------------------
  * Add original PlaceQuery to nested dict method response
 
-v1.5.0, 2012-09-12
+v1.5.0, 2012-09-19
 ------------------
  * Add support for ESRI World Geocoder service
  * Add documentation built in Sphinx
@@ -107,3 +107,8 @@ v1.5.0, 2012-09-12
    Viewbox representation
  * Modify ReplaceRangeWithNumber preprocessor to be friendly
    to ZIP+4 postal codes.
+
+v1.5.1, 2012-09-20
+------------------
+ * Fix ordering of default postprocessors for EsriWGS geocoder
+ * Minor documentation updates

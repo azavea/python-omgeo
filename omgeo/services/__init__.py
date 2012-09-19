@@ -107,7 +107,7 @@ class Bing(GeocodeService):
     
 class CitizenAtlas(GeocodeService):
     '''
-    Class to geocode using the Washington DC CitizenAtlas <http://citizenatlas.dc.gov/newwebservices>
+    Class to geocode using the `Washington DC CitizenAtlas <http://citizenatlas.dc.gov/newwebservices>`_
     '''
 
     _endpoint = 'http://citizenatlas.dc.gov/newwebservices/locationverifier.asmx/findLocation'
@@ -529,8 +529,8 @@ class EsriNA(_EsriGeocodeService, _EsriNAGeocodeService):
     
 class EsriWGS(GeocodeService):
     """
-    Class to geocode using the ESRI World Geocoding service
-    <http://geocode.arcgis.com/arcgis/geocoding.html>.
+    Class to geocode using the `ESRI World Geocoding service
+    <http://geocode.arcgis.com/arcgis/geocoding.html>`_.
 
     This uses two endpoints -- one for single-line addresses,
     and one for multi-part addresses.
@@ -561,9 +561,9 @@ class EsriWGS(GeocodeService):
                    'locator_type'),
         AttrRename('locator', LOCATOR_MAP), # after filter to avoid searching things we toss out
         UseHighScoreIfAtLeast(99.8),
+        ScoreSorter(),      
         GroupBy('match_addr'),
         GroupBy(('x', 'y')),
-        ScoreSorter(),
     ]
 
     _endpoint = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
@@ -670,8 +670,8 @@ class EsriWGS(GeocodeService):
 
 class EsriWGSSSL(EsriWGS):
     """ 
-    Class to geocode using the ESRI World Geocoding service over SSL
-    <https://geocode.arcgis.com/arcgis/geocoding.html>
+    Class to geocode using the `ESRI World Geocoding service over SSL
+    <https://geocode.arcgis.com/arcgis/geocoding.html>_`
     """
     _endpoint = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
 
