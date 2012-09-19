@@ -6,7 +6,7 @@
 Table of Contents
 +++++++++++++++++
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    
    User Documentation (you are here) <self>
    Release Notes <changes>
