@@ -51,6 +51,260 @@
             
   <div class="section" id="module-omgeo.tests.tests">
 <span id="tests"></span><h1>Tests<a class="headerlink" href="#module-omgeo.tests.tests" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest">
+<em class="property">class </em><tt class="descclassname">omgeo.tests.tests.</tt><tt class="descname">GeocoderProcessorTest</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests using various pre- and post-processors.</p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_postpro_GroupBy">
+<tt class="descname">test_postpro_GroupBy</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_postpro_GroupBy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_postpro_GroupBy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test GroupBy postprocessor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_CancelIfPOBox">
+<tt class="descname">test_pro_CancelIfPOBox</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_CancelIfPOBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_CancelIfPOBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test CancelIfPOBox preprocessor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_CancelIfRegexInAttr">
+<tt class="descname">test_pro_CancelIfRegexInAttr</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_CancelIfRegexInAttr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_CancelIfRegexInAttr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test CancelIfRegexInAttr preprocessor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_CancelIfRegexInAttr_case_sensitive">
+<tt class="descname">test_pro_CancelIfRegexInAttr_case_sensitive</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_CancelIfRegexInAttr_case_sensitive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_CancelIfRegexInAttr_case_sensitive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test CancelIfRegexInAttr preprocessor using case-sensitive option.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_SnapPoints">
+<tt class="descname">test_pro_SnapPoints</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_SnapPoints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_SnapPoints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take two candidates within 50 metres and eliminate one.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_country_CountryPreProcessor">
+<tt class="descname">test_pro_country_CountryPreProcessor</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_country_CountryPreProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_country_CountryPreProcessor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test CountryPreProcessor</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_country_RequireCountry">
+<tt class="descname">test_pro_country_RequireCountry</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_country_RequireCountry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_country_RequireCountry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test RequireCountry preprocessor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_filter_AttrExclude_exact">
+<tt class="descname">test_pro_filter_AttrExclude_exact</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_filter_AttrExclude_exact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_filter_AttrExclude_exact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test AttrExclude with <tt class="docutils literal"><span class="pre">exact_match=True</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_filter_AttrExclude_inexact">
+<tt class="descname">test_pro_filter_AttrExclude_inexact</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_filter_AttrExclude_inexact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_filter_AttrExclude_inexact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test AttrExclude with <tt class="docutils literal"><span class="pre">exact_match=False</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_filter_AttrFilter_exact">
+<tt class="descname">test_pro_filter_AttrFilter_exact</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_filter_AttrFilter_exact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_filter_AttrFilter_exact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test AttrFilter postprocessor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_filter_AttrFilter_inexact">
+<tt class="descname">test_pro_filter_AttrFilter_inexact</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_filter_AttrFilter_inexact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_filter_AttrFilter_inexact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test AttrFilter postprocessor with <tt class="docutils literal"><span class="pre">exact_match=False</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_parsing_ParseSingleLine">
+<tt class="descname">test_pro_parsing_ParseSingleLine</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_parsing_ParseSingleLine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_parsing_ParseSingleLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test ParseSingleLine preprocessor using single-line UK address.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_rename_AttrRename_exact">
+<tt class="descname">test_pro_rename_AttrRename_exact</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_rename_AttrRename_exact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_rename_AttrRename_exact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test AttrRename postprocessor using exact search string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_rename_AttrRename_inexact">
+<tt class="descname">test_pro_rename_AttrRename_inexact</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_rename_AttrRename_inexact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_rename_AttrRename_inexact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test AttrRename postprocessor using partial search string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_scoring_ScoreSorter">
+<tt class="descname">test_pro_scoring_ScoreSorter</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_scoring_ScoreSorter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_scoring_ScoreSorter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test ScoreSorter postprocessor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_scoring_ScoreSorter_asc">
+<tt class="descname">test_pro_scoring_ScoreSorter_asc</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_scoring_ScoreSorter_asc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_scoring_ScoreSorter_asc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test ScoreSorter postprocessor with <tt class="docutils literal"><span class="pre">reverse=False</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_scoring_UseHighScoreIfAtLeast">
+<tt class="descname">test_pro_scoring_UseHighScoreIfAtLeast</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_scoring_UseHighScoreIfAtLeast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_scoring_UseHighScoreIfAtLeast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test UseHighScoreIfAtLeast postprocessor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_sort_AttrReverseSorter">
+<tt class="descname">test_pro_sort_AttrReverseSorter</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_sort_AttrReverseSorter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_sort_AttrReverseSorter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test AttrReverseSorter postprocessor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_sort_AttrSorter">
+<tt class="descname">test_pro_sort_AttrSorter</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_sort_AttrSorter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_sort_AttrSorter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test AttrSorter postprocessor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderProcessorTest.test_pro_streetnumber_ReplaceRangeWithNumber">
+<tt class="descname">test_pro_streetnumber_ReplaceRangeWithNumber</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderProcessorTest.test_pro_streetnumber_ReplaceRangeWithNumber"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderProcessorTest.test_pro_streetnumber_ReplaceRangeWithNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test ReplaceRangeWithNumber preprocessor.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omgeo.tests.tests.GeocoderTest">
+<em class="property">class </em><tt class="descclassname">omgeo.tests.tests.</tt><tt class="descname">GeocoderTest</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests using various geocoding APIs. Requires internet connection.</p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_bounded_no_viewbox">
+<tt class="descname">test_bounded_no_viewbox</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_bounded_no_viewbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_bounded_no_viewbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Should return a nice error saying that PlaceQuery can&#8217;t be bounded without Viewbox.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_esri_geocoder_eu_default_override">
+<tt class="descname">test_esri_geocoder_eu_default_override</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_esri_geocoder_eu_default_override"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_esri_geocoder_eu_default_override" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test for default argument bug in 3.1 &#8211;
+EsriNA and EsriEU append processors rather than replace them</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_esri_geocoder_na_default_override">
+<tt class="descname">test_esri_geocoder_na_default_override</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_esri_geocoder_na_default_override"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_esri_geocoder_na_default_override" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test for default argument bug in 3.1 &#8211;
+EsriNA and EsriEU append processors rather than replace them</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_bing">
+<tt class="descname">test_geocode_bing</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_bing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_bing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test Azavea&#8217;s address using Bing geocoder</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_dc_address">
+<tt class="descname">test_geocode_dc_address</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_dc_address"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_dc_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that &#8216;1600 Pennsylvania&#8217; returns first result using DC address locator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_dc_intersection">
+<tt class="descname">test_geocode_dc_intersection</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_dc_intersection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_dc_intersection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that &#8216;H and 15th&#8217; returns first result using DC intersection locator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_dupepicker">
+<tt class="descname">test_geocode_dupepicker</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_dupepicker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_dupepicker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that &#8216;340 12th St returns results&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_esri_eu_soap">
+<tt class="descname">test_geocode_esri_eu_soap</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_esri_eu_soap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_esri_eu_soap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test ESRI Europe SOAP geocoder</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_esri_na_nz">
+<tt class="descname">test_geocode_esri_na_nz</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_esri_na_nz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_esri_na_nz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test ESRI North America REST geocoder using a city in New Zealand.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_esri_na_us">
+<tt class="descname">test_geocode_esri_na_us</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_esri_na_us"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_esri_na_us" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test ESRI North America REST geocoder</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_esri_na_us_soap">
+<tt class="descname">test_geocode_esri_na_us_soap</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_esri_na_us_soap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_esri_na_us_soap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test ESRI North America SOAP geocoder</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_esri_wgs_340_12th_bounded">
+<tt class="descname">test_geocode_esri_wgs_340_12th_bounded</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_esri_wgs_340_12th_bounded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_esri_wgs_340_12th_bounded" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trying to geocode <tt class="docutils literal"><span class="pre">340</span> <span class="pre">12th</span> <span class="pre">St,</span> <span class="pre">Philadelphia</span> <span class="pre">PA</span></tt> would normally return results
+for both <tt class="docutils literal"><span class="pre">340</span> <span class="pre">N</span> <span class="pre">12th</span> <span class="pre">St</span></tt> and <tt class="docutils literal"><span class="pre">340</span> <span class="pre">S</span> <span class="pre">12th</span> <span class="pre">St</span></tt>. Using a bounding box around Callowhill,
+we should only get the former.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_karori">
+<tt class="descname">test_geocode_karori</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_karori"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_karori" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that &#8216;102 Karori Road Karori Wellington&#8217; returns an address
+with the correct house number and postcode.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_mapquest">
+<tt class="descname">test_geocode_mapquest</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_mapquest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_mapquest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test Azavea&#8217;s address using MapQuest geocoder.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_mapquest_ssl">
+<tt class="descname">test_geocode_mapquest_ssl</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_mapquest_ssl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_mapquest_ssl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test Azavea&#8217;s address using secure MapQuest geocoder.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_nom">
+<tt class="descname">test_geocode_nom</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_nom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_nom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test 1200 Callowhill Street using Nominatim geocoder.
+Also check to make sure coordinate values are floats and not some other data type.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_snap_points_1">
+<tt class="descname">test_geocode_snap_points_1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_snap_points_1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_snap_points_1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Geocoder expected to return the same place twice &#8211; one with city as Flemington,
+and one with city as Readington Twp. This test checks that only one is picked.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="omgeo.tests.tests.GeocoderTest.test_geocode_snap_points_2">
+<tt class="descname">test_geocode_snap_points_2</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/omgeo/tests/tests.html#GeocoderTest.test_geocode_snap_points_2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omgeo.tests.tests.GeocoderTest.test_geocode_snap_points_2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bing geocoder expected to return the same place twice &#8211; one with city as Alpha,
+and one with city as Phillipsburg. This test checks that only one is picked.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

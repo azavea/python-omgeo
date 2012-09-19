@@ -1,0 +1,655 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>omgeo.tests.tests &mdash; python-omgeo 1.4.9 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.4.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="python-omgeo 1.4.9 documentation" href="../../../index.html" />
+    <link rel="up" title="omgeo" href="../../omgeo.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python-omgeo 1.4.9 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../omgeo.html" accesskey="U">omgeo</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for omgeo.tests.tests</h1><div class="highlight"><pre>
+<span class="c">#! /usr/bin/env python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">from</span> <span class="nn">omgeo</span> <span class="kn">import</span> <span class="n">Geocoder</span>
+<span class="kn">from</span> <span class="nn">omgeo.places</span> <span class="kn">import</span> <span class="n">Viewbox</span><span class="p">,</span> <span class="n">PlaceQuery</span><span class="p">,</span> <span class="n">Candidate</span>
+<span class="kn">from</span> <span class="nn">omgeo.processors.preprocessors</span> <span class="kn">import</span> <span class="n">CancelIfPOBox</span><span class="p">,</span> <span class="n">CancelIfRegexInAttr</span><span class="p">,</span> <span class="n">CountryPreProcessor</span><span class="p">,</span>\
+                                           <span class="n">RequireCountry</span><span class="p">,</span> <span class="n">ParseSingleLine</span><span class="p">,</span> <span class="n">ReplaceRangeWithNumber</span>
+<span class="kn">from</span> <span class="nn">omgeo.processors.postprocessors</span> <span class="kn">import</span> <span class="n">AttrFilter</span><span class="p">,</span> <span class="n">AttrExclude</span><span class="p">,</span> <span class="n">AttrRename</span><span class="p">,</span>\
+                                            <span class="n">AttrSorter</span><span class="p">,</span> <span class="n">AttrReverseSorter</span><span class="p">,</span> <span class="n">UseHighScoreIfAtLeast</span><span class="p">,</span>\
+                                            <span class="n">GroupBy</span><span class="p">,</span> <span class="n">GroupByMultiple</span><span class="p">,</span> <span class="n">ScoreSorter</span><span class="p">,</span> <span class="n">SnapPoints</span>
+
+<span class="n">BING_MAPS_API_KEY</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s">&quot;BING_MAPS_API_KEY&quot;</span><span class="p">)</span>
+<span class="n">ESRI_MAPS_API_KEY</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s">&quot;ESRI_MAPS_API_KEY&quot;</span><span class="p">)</span>
+<span class="n">MAPQUEST_API_KEY</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s">&quot;MAPQUEST_API_KEY&quot;</span><span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s">&#39;ERROR&#39;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">OmgeoTestCase</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">assertEqual_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;assertEqual with built-in error message&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="s">&#39;Expected &quot;</span><span class="si">%s</span><span class="s">&quot;. Got &quot;</span><span class="si">%s</span><span class="s">&quot;.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">assertEqualCI_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">strip_commas</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Case-insensitive assertEqual with built-in error message&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+
+<div class="viewcode-block" id="GeocoderTest"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest">[docs]</a><span class="k">class</span> <span class="nc">GeocoderTest</span><span class="p">(</span><span class="n">OmgeoTestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests using various geocoding APIs. Requires internet connection.&quot;&quot;&quot;</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="bp">None</span> <span class="c"># not set until set up</span>
+    <span class="n">BING_KEY_REQUIRED_MSG</span> <span class="o">=</span> <span class="s">&#39;Enter a Bing Maps API key to run the Bing tests.&#39;</span>
+    <span class="n">MAPQUEST_KEY_REQUIRED_MSG</span> <span class="o">=</span> <span class="s">&#39;Enter a MapQuest API key to run the MapQuest tests. &#39;</span>\
+                                <span class="s">&#39;Keys can be obtained at http://developer.mapquest.com/.&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># Viewbox objects - callowhill is from BSS Spring Garden station to Wash. Sq.</span>
+        <span class="n">vb</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;callowhill&#39;</span><span class="p">:</span> <span class="n">Viewbox</span><span class="p">(</span><span class="o">-</span><span class="mf">75.162628</span><span class="p">,</span> <span class="mf">39.962769</span><span class="p">,</span> <span class="o">-</span><span class="mf">75.150963</span><span class="p">,</span> <span class="mf">39.956322</span><span class="p">)}</span>
+        <span class="c"># PlaceQuery objects</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pq</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;azavea&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;340 N 12th St Ste 402 Philadelphia PA&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;ambiguous_azavea&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;340 12th St Ste 402 Philadelphia PA&#39;</span><span class="p">),</span>
+                    <span class="c"># North American Addresses:</span>
+                    <span class="s">&#39;wolf&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;Wolf Building&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;wolf_philly&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;Wolf Building, Philadelphia PA&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;wolf_bounded&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;Wolf Building&#39;</span><span class="p">,</span>
+                        <span class="n">bounded</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">viewbox</span><span class="o">=</span><span class="n">vb</span><span class="p">[</span><span class="s">&#39;callowhill&#39;</span><span class="p">]),</span>
+                    <span class="s">&#39;bounded_340_12th&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;340 12th St, Philadelphia PA&#39;</span><span class="p">,</span>
+                        <span class="n">bounded</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">viewbox</span><span class="o">=</span><span class="n">vb</span><span class="p">[</span><span class="s">&#39;callowhill&#39;</span><span class="p">]),</span>
+                    <span class="s">&#39;alpha_774R_W_Central_Ave&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;774R W Central Ave Alpha NJ&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;alpha_774_W_Central_Ave_Rear&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;774 W Central Ave Rear, Alpha NJ&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;8_kirkbride&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;8 Kirkbride Rd 08822&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;george_washington&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;201 W Montmorency Blvd, George, Washington&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;pine_needles_dr&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;11761 pine needles providence forge&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;pine_needles_ct&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;5328 pine needles providence forge&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;pine_needles_terr&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;5359 pine needles providence forge&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;moorestown_hyphenated&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;111-113 W Main St Moorestown NJ&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;willow_street&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;2819F Willow Street Pike Willow Street PA&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;quebec&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;756 Rue Berri Montreal QC&#39;</span><span class="p">,</span> <span class="n">country</span><span class="o">=</span><span class="s">&#39;CA&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;quebec_accent&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;527 Ch. Beauséjour, Saint-Elzéar-de-Témiscouata QC&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;quebec_hyphenated&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;227-227A Rue Commerciale, Saint-Louis-du-Ha! Ha! QC&#39;</span><span class="p">),</span>
+                    <span class="c"># European Addresses:</span>
+                    <span class="s">&#39;london_pieces&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s">&#39;31 Maiden Lane&#39;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s">&#39;London&#39;</span><span class="p">,</span> <span class="n">country</span><span class="o">=</span><span class="s">&#39;UK&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;london_one_line&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;31 Maiden Lane, London WC2E&#39;</span><span class="p">,</span> <span class="n">country</span><span class="o">=</span><span class="s">&#39;UK&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;london_pieces_hyphenated&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s">&#39;31-32 Maiden Lane&#39;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s">&#39;London&#39;</span><span class="p">,</span> <span class="n">country</span><span class="o">=</span><span class="s">&#39;UK&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;london_one_line_hyphenated&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;31-32 Maiden Lane London WC2E&#39;</span><span class="p">,</span> <span class="n">country</span><span class="o">=</span><span class="s">&#39;UK&#39;</span><span class="p">),</span>
+                    <span class="c"># Oceanian Addresses:</span>
+                    <span class="s">&#39;karori&#39;</span><span class="p">:</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;102 Karori Road Karori Wellington&#39;</span><span class="p">,</span> <span class="n">country</span><span class="o">=</span><span class="s">&#39;NZ&#39;</span><span class="p">),</span>
+                    <span class="p">}</span>
+        
+        <span class="k">if</span> <span class="n">BING_MAPS_API_KEY</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">bing_settings</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">BING_MAPS_API_KEY</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">g_bing</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">([[</span><span class="s">&#39;omgeo.services.Bing&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;settings&#39;</span><span class="p">:</span> <span class="n">bing_settings</span><span class="p">}]])</span>
+
+        <span class="k">if</span> <span class="n">MAPQUEST_API_KEY</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">mapquest_settings</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">MAPQUEST_API_KEY</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">g_mapquest</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">([[</span><span class="s">&#39;omgeo.services.MapQuest&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;settings&#39;</span><span class="p">:</span> <span class="n">mapquest_settings</span><span class="p">}]])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">g_mapquest_ssl</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">([[</span><span class="s">&#39;omgeo.services.MapQuestSSL&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;settings&#39;</span><span class="p">:</span> <span class="n">mapquest_settings</span><span class="p">}]])</span>            
+
+        <span class="c">#: main geocoder used for tests, using default APIs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">()</span> 
+
+        <span class="c"># Set up params for old ESRI rest services:</span>
+        <span class="n">esri_settings</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">ESRI_MAPS_API_KEY</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">{</span><span class="s">&#39;api_key&#39;</span><span class="p">:</span> <span class="n">ESRI_MAPS_API_KEY</span><span class="p">}</span>
+        <span class="n">old_esri_params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;settings&#39;</span><span class="p">:</span> <span class="n">esri_settings</span><span class="p">}</span>
+
+        <span class="c"># geocoders using individual services</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g_dc</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">([[</span><span class="s">&#39;omgeo.services.CitizenAtlas&#39;</span><span class="p">,</span> <span class="p">{}]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g_esri_na</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">([[</span><span class="s">&#39;omgeo.services.EsriNA&#39;</span><span class="p">,</span> <span class="n">old_esri_params</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g_esri_eu</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">([[</span><span class="s">&#39;omgeo.services.EsriEU&#39;</span><span class="p">,</span> <span class="n">old_esri_params</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g_esri_na_soap</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">([[</span><span class="s">&#39;omgeo.services.EsriNASoap&#39;</span><span class="p">,</span> <span class="p">{}]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g_esri_eu_soap</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">([[</span><span class="s">&#39;omgeo.services.EsriEUSoap&#39;</span><span class="p">,</span> <span class="p">{}]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g_esri_wgs</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">([[</span><span class="s">&#39;omgeo.services.EsriWGS&#39;</span><span class="p">,</span> <span class="p">{}]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g_nom</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">([[</span><span class="s">&#39;omgeo.services.Nominatim&#39;</span><span class="p">,</span> <span class="p">{}]])</span>
+
+        <span class="c">#: geocoder with fast timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">impatient_geocoder</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">([[</span><span class="s">&#39;omgeo.services.EsriWGS&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;settings&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;timeout&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">}}]])</span>
+        
+    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">test_geocode_azavea</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="s">&#39;azavea&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;No candidates returned.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;More than one candidate returned.&#39;</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">test_impatiently_geocode_azavea</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">impatient_geocoder</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="s">&#39;azavea&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;Candidates were unexpectedly returned in under 10ms.&#39;</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="GeocoderTest.test_geocode_snap_points_1"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_snap_points_1">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_snap_points_1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Geocoder expected to return the same place twice -- one with city as Flemington,</span>
+<span class="sd">        and one with city as Readington Twp. This test checks that only one is picked.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_esri_na</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="s">&#39;8_kirkbride&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;No candidates returned.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;More than one candidate returned.&#39;</span><span class="p">)</span>
+        </div>
+    <span class="nd">@unittest.skipIf</span><span class="p">(</span><span class="n">BING_MAPS_API_KEY</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span> <span class="n">BING_KEY_REQUIRED_MSG</span><span class="p">)</span>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_snap_points_2"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_snap_points_2">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_snap_points_2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Bing geocoder expected to return the same place twice -- one with city as Alpha,</span>
+<span class="sd">        and one with city as Phillipsburg. This test checks that only one is picked.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_bing</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="s">&#39;alpha_774_W_Central_Ave_Rear&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;No candidates returned.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;More than one candidate returned.&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_esri_wgs_340_12th_bounded"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_esri_wgs_340_12th_bounded">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_esri_wgs_340_12th_bounded</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Trying to geocode ``340 12th St, Philadelphia PA`` would normally return results</span>
+<span class="sd">        for both ``340 N 12th St`` and ``340 S 12th St``. Using a bounding box around Callowhill,</span>
+<span class="sd">        we should only get the former.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_esri_wgs</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="s">&#39;bounded_340_12th&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;No candidates returned.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;More than one candidate returned.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s">&#39;340 N 12th&#39;</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">match_addr</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span>
+                         <span class="s">&#39;&quot;340 N 12th&quot; not found in match_addr. Got &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">match_addr</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderTest.test_bounded_no_viewbox"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_bounded_no_viewbox">[docs]</a>    <span class="k">def</span> <span class="nf">test_bounded_no_viewbox</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Should return a nice error saying that PlaceQuery can&#39;t be bounded without Viewbox.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_esri_na_us_soap"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_esri_na_us_soap">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_esri_na_us_soap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test ESRI North America SOAP geocoder&quot;&quot;&quot;</span>
+        <span class="n">location</span> <span class="o">=</span> <span class="s">&#39;340 N 12th St., Philadelphia, PA, US&#39;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_esri_na_soap</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;No candidates returned for </span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="n">location</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_esri_na_us"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_esri_na_us">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_esri_na_us</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test ESRI North America REST geocoder&quot;&quot;&quot;</span>
+        <span class="n">location</span> <span class="o">=</span> <span class="s">&#39;340 N 12th St., Philadelphia, PA, US&#39;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_esri_na</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;No candidates returned for </span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="n">location</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_esri_eu_soap"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_esri_eu_soap">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_esri_eu_soap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test ESRI Europe SOAP geocoder&quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_esri_eu_soap</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="n">PlaceQuery</span><span class="p">(</span>
+            <span class="n">address</span><span class="o">=</span><span class="s">&#39;31 Maiden Lane&#39;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s">&#39;London&#39;</span><span class="p">,</span> <span class="n">country</span><span class="o">=</span><span class="s">&#39;UK&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;No candidates returned.&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_esri_na_nz"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_esri_na_nz">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_esri_na_nz</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test ESRI North America REST geocoder using a city in New Zealand.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_esri_na</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="s">&#39;karori&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span>
+                         <span class="s">&#39;Found New Zealand address when this should only&#39;</span>
+                         <span class="s">&#39;be using the North American ESRI geocoder. &#39;</span>
+                         <span class="s">&#39;Candidates are </span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="n">candidates</span><span class="p">)</span>
+</div>
+    <span class="nd">@unittest.skipIf</span><span class="p">(</span><span class="n">BING_MAPS_API_KEY</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span> <span class="n">BING_KEY_REQUIRED_MSG</span><span class="p">)</span>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_bing"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_bing">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_bing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test Azavea&#39;s address using Bing geocoder&quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_bing</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="s">&#39;azavea&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;No candidates returned.&#39;</span><span class="p">)</span>
+        </div>
+    <span class="nd">@unittest.skipIf</span><span class="p">(</span><span class="n">MAPQUEST_API_KEY</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span> <span class="n">MAPQUEST_KEY_REQUIRED_MSG</span><span class="p">)</span>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_mapquest"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_mapquest">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_mapquest</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test Azavea&#39;s address using MapQuest geocoder.&quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_mapquest</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="s">&#39;azavea&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;No candidates returned.&#39;</span><span class="p">)</span>
+</div>
+    <span class="nd">@unittest.skipIf</span><span class="p">(</span><span class="n">MAPQUEST_API_KEY</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span> <span class="n">MAPQUEST_KEY_REQUIRED_MSG</span><span class="p">)</span>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_mapquest_ssl"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_mapquest_ssl">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_mapquest_ssl</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test Azavea&#39;s address using secure MapQuest geocoder.&quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_mapquest_ssl</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="s">&#39;azavea&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;No candidates returned.&#39;</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_nom"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_nom">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_nom</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test 1200 Callowhill Street using Nominatim geocoder.</span>
+<span class="sd">        Also check to make sure coordinate values are floats and not some other data type.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_nom</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;1200 Callowhill St, Philadelphia, PA, 19123&#39;</span><span class="p">))</span>
+        <span class="n">x_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">y_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">x_type</span> <span class="o">==</span> <span class="nb">float</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;x coord is of type </span><span class="si">%s</span><span class="s"> instead of float&#39;</span> <span class="o">%</span> <span class="n">x_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">y_type</span> <span class="o">==</span> <span class="nb">float</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;y coord is of type </span><span class="si">%s</span><span class="s"> instead of float&#39;</span> <span class="o">%</span> <span class="n">y_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;No candidates returned.&#39;</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_dc_address"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_dc_address">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_dc_address</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check that &#39;1600 Pennsylvania&#39; returns first result using DC address locator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_dc</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;1600 pennsylvania&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#39;No candidates returned.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">locator</span> <span class="o">==</span> <span class="s">&#39;DC Address&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;Expected 1600 pennsylvania to be an address match&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_dc_intersection"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_dc_intersection">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_dc_intersection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check that &#39;H and 15th&#39; returns first result using DC intersection locator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_dc</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;h and 15th&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#39;No candidates returned.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">locator</span> <span class="o">==</span> <span class="s">&#39;DC Intersection&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;h and 15th to be an intersection match&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_dupepicker"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_dupepicker">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_dupepicker</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check that &#39;340 12th St returns results&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="s">&#39;ambiguous_azavea&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;No candidates returned.&#39;</span><span class="p">)</span>
+        </div>
+    <span class="nd">@unittest.skipIf</span><span class="p">(</span><span class="n">BING_MAPS_API_KEY</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span> <span class="n">BING_KEY_REQUIRED_MSG</span><span class="p">)</span>
+<div class="viewcode-block" id="GeocoderTest.test_geocode_karori"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_geocode_karori">[docs]</a>    <span class="k">def</span> <span class="nf">test_geocode_karori</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check that &#39;102 Karori Road Karori Wellington&#39; returns an address</span>
+<span class="sd">        with the correct house number and postcode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_bing</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="s">&#39;karori&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;No candidates returned.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">any</span><span class="p">([(</span><span class="s">&#39;102&#39;</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">match_addr</span> <span class="ow">and</span> <span class="s">&#39;6012&#39;</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">match_addr</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">]),</span>
+            <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;Could not find bldg. no. &quot;102&quot; and postcode &quot;6012&quot; in any address.&#39;</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_test_geocode_results_all_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">geocoder</span><span class="o">=</span><span class="n">Geocoder</span><span class="p">(),</span>
+                                   <span class="n">expected_results</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Geocode a list of addresses. Some of these only work with Bing so </span>
+<span class="sd">        fewer results are expected when Bing is not used as a geocoder.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span> 
+            <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+        <span class="n">queries_with_results</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">place</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">place</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">place</span><span class="p">)</span> <span class="o">*</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
+            <span class="n">candidates</span> <span class="o">=</span> <span class="n">geocoder</span><span class="o">.</span><span class="n">get_candidates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="n">place</span><span class="p">])</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Input: </span><span class="si">%s</span><span class="se">\n</span><span class="s">(no results)&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="n">place</span><span class="p">]</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">queries_with_results</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Input:  </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="n">place</span><span class="p">]</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="s">&#39;Output: </span><span class="si">%r</span><span class="s"> (</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">)</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">match_addr</span><span class="p">,</span> 
+                    <span class="n">c</span><span class="o">.</span><span class="n">geoservice</span><span class="p">,</span> 
+                    <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">locator</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">score</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">confidence</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">entity</span><span class="p">]),</span>
+                    <span class="n">candidates</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected_results</span><span class="p">,</span> <span class="n">queries_with_results</span><span class="p">,</span>
+                         <span class="s">&#39;Got results for </span><span class="si">%d</span><span class="s"> of </span><span class="si">%d</span><span class="s"> queries.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">queries_with_results</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">_test_geocode_results_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">BING_MAPS_API_KEY</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">expected_results</span><span class="o">=</span><span class="mi">16</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">add_source</span><span class="p">([</span><span class="s">&#39;omgeo.services.Bing&#39;</span><span class="p">,</span>
+                     <span class="p">{</span><span class="s">&#39;settings&#39;</span><span class="p">:{</span><span class="s">&#39;api_key&#39;</span><span class="p">:</span><span class="n">BING_MAPS_API_KEY</span><span class="p">}}])</span>
+            <span class="n">expected_results</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_test_geocode_results_all_</span><span class="p">(</span><span class="n">geocoder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">expected_results</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">))</span>
+
+<div class="viewcode-block" id="GeocoderTest.test_esri_geocoder_na_default_override"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_esri_geocoder_na_default_override">[docs]</a>    <span class="k">def</span> <span class="nf">test_esri_geocoder_na_default_override</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test for default argument bug in 3.1 --</span>
+<span class="sd">        EsriNA and EsriEU append processors rather than replace them</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">geocoder</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">([[</span><span class="s">&#39;omgeo.services.EsriNA&#39;</span><span class="p">,</span>
+                            <span class="p">{</span><span class="s">&#39;postprocessors&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">AttrFilter</span><span class="p">([</span>
+                                <span class="s">&#39;rooftop&#39;</span><span class="p">,</span>
+                                <span class="s">&#39;interpolation&#39;</span><span class="p">,</span>
+                                <span class="s">&#39;postal_specific&#39;</span><span class="p">],</span>
+                                <span class="s">&#39;locator&#39;</span><span class="p">)]}]])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">geocoder</span><span class="o">.</span><span class="n">_sources</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_postprocessors</span><span class="p">),</span>
+            <span class="s">&#39;EsriNA geocoder incorrectly processed defaults&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s">&#39;AttrFilter&#39;</span><span class="p">,</span>
+            <span class="n">geocoder</span><span class="o">.</span><span class="n">_sources</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_postprocessors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+            <span class="s">&#39;EsriNA geocoder incorrectly processed defaults&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderTest.test_esri_geocoder_eu_default_override"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderTest.test_esri_geocoder_eu_default_override">[docs]</a>    <span class="k">def</span> <span class="nf">test_esri_geocoder_eu_default_override</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test for default argument bug in 3.1 --</span>
+<span class="sd">        EsriNA and EsriEU append processors rather than replace them</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">geocoder</span> <span class="o">=</span> <span class="n">Geocoder</span><span class="p">([[</span><span class="s">&#39;omgeo.services.EsriEU&#39;</span><span class="p">,</span>
+                            <span class="p">{</span><span class="s">&#39;postprocessors&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">AttrFilter</span><span class="p">([</span>
+                                <span class="s">&#39;rooftop&#39;</span><span class="p">,</span>
+                                <span class="s">&#39;interpolation&#39;</span><span class="p">,</span>
+                                <span class="s">&#39;postal_specific&#39;</span><span class="p">],</span>
+                                <span class="s">&#39;locator&#39;</span><span class="p">)]}]])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">geocoder</span><span class="o">.</span><span class="n">_sources</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_postprocessors</span><span class="p">),</span>
+            <span class="s">&#39;EsriEU geocoder incorrectly processed defaults&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s">&#39;AttrFilter&#39;</span><span class="p">,</span>
+            <span class="n">geocoder</span><span class="o">.</span><span class="n">_sources</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_postprocessors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+            <span class="s">&#39;EsriEU geocoder incorrectly processed defaults&#39;</span><span class="p">)</span>
+</div></div>
+<div class="viewcode-block" id="GeocoderProcessorTest"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest">[docs]</a><span class="k">class</span> <span class="nc">GeocoderProcessorTest</span><span class="p">(</span><span class="n">OmgeoTestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests using various pre- and post-processors.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># places</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pq_us</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;1200 Callowhill St, Philadelphia, PA 19107&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pq_uk</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;32 Bond Road, Ste A, Surbiton, Surrey KT6&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pq_uk_with_country_UK</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;32 Bond Road, Ste A, Surbiton, Surrey KT6&#39;</span><span class="p">,</span> <span class="n">country</span><span class="o">=</span><span class="s">&#39;UK&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pq_uk_with_country_GB</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;32 Bond Road, Ste A, Surbiton, Surrey KT6&#39;</span><span class="p">,</span> <span class="n">country</span><span class="o">=</span><span class="s">&#39;GB&#39;</span><span class="p">)</span>
+
+        <span class="c"># candidates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">good</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">(</span><span class="n">match_addr</span><span class="o">=</span><span class="s">&#39;123 Any St&#39;</span><span class="p">,</span> <span class="n">locator</span><span class="o">=</span><span class="s">&#39;address&#39;</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mf">85.3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">better</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">(</span><span class="n">match_addr</span><span class="o">=</span><span class="s">&#39;123 Any St&#39;</span><span class="p">,</span> <span class="n">locator</span><span class="o">=</span><span class="s">&#39;parcel&#39;</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">92</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">(</span><span class="n">match_addr</span><span class="o">=</span><span class="s">&#39;123 Any St&#39;</span><span class="p">,</span> <span class="n">locator</span><span class="o">=</span><span class="s">&#39;rooftop&#39;</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wolf_good</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">(</span><span class="n">match_addr</span><span class="o">=</span><span class="s">&#39;1200 Callowhill St&#39;</span><span class="p">,</span> <span class="n">locator</span><span class="o">=</span><span class="s">&#39;address&#39;</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">76</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wolf_better</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">(</span><span class="n">match_addr</span><span class="o">=</span><span class="s">&#39;1200 Callowhill St&#39;</span><span class="p">,</span> <span class="n">locator</span><span class="o">=</span><span class="s">&#39;parcel&#39;</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wolf_best</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">(</span><span class="n">match_addr</span><span class="o">=</span><span class="s">&#39;1200 Callowhill St&#39;</span><span class="p">,</span> <span class="n">locator</span><span class="o">=</span><span class="s">&#39;rooftop&#39;</span><span class="p">,</span>
+                                   <span class="n">score</span><span class="o">=</span><span class="mf">99.9</span><span class="p">,</span> <span class="n">x</span><span class="o">=-</span><span class="mf">75.158</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">39.959</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wolf_340</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">(</span><span class="n">match_addr</span><span class="o">=</span><span class="s">&#39;340 N 12th St&#39;</span><span class="p">,</span> <span class="n">locator</span><span class="o">=</span><span class="s">&#39;rooftop&#39;</span><span class="p">,</span>
+                                  <span class="n">score</span><span class="o">=</span><span class="mf">99.5</span><span class="p">,</span> <span class="n">x</span><span class="o">=-</span><span class="mf">75.158</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">39.959</span><span class="p">)</span> <span class="c"># same coords</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inky</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">(</span><span class="n">match_addr</span><span class="o">=</span><span class="s">&#39;324 N Broad St&#39;</span><span class="p">,</span> <span class="n">locator</span><span class="o">=</span><span class="s">&#39;rooftop&#39;</span><span class="p">,</span>
+                              <span class="n">score</span><span class="o">=</span><span class="mf">99.9</span><span class="p">,</span> <span class="n">x</span><span class="o">=-</span><span class="mf">75.163</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">39.959</span><span class="p">)</span> <span class="c"># same y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">capt_thomas</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">(</span><span class="n">match_addr</span><span class="o">=</span><span class="s">&#39;843 Callowhill St&#39;</span><span class="p">,</span> <span class="n">locator</span><span class="o">=</span><span class="s">&#39;rooftop&#39;</span><span class="p">,</span>
+                                     <span class="n">score</span><span class="o">=</span><span class="mf">99.9</span><span class="p">,</span> <span class="n">x</span><span class="o">=-</span><span class="mf">75.163</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">39.959</span><span class="p">)</span> <span class="c"># same y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reading_term</span> <span class="o">=</span> <span class="n">Candidate</span><span class="p">(</span><span class="n">match_addr</span><span class="o">=</span><span class="s">&#39;1200 Arch St&#39;</span><span class="p">,</span> <span class="n">locator</span><span class="o">=</span><span class="s">&#39;rooftop&#39;</span><span class="p">,</span>
+                                      <span class="n">score</span><span class="o">=</span><span class="mf">99.9</span><span class="p">,</span> <span class="n">x</span><span class="o">=-</span><span class="mf">75.163</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">39.953</span><span class="p">)</span> <span class="c"># same x</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">locators_worse_to_better</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;address&#39;</span><span class="p">,</span> <span class="s">&#39;parcel&#39;</span><span class="p">,</span> <span class="s">&#39;rooftop&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_country_CountryPreProcessor"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_country_CountryPreProcessor">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_country_CountryPreProcessor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test CountryPreProcessor&quot;&quot;&quot;</span>
+        <span class="n">acceptable_countries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;US&#39;</span><span class="p">,</span> <span class="s">&#39;UK&#39;</span><span class="p">]</span>
+        <span class="n">country_map</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;GB&#39;</span><span class="p">:</span><span class="s">&#39;UK&#39;</span><span class="p">}</span> <span class="c"># &#39;from&#39;:&#39;to&#39;</span>
+        <span class="n">place_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pq_uk_with_country_GB</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CountryPreProcessor</span><span class="p">(</span><span class="n">acceptable_countries</span><span class="p">,</span> <span class="n">country_map</span><span class="p">)</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="n">country_exp</span> <span class="o">=</span> <span class="s">&#39;UK&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="o">.</span><span class="n">country</span><span class="p">,</span> <span class="n">country_exp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_country_RequireCountry"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_country_RequireCountry">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_country_RequireCountry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test RequireCountry preprocessor.&quot;&quot;&quot;</span>
+        <span class="n">place_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pq_us</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">RequireCountry</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="n">place_exp</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="n">place_exp</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_CancelIfRegexInAttr"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_CancelIfRegexInAttr">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_CancelIfRegexInAttr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test CancelIfRegexInAttr preprocessor.&quot;&quot;&quot;</span>
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;PO Box 123, Philadelphia, PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfRegexInAttr</span><span class="p">(</span><span class="n">regex</span><span class="o">=</span><span class="s">&quot;po box&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;query&#39;</span><span class="p">,))</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="n">place_exp</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="n">place_exp</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_CancelIfRegexInAttr_case_sensitive"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_CancelIfRegexInAttr_case_sensitive">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_CancelIfRegexInAttr_case_sensitive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test CancelIfRegexInAttr preprocessor using case-sensitive option.&quot;&quot;&quot;</span>
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;PO Box 123, Philadelphia, PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfRegexInAttr</span><span class="p">(</span><span class="n">regex</span><span class="o">=</span><span class="s">&quot;PO BOX&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;query&#39;</span><span class="p">,),</span> <span class="n">ignorecase</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="n">place_exp</span> <span class="o">=</span> <span class="n">place_in</span> <span class="c"># we should still have it because PO BOX does not match exactly</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="n">place_exp</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_CancelIfPOBox"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_CancelIfPOBox">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_CancelIfPOBox</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test CancelIfPOBox preprocessor.&quot;&quot;&quot;</span>
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;PO Box 123, Philadelphia, PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfPOBox</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s">&#39;PO Box 123&#39;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s">&#39;Philadelphia&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s">&#39;PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfPOBox</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s">&#39;P.O Box 123&#39;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s">&#39;Philadelphia&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s">&#39;PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfPOBox</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>  
+        
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s">&#39;P  O  box 123&#39;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s">&#39;Philadelphia&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s">&#39;PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfPOBox</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s">&#39;P.O. Box 123&#39;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s">&#39;Philadelphia&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s">&#39;PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfPOBox</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>  
+        
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s">&#39;P.O. Box K&#39;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s">&#39;New Stanton&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s">&#39;PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfPOBox</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s">&#39;PO. Box K&#39;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s">&#39;New Stanton&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s">&#39;PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfPOBox</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s">&#39;P.O.B. 123&#39;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s">&#39;Philadelphia&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s">&#39;PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfPOBox</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>      
+        
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s">&#39;P.O. BX123&#39;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s">&#39;Philadelphia&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s">&#39;PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfPOBox</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s">&#39;POB 123&#39;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s">&#39;Philadelphia&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s">&#39;PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfPOBox</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;POBOX 123, Philadelphia, PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfPOBox</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>  
+        
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;1200 Callowhill St, PO Box 466, Philadelphia, PA&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">CancelIfPOBox</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="p">,</span> <span class="n">place_in</span><span class="p">)</span> <span class="c"># should still geocode because we a physical address</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_filter_AttrFilter_exact"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_filter_AttrFilter_exact">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_filter_AttrFilter_exact</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test AttrFilter postprocessor.&quot;&quot;&quot;</span>
+        <span class="n">good_values</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;roof&#39;</span><span class="p">,</span> <span class="s">&#39;parcel&#39;</span><span class="p">]</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">]</span>
+        <span class="n">candidates_exp</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">]</span> <span class="c"># just the one with the parcel locator</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">AttrFilter</span><span class="p">(</span><span class="n">good_values</span><span class="p">,</span> <span class="s">&#39;locator&#39;</span><span class="p">,</span> <span class="n">exact_match</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">,</span> <span class="n">candidates_exp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_filter_AttrFilter_inexact"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_filter_AttrFilter_inexact">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_filter_AttrFilter_inexact</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test AttrFilter postprocessor with ``exact_match=False``.&quot;&quot;&quot;</span>
+        <span class="n">good_values</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;roof&#39;</span><span class="p">,</span> <span class="s">&#39;parcel&#39;</span><span class="p">]</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">]</span>
+        <span class="n">candidates_exp</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">]</span> <span class="c"># roof is a substr of rooftop</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">AttrFilter</span><span class="p">(</span><span class="n">good_values</span><span class="p">,</span> <span class="s">&#39;locator&#39;</span><span class="p">,</span> <span class="n">exact_match</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">,</span> <span class="n">candidates_exp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_filter_AttrExclude_exact"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_filter_AttrExclude_exact">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_filter_AttrExclude_exact</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test AttrExclude with ``exact_match=True``.&quot;&quot;&quot;</span>
+        <span class="n">bad_values</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;address&#39;</span><span class="p">,</span> <span class="s">&#39;parc&#39;</span><span class="p">]</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">]</span>
+        <span class="n">candidates_exp</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">]</span>
+        <span class="c"># The candidate with the &#39;parcel&#39; locator stays because &#39;parcel&#39; is not in bad values</span>
+        <span class="c"># and the processor by default only looks for exact matches against bad_values.</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">AttrExclude</span><span class="p">(</span><span class="n">bad_values</span><span class="p">,</span> <span class="s">&#39;locator&#39;</span><span class="p">,</span> <span class="n">exact_match</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">,</span> <span class="n">candidates_exp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_filter_AttrExclude_inexact"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_filter_AttrExclude_inexact">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_filter_AttrExclude_inexact</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test AttrExclude with ``exact_match=False``.&quot;&quot;&quot;</span>
+        <span class="n">bad_values</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;address&#39;</span><span class="p">,</span> <span class="s">&#39;parc&#39;</span><span class="p">]</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">]</span>
+        <span class="n">candidates_exp</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">]</span>
+        <span class="c"># This can be confusing. There is only one because the match does NOT have to be exact, but</span>
+        <span class="c"># we are using this processor to EXCLUDE values, so an inexact match will result in fewer candidates</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">AttrExclude</span><span class="p">(</span><span class="n">bad_values</span><span class="p">,</span> <span class="s">&#39;locator&#39;</span><span class="p">,</span> <span class="n">exact_match</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">,</span> <span class="n">candidates_exp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_postpro_GroupBy"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_postpro_GroupBy">[docs]</a>    <span class="k">def</span> <span class="nf">test_postpro_GroupBy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test GroupBy postprocessor.&quot;&quot;&quot;</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wolf_best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wolf_good</span><span class="p">]</span>
+        <span class="n">candidates_exp</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wolf_best</span><span class="p">]</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">GroupBy</span><span class="p">(</span><span class="s">&#39;match_addr&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">,</span> <span class="n">candidates_exp</span><span class="p">)</span>
+        </div>
+    <span class="k">def</span> <span class="nf">test_postpro_GroupByMultiple</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">wolf_best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wolf_340</span><span class="p">]</span>
+        <span class="n">candidates_exp</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">wolf_best</span><span class="p">]</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">GroupBy</span><span class="p">((</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">,</span> <span class="n">candidates_exp</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_parsing_ParseSingleLine"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_parsing_ParseSingleLine">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_parsing_ParseSingleLine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test ParseSingleLine preprocessor using single-line UK address.&quot;&quot;&quot;</span>
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;32 Bond Road, Surbiton, Surrey KT6 7SH&#39;</span><span class="p">)</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">ParseSingleLine</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="s">&#39;32 Bond Road&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="o">.</span><span class="n">city</span><span class="p">,</span> <span class="s">&#39;Surbiton, Surrey&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="o">.</span><span class="n">postal</span><span class="p">,</span> <span class="s">&#39;KT6 7SH&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_rename_AttrRename_inexact"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_rename_AttrRename_inexact">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_rename_AttrRename_inexact</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test AttrRename postprocessor using partial search string.&quot;&quot;&quot;</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">]</span>
+        <span class="n">locator_exp</span> <span class="o">=</span> <span class="s">&#39;el_techo&#39;</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">AttrRename</span><span class="p">(</span><span class="s">&#39;locator&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;oofto&#39;</span><span class="p">:</span> <span class="s">&#39;el_techo&#39;</span><span class="p">})</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">locator</span><span class="p">,</span> <span class="n">locator_exp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_rename_AttrRename_exact"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_rename_AttrRename_exact">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_rename_AttrRename_exact</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test AttrRename postprocessor using exact search string.&quot;&quot;&quot;</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">]</span>
+        <span class="n">locator_exp</span> <span class="o">=</span> <span class="s">&#39;el_techo&#39;</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">AttrRename</span><span class="p">(</span><span class="s">&#39;locator&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;rooftop&#39;</span><span class="p">:</span> <span class="s">&#39;el_techo&#39;</span><span class="p">})</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">locator</span><span class="p">,</span> <span class="n">locator_exp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_scoring_UseHighScoreIfAtLeast"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_scoring_UseHighScoreIfAtLeast">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_scoring_UseHighScoreIfAtLeast</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test UseHighScoreIfAtLeast postprocessor.&quot;&quot;&quot;</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">]</span>
+        <span class="n">candidates_exp</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">]</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">UseHighScoreIfAtLeast</span><span class="p">(</span><span class="mi">90</span><span class="p">)</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">,</span> <span class="n">candidates_exp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_scoring_ScoreSorter"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_scoring_ScoreSorter">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_scoring_ScoreSorter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test ScoreSorter postprocessor.&quot;&quot;&quot;</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">]</span>
+        <span class="n">candidates_exp</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">]</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">ScoreSorter</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">,</span> <span class="n">candidates_exp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_scoring_ScoreSorter_asc"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_scoring_ScoreSorter_asc">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_scoring_ScoreSorter_asc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test ScoreSorter postprocessor with ``reverse=False``.&quot;&quot;&quot;</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">]</span>
+        <span class="n">candidates_exp</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">]</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">ScoreSorter</span><span class="p">(</span><span class="n">reverse</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">,</span> <span class="n">candidates_exp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_sort_AttrSorter"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_sort_AttrSorter">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_sort_AttrSorter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test AttrSorter postprocessor.&quot;&quot;&quot;</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">]</span>
+        <span class="n">candidates_exp</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">]</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">AttrSorter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">locators_worse_to_better</span><span class="p">)</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">,</span> <span class="n">candidates_exp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_sort_AttrReverseSorter"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_sort_AttrReverseSorter">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_sort_AttrReverseSorter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test AttrReverseSorter postprocessor.&quot;&quot;&quot;</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">]</span>
+        <span class="n">candidates_exp</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">better</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">good</span><span class="p">]</span> <span class="c"># reverse order of self.locators_worse_to_better</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">AttrReverseSorter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">locators_worse_to_better</span><span class="p">)</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">,</span> <span class="n">candidates_exp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_streetnumber_ReplaceRangeWithNumber"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_streetnumber_ReplaceRangeWithNumber">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_streetnumber_ReplaceRangeWithNumber</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test ReplaceRangeWithNumber preprocessor.&quot;&quot;&quot;</span>
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="s">&#39;4452-54 Main Street, Philadelphia&#39;</span><span class="p">)</span> <span class="c">#Mom&#39;s Pizza in Manayunk</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">ReplaceRangeWithNumber</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="n">query_exp</span> <span class="o">=</span> <span class="s">&#39;4452 Main Street, Philadelphia&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="o">.</span><span class="n">query</span><span class="p">,</span> <span class="n">query_exp</span><span class="p">)</span>
+
+        <span class="n">zip_plus_4</span> <span class="o">=</span> <span class="s">&#39;19127-1112&#39;</span>
+        <span class="n">place_in</span> <span class="o">=</span> <span class="n">PlaceQuery</span><span class="p">(</span><span class="n">zip_plus_4</span><span class="p">)</span> <span class="c"># sets PlaceQuery.query to zip_plus_4 on init</span>
+        <span class="n">place_out</span> <span class="o">=</span> <span class="n">ReplaceRangeWithNumber</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">place_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">place_out</span><span class="o">.</span><span class="n">query</span><span class="p">,</span> <span class="n">zip_plus_4</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeocoderProcessorTest.test_pro_SnapPoints"><a class="viewcode-back" href="../../../tests.html#omgeo.tests.tests.GeocoderProcessorTest.test_pro_SnapPoints">[docs]</a>    <span class="k">def</span> <span class="nf">test_pro_SnapPoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Take two candidates within 50 metres and eliminate one.&quot;&quot;&quot;</span>
+        <span class="n">candidates_in</span> <span class="o">=</span> <span class="p">[</span><span class="n">Candidate</span><span class="p">(</span><span class="n">match_addr</span><span class="o">=</span><span class="s">&#39;340 N 12th St, Philadelphia, PA, 19107&#39;</span><span class="p">,</span>
+                                   <span class="n">x</span><span class="o">=-</span><span class="mf">75.158433167</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">39.958727992</span><span class="p">),</span>
+                         <span class="n">Candidate</span><span class="p">(</span><span class="n">match_addr</span><span class="o">=</span><span class="s">&#39;1200 Callowhill St, Philadelphia, PA, 19123&#39;</span><span class="p">,</span>
+                                   <span class="n">x</span><span class="o">=-</span><span class="mf">75.158303781</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">39.959040684</span><span class="p">)]</span> <span class="c"># about 40m away</span>
+        <span class="n">candidates_exp</span> <span class="o">=</span> <span class="p">[</span><span class="n">candidates_in</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="c"># should just keep the first one.</span>
+        <span class="n">candidates_out</span> <span class="o">=</span> <span class="n">SnapPoints</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">candidates_in</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual_</span><span class="p">(</span><span class="n">candidates_out</span><span class="p">,</span> <span class="n">candidates_exp</span><span class="p">)</span>
+        
+</div></div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python-omgeo 1.4.9 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../omgeo.html" >omgeo</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012 Azavea.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
