@@ -45,6 +45,7 @@ class GeocoderTest(OmgeoTestCase):
                     'wolf': PlaceQuery('Wolf Building'),
                     'wolf_philly': PlaceQuery('Wolf Building, Philadelphia PA'),
                     'wolf_bounded': PlaceQuery('Wolf Building', viewbox=vb['callowhill']),
+                    'bounded_340_12th': PlaceQuery('340 12th St, Philadelphia PA', viewbox=vb['callowhill'])
                     'alpha_774R_W_Central_Ave': PlaceQuery('774R W Central Ave Alpha NJ'),
                     'alpha_774_W_Central_Ave_Rear': PlaceQuery('774 W Central Ave Rear, Alpha NJ'),
                     '8_kirkbride': PlaceQuery('8 Kirkbride Rd 08822'),
@@ -124,6 +125,18 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g_bing.get_candidates(self.pq['alpha_774_W_Central_Ave_Rear'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
+
+    def test_geocode_esri_wgs_340_12th_bounded(self):
+        """
+        Trying to geocode ``340 12th St, Philadelphia PA`` would normally return results
+        for both ``340 N 12th St`` and ``340 S 12th St``. Using a bounding box around Callowhill,
+        we should only get the former.
+        """
+        candidates = self.g.get_candidates(self.pq['bounded_340_12th'])
+        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
+        self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
+        self.assertEqual('340 N 12th' in candidates[0].match_addr, True,
+                         '"340 N 12th" not found in match_addr.')
 
     def test_geocode_esri_na_us_soap(self):
         """Test ESRI North America SOAP geocoder"""
