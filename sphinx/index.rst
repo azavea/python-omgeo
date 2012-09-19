@@ -3,8 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+Table of Contents
++++++++++++++++++
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    
    User Documentation (you are here) <self>
    Test Documentation for Developers <tests>
