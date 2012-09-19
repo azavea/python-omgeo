@@ -45,7 +45,7 @@ class GeocoderTest(OmgeoTestCase):
                     'wolf': PlaceQuery('Wolf Building'),
                     'wolf_philly': PlaceQuery('Wolf Building, Philadelphia PA'),
                     'wolf_bounded': PlaceQuery('Wolf Building', viewbox=vb['callowhill']),
-                    'bounded_340_12th': PlaceQuery('340 12th St, Philadelphia PA', viewbox=vb['callowhill'])
+                    'bounded_340_12th': PlaceQuery('340 12th St, Philadelphia PA', viewbox=vb['callowhill']),
                     'alpha_774R_W_Central_Ave': PlaceQuery('774R W Central Ave Alpha NJ'),
                     'alpha_774_W_Central_Ave_Rear': PlaceQuery('774 W Central Ave Rear, Alpha NJ'),
                     '8_kirkbride': PlaceQuery('8 Kirkbride Rd 08822'),
