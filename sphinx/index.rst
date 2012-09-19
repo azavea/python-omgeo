@@ -30,11 +30,10 @@ places
 
 services
 ++++++++
-.. automodule:: omgeo.services.base
-   :members:
 
 .. automodule:: omgeo.services
    :members:
+   :inherited-members:
 
 Preprocessors for cleaning user input
 +++++++++++++++++++++++++++++++++++++
