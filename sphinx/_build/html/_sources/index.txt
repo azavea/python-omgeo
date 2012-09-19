@@ -8,18 +8,22 @@ Introduction
 
 .. include:: ../README.rst
 
+.. toctree::
+   :maxdepth: 1
+   
+   User Documentation <self>
+   Test Documentation for Developers <tests>
+
 Geocoder
 ++++++++
 .. automodule:: omgeo
    :members:
-
 
 places
 ++++++
 
 .. automodule:: omgeo.places
    :members:
-
 
 services
 ++++++++
@@ -29,13 +33,11 @@ services
 .. automodule:: omgeo.services
    :members:
 
-
 Preprocessors for cleaning user input
 +++++++++++++++++++++++++++++++++++++
 
 .. automodule:: omgeo.processors.preprocessors
    :members:
-
 
 Postprocessors for filtering and sorting results
 ++++++++++++++++++++++++++++++++++++++++++++++++

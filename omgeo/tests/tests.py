@@ -111,7 +111,7 @@ class GeocoderTest(OmgeoTestCase):
         Geocoder expected to return the same place twice -- one with city as Flemington,
         and one with city as Readington Twp. This test checks that only one is picked.
         """
-        candidates = self.g.get_candidates(self.pq['8_kirkbride'])
+        candidates = self.g_esri_na.get_candidates(self.pq['8_kirkbride'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
         
@@ -121,7 +121,7 @@ class GeocoderTest(OmgeoTestCase):
         Bing geocoder expected to return the same place twice -- one with city as Alpha,
         and one with city as Phillipsburg. This test checks that only one is picked.
         """
-        candidates = self.g.get_candidates(self.pq['alpha_774_W_Central_Ave_Rear'])
+        candidates = self.g_bing.get_candidates(self.pq['alpha_774_W_Central_Ave_Rear'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
 

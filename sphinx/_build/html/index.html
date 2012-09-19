@@ -24,7 +24,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="python-omgeo 1.4.9 documentation" href="#" /> 
+    <link rel="top" title="python-omgeo 1.4.9 documentation" href="#" />
+    <link rel="next" title="Tests" href="tests.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,6 +37,9 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="tests.html" title="Tests"
+             accesskey="N">next</a> |</li>
         <li><a href="#">python-omgeo 1.4.9 documentation</a> &raquo;</li> 
       </ul>
     </div>  
@@ -53,8 +57,9 @@ supported geocoders:</p>
 <ul class="simple">
 <li>Bing</li>
 <li>Citizen Atlas (Washington DC)</li>
-<li>ESRI North American locator (REST &amp; SOAP)</li>
 <li>ESRI European address locator (REST &amp; SOAP)</li>
+<li>ESRI North American locator (REST &amp; SOAP)</li>
+<li>ESRI <a class="reference external" href="http://geocode.arcgis.com/arcgis/geocoding.html">World Geocoding Service</a></li>
 <li>MapQuest Licensed Data API</li>
 <li>MapQuest-hosted Nominatim Open Data API</li>
 </ul>
@@ -76,6 +81,12 @@ or <a class="reference external" href="http://media.readthedocs.org/pdf/python-o
 <span class="go">-75.15843 39.95872 340 N 12th St, Philadelphia, PA, 19107</span>
 <span class="go">-75.16136 39.94531 340 S 12th St, Philadelphia, PA, 19107</span>
 </pre></div>
+</div>
+<div class="toctree-wrapper compound">
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">User Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests.html">Test Documentation for Developers</a></li>
+</ul>
 </div>
 </div>
 <div class="section" id="module-omgeo">
@@ -488,13 +499,13 @@ if they are set.</p>
 by MapQuest</a>.</p>
 <dl class="attribute">
 <dt id="omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS">
-<tt class="descname">DEFAULT_POSTPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.postprocessors.AttrFilter instance at 0x32c0440&gt;, &lt;omgeo.processors.postprocessors.AttrExclude instance at 0x32c03b0&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">DEFAULT_POSTPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.postprocessors.AttrFilter instance at 0x26ba680&gt;, &lt;omgeo.processors.postprocessors.AttrExclude instance at 0x26ba320&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Postprocessors to use with this geocoder service, in order of desired execution.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="omgeo.services.Nominatim.DEFAULT_PREPROCESSORS">
-<tt class="descname">DEFAULT_PREPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.preprocessors.ReplaceRangeWithNumber instance at 0x32c0320&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_PREPROCESSORS" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">DEFAULT_PREPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.preprocessors.ReplaceRangeWithNumber instance at 0x26ba5f0&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_PREPROCESSORS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Preprocessors to use with this geocoder service, in order of desired execution.</p>
 </dd></dl>
 
@@ -653,7 +664,7 @@ indicates the house number.</p>
 </div>
 <dl class="attribute">
 <dt id="omgeo.processors.preprocessors.ReplaceRangeWithNumber.RE_STREET_NUMBER">
-<tt class="descname">RE_STREET_NUMBER</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x32fb2a0&gt;</em><a class="headerlink" href="#omgeo.processors.preprocessors.ReplaceRangeWithNumber.RE_STREET_NUMBER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">RE_STREET_NUMBER</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x2788230&gt;</em><a class="headerlink" href="#omgeo.processors.preprocessors.ReplaceRangeWithNumber.RE_STREET_NUMBER" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Regular expression to represent ranges like:</dt>
 <dd><ul class="first last simple">
@@ -1158,7 +1169,9 @@ Otherwise, returns original list of Candidates.</td>
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Introduction</a></li>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-omgeo">Geocoder</a></li>
 <li><a class="reference internal" href="#module-omgeo.places">places</a></li>
 <li><a class="reference internal" href="#module-omgeo.services.base">services</a></li>
@@ -1167,6 +1180,9 @@ Otherwise, returns original list of Candidates.</td>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tests.html"
+                        title="next chapter">Tests</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/index.txt"
@@ -1198,6 +1214,9 @@ Otherwise, returns original list of Candidates.</td>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="tests.html" title="Tests"
+             >next</a> |</li>
         <li><a href="#">python-omgeo 1.4.9 documentation</a> &raquo;</li> 
       </ul>
     </div>
