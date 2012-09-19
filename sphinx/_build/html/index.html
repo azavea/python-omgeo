@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Introduction &mdash; python-omgeo 1.4.9 documentation</title>
+    <title>Table of Contents &mdash; python-omgeo 1.4.9 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -49,7 +49,16 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="introduction">
+  <div class="section" id="table-of-contents">
+<h1>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">User Documentation (you are here)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests.html">Test Documentation for Developers</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
 <p><strong>The Oatmeal Geocoder - Python Edition</strong></p>
 <p><tt class="docutils literal"><span class="pre">python-omgeo</span></tt> is a geocoding abstraction layer written in python.  Currently
@@ -81,12 +90,6 @@ or <a class="reference external" href="http://media.readthedocs.org/pdf/python-o
 <span class="go">-75.15843 39.95872 340 N 12th St, Philadelphia, PA, 19107</span>
 <span class="go">-75.16136 39.94531 340 S 12th St, Philadelphia, PA, 19107</span>
 </pre></div>
-</div>
-<div class="toctree-wrapper compound">
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="">User Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tests.html">Test Documentation for Developers</a></li>
-</ul>
 </div>
 </div>
 <div class="section" id="module-omgeo">
@@ -499,13 +502,13 @@ if they are set.</p>
 by MapQuest</a>.</p>
 <dl class="attribute">
 <dt id="omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS">
-<tt class="descname">DEFAULT_POSTPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.postprocessors.AttrFilter instance at 0x26ba680&gt;, &lt;omgeo.processors.postprocessors.AttrExclude instance at 0x26ba320&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">DEFAULT_POSTPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.postprocessors.AttrFilter instance at 0x3152290&gt;, &lt;omgeo.processors.postprocessors.AttrExclude instance at 0x3152830&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_POSTPROCESSORS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Postprocessors to use with this geocoder service, in order of desired execution.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="omgeo.services.Nominatim.DEFAULT_PREPROCESSORS">
-<tt class="descname">DEFAULT_PREPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.preprocessors.ReplaceRangeWithNumber instance at 0x26ba5f0&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_PREPROCESSORS" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">DEFAULT_PREPROCESSORS</tt><em class="property"> = [&lt;omgeo.processors.preprocessors.ReplaceRangeWithNumber instance at 0x30740e0&gt;]</em><a class="headerlink" href="#omgeo.services.Nominatim.DEFAULT_PREPROCESSORS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Preprocessors to use with this geocoder service, in order of desired execution.</p>
 </dd></dl>
 
@@ -664,7 +667,7 @@ indicates the house number.</p>
 </div>
 <dl class="attribute">
 <dt id="omgeo.processors.preprocessors.ReplaceRangeWithNumber.RE_STREET_NUMBER">
-<tt class="descname">RE_STREET_NUMBER</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x2788230&gt;</em><a class="headerlink" href="#omgeo.processors.preprocessors.ReplaceRangeWithNumber.RE_STREET_NUMBER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">RE_STREET_NUMBER</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x3befac0&gt;</em><a class="headerlink" href="#omgeo.processors.preprocessors.ReplaceRangeWithNumber.RE_STREET_NUMBER" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Regular expression to represent ranges like:</dt>
 <dd><ul class="first last simple">
@@ -1169,9 +1172,10 @@ Otherwise, returns original list of Candidates.</td>
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#">Table of Contents</a><ul>
 </ul>
 </li>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#module-omgeo">Geocoder</a></li>
 <li><a class="reference internal" href="#module-omgeo.places">places</a></li>
 <li><a class="reference internal" href="#module-omgeo.services.base">services</a></li>

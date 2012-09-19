@@ -30,6 +30,7 @@ class OmgeoTestCase(unittest.TestCase):
         self.assertEqual_(str(output).upper(), str(expected).upper())
 
 class GeocoderTest(OmgeoTestCase):
+    """Tests using various geocoding APIs. Requires internet connection."""
     g = None # not set until set up
     BING_KEY_REQUIRED_MSG = 'Enter a Bing Maps API key to run the Bing tests.'
     MAPQUEST_KEY_REQUIRED_MSG = 'Enter a MapQuest API key to run the MapQuest tests. '\
@@ -313,6 +314,7 @@ class GeocoderTest(OmgeoTestCase):
             'EsriEU geocoder incorrectly processed defaults')
 
 class GeocoderProcessorTest(OmgeoTestCase):
+    """Tests using various pre- and post-processors."""
     def setUp(self):
         # places
         self.pq_us = PlaceQuery('1200 Callowhill St, Philadelphia, PA 19107')
