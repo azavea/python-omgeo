@@ -3,16 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. toctree::
+   :maxdepth: 1
+   
+   User Documentation (you are here) <self>
+   Test Documentation for Developers <tests>
+
 Introduction
 ++++++++++++
 
 .. include:: ../README.rst
-
-.. toctree::
-   :maxdepth: 1
-   
-   User Documentation <self>
-   Test Documentation for Developers <tests>
 
 Geocoder
 ++++++++
