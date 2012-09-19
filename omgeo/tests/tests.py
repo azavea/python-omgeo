@@ -37,66 +37,62 @@ class GeocoderTest(OmgeoTestCase):
     
     def setUp(self):
         # Viewbox objects
-        vb = {}
-        vb['callowhill'] = Viewbox(-75.162628, 39.962769, -75.150963, 39.956322)
+        vb = {'callowhill': Viewbox(-75.162628, 39.962769, -75.150963, 39.956322)}
         # PlaceQuery objects
-        self.pq = {}
-        # North American Addresses:
-        self.pq['azavea'] = PlaceQuery('340 N 12th St Ste 402 Philadelphia PA')
-        self.pq['ambiguous_azavea'] = PlaceQuery('340 12th St Ste 402 Philadelphia PA')
-        self.pq['wolf'] = PlaceQuery('Wolf Building')
-        self.pq['wolf_philly'] = PlaceQuery('Wolf Building, Philadelphia PA')
-        self.pq['wolf_bounded'] = PlaceQuery('Wolf Building', viewbox=vb['callowhill'])
-        self.pq['alpha_774R_W_Central_Ave'] = PlaceQuery('774R W Central Ave Alpha NJ')
-        self.pq['alpha_774_W_Central_Ave_Rear'] = PlaceQuery('774 W Central Ave Rear, Alpha NJ')
-        self.pq['8_kirkbride'] = PlaceQuery('8 Kirkbride Rd 08822')
-        self.pq['george_washington'] = PlaceQuery('201 W Montmorency Blvd, George, Washington')
-        self.pq['pine_needles_dr'] = PlaceQuery('11761 pine needles providence forge')
-        self.pq['pine_needles_ct'] = PlaceQuery('5328 pine needles providence forge')
-        self.pq['pine_needles_terr'] = PlaceQuery('5359 pine needles providence forge')
-        self.pq['moorestown_hyphenated'] = PlaceQuery('111-113 W Main St Moorestown NJ')
-        self.pq['willow_street'] = PlaceQuery('2819F Willow Street Pike Willow Street PA')
-        self.pq['quebec'] = PlaceQuery('756 Rue Berri Montreal QC', country='CA')
-        self.pq['quebec_accent'] = PlaceQuery('527 Ch. Beauséjour, Saint-Elzéar-de-Témiscouata QC')
-        self.pq['quebec_hyphenated'] = PlaceQuery('227-227A Rue Commerciale, Saint-Louis-du-Ha! Ha! QC')
-        # European Addresses:
-        self.pq['london_pieces'] = PlaceQuery(address='31 Maiden Lane', city='London', country='UK')
-        self.pq['london_one_line'] = PlaceQuery('31 Maiden Lane, London WC2E', country='UK')
-        self.pq['london_pieces_hyphenated'] = PlaceQuery(address='31-32 Maiden Lane', city='London', country='UK')
-        self.pq['london_one_line_hyphenated'] = PlaceQuery('31-32 Maiden Lane London WC2E', country='UK')
-        # Oceanian Addresses:
-        self.pq['karori'] = PlaceQuery('102 Karori Road Karori Wellington', country='NZ')
-
-        # Set up geocoders
-        if ESRI_MAPS_API_KEY is None:
-            esri_settings = {}
-        else:
-            esri_settings = dict(api_key=ESRI_MAPS_API_KEY)
-        self.service_esri_na = ['omgeo.services.EsriNA', dict(settings=esri_settings)]
-        self.service_esri_eu = ['omgeo.services.EsriEU', dict(settings=esri_settings)]
-        g_sources = [self.service_esri_na, self.service_esri_eu]
-        self.g_esri_na = Geocoder([self.service_esri_na])
-        self.g_esri_eu = Geocoder([self.service_esri_eu])
+        self.pq = { 'azavea': PlaceQuery('340 N 12th St Ste 402 Philadelphia PA'),
+                    'ambiguous_azavea': PlaceQuery('340 12th St Ste 402 Philadelphia PA'),
+                     # North American Addresses:
+                    'wolf': PlaceQuery('Wolf Building'),
+                    'wolf_philly': PlaceQuery('Wolf Building, Philadelphia PA'),
+                    'wolf_bounded': PlaceQuery('Wolf Building', viewbox=vb['callowhill']),
+                    'alpha_774R_W_Central_Ave': PlaceQuery('774R W Central Ave Alpha NJ'),
+                    'alpha_774_W_Central_Ave_Rear': PlaceQuery('774 W Central Ave Rear, Alpha NJ'),
+                    '8_kirkbride': PlaceQuery('8 Kirkbride Rd 08822'),
+                    'george_washington': PlaceQuery('201 W Montmorency Blvd, George, Washington'),
+                    'pine_needles_dr': PlaceQuery('11761 pine needles providence forge'),
+                    'pine_needles_ct': PlaceQuery('5328 pine needles providence forge'),
+                    'pine_needles_terr': PlaceQuery('5359 pine needles providence forge'),
+                    'moorestown_hyphenated': PlaceQuery('111-113 W Main St Moorestown NJ'),
+                    'willow_street': PlaceQuery('2819F Willow Street Pike Willow Street PA'),
+                    'quebec': PlaceQuery('756 Rue Berri Montreal QC', country='CA'),
+                    'quebec_accent': PlaceQuery('527 Ch. Beauséjour, Saint-Elzéar-de-Témiscouata QC'),
+                    'quebec_hyphenated': PlaceQuery('227-227A Rue Commerciale, Saint-Louis-du-Ha! Ha! QC'),
+                    # European Addresses:
+                    'london_pieces': PlaceQuery(address='31 Maiden Lane', city='London', country='UK'),
+                    'london_one_line': PlaceQuery('31 Maiden Lane, London WC2E', country='UK'),
+                    'london_pieces_hyphenated': PlaceQuery(address='31-32 Maiden Lane', city='London', country='UK'),
+                    'london_one_line_hyphenated': PlaceQuery('31-32 Maiden Lane London WC2E', country='UK'),
+                    # Oceanian Addresses:
+                    'karori': PlaceQuery('102 Karori Road Karori Wellington', country='NZ'),
+                    }
+        
         if BING_MAPS_API_KEY is not None:
             bing_settings = dict(api_key=BING_MAPS_API_KEY)
-            self.service_bing = ['omgeo.services.Bing', dict(settings=bing_settings)]
-            g_sources.append(self.service_bing)
-            self.g_bing = Geocoder([self.service_bing])
+            self.g_bing = Geocoder([['omgeo.services.Bing', {'settings': bing_settings}]])
+
         if MAPQUEST_API_KEY is not None:
             mapquest_settings = dict(api_key=MAPQUEST_API_KEY)
-            self.service_mapquest = ['omgeo.services.MapQuest', dict(settings=mapquest_settings)]
-            self.g_mapquest = Geocoder([self.service_mapquest])
-            self.service_mapquest_ssl = ['omgeo.services.MapQuestSSL', dict(settings=mapquest_settings)]
-            self.g_mapquest_ssl = Geocoder([self.service_mapquest_ssl])            
-        self.service_nom = ['omgeo.services.Nominatim', {}]
-        g_sources.append(self.service_nom)
-        self.g_nom = Geocoder([self.service_nom])
-        self.g = Geocoder(sources=g_sources) # main geocoder used for tests
-        # other geocoders for services not used in self.g
+            self.g_mapquest = Geocoder(['omgeo.services.MapQuest', {'settings': mapquest_settings}])
+            self.g_mapquest_ssl = Geocoder(['omgeo.services.MapQuestSSL', {'settings': mapquest_settings}])            
+
+        #: main geocoder used for tests, using default APIs
+        self.g = Geocoder() 
+
+        # Set up params for old ESRI rest services:
+        esri_settings = {} if ESRI_MAPS_API_KEY is None else {'api_key': ESRI_MAPS_API_KEY}
+        old_esri_params = {'settings': esri_settings}
+
+        # geocoders using individual services
         self.g_dc = Geocoder([['omgeo.services.CitizenAtlas', {}]])
+        self.g_esri_na = Geocoder([['omgeo.services.EsriNA', old_esri_params]])
+        self.g_esri_eu = Geocoder([['omgeo.services.EsriEU', old_esri_params]])
         self.g_esri_na_soap = Geocoder([['omgeo.services.EsriNASoap', {}]])
         self.g_esri_eu_soap = Geocoder([['omgeo.services.EsriEUSoap', {}]])
-        self.impatient_geocoder = Geocoder([['omgeo.services.EsriNA', dict(settings=dict(timeout=0.01))]])
+        self.g_esri_wgs = Geocoder([['omgeo.services.EsriWGS', {}]])
+        self.g_nom = Geocoder([['omgeo.services.Nominatim', {}]])
+
+        #: geocoder with fast timeout
+        self.impatient_geocoder = Geocoder([['omgeo.services.EsriWGS', {'settings': {'timeout': 0.01}}]])
         
     def tearDown(self):
         pass
