@@ -136,7 +136,7 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
         self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
         self.assertEqual('340 N 12th' in candidates[0].match_addr, True,
-                         '"340 N 12th" not found in match_addr.')
+                         '"340 N 12th" not found in match_addr. Got "%s"' % candidates[0].match_addr)
 
     def test_geocode_esri_na_us_soap(self):
         """Test ESRI North America SOAP geocoder"""
