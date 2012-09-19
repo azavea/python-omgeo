@@ -64,7 +64,7 @@ class Geocoder():
 
         :arg list preprocessors: list of universal preprocessors to use
         :arg list postprocessors: list of universal postprocessors to use
-        :arg bool waterfall: sets default ``for waterfall on geocode() method (default ``False````)
+        :arg bool waterfall: sets default for waterfall on geocode() method (default ``False````)
         """
 
         self._preprocessors = Geocoder.DEFAULT_PREPROCESSORS \
