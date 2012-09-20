@@ -65,7 +65,7 @@ class UpstreamResponseInfo():
         self.errors = errors
 
     def __repr__(self):
-        '%s %s %sms' % (self.geoservice, self.response_code, self.response_time)
+        return '%s %s %sms' % (self.geoservice, self.response_code, self.response_time)
 
 
 class GeocodeService():
