@@ -49,7 +49,6 @@ class GeocoderTest(OmgeoTestCase):
                     'azavea': PlaceQuery('340 N 12th St Ste 402 Philadelphia PA'),
                     'ambiguous_azavea': PlaceQuery('340 12th St Ste 402 Philadelphia PA'),
                     'zip_plus_4_in_postal_plus_country': PlaceQuery(postal='19127-1115', country='US'),
-                    'zip_plus_4_as_query': PlaceQuery('19127-1115'),
                     'wolf': PlaceQuery('Wolf Building'),
                     'wolf_philly': PlaceQuery('Wolf Building, Philadelphia PA'),
                     'wolf_bounded': PlaceQuery('Wolf Building',
@@ -162,13 +161,9 @@ class GeocoderTest(OmgeoTestCase):
                          '"340 N 12th" not found in match_addr. Got "%s"' % candidates[0].match_addr)
 
     def test_geocode_esri_wgs_zip_plus_4(self):
-        """
-        Check that geocoding 19127-1112 returns one result.
-        """
+        """Check that geocoding 19127-1112 returns one result."""
         candidates = self.g_esri_wgs_postal_ok.get_candidates(self.pq['zip_plus_4_in_postal_plus_country'])
         self.assertOneCandidate(candidates)
-        candidates = self.g_esri_wgs_postal_ok.get_candidates(self.pq['zip_plus_4_as_query'])
-        self.assertOneCandidate(candidates)                
 
     def test_bounded_no_viewbox(self):
         """
