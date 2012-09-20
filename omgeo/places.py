@@ -134,7 +134,7 @@ class PlaceQuery():
             setattr(self, k, kwargs[k])
             
     def __repr__(self):
-        return '%s%s' % (self.query, self.address)
+        return '<%s%s %s>' % (self.query, self.address, self.postal)
 
 
 class Candidate():
@@ -191,5 +191,5 @@ class Candidate():
         else:
             y = self.y
 
-        geoservice = 'via %s' % getattr(self, 'geoservice', '(no geoservice specfied')
-        return '%s (%s, %s) %s' % (match_addr, x, y, geoservice)
+        geoservice = '%s' % getattr(self, 'geoservice', '(no geoservice specified')
+        return '<%s (%s, %s) %s>' % (match_addr, x, y, geoservice)

@@ -66,9 +66,10 @@ class UpstreamResponseInfo():
 
     def __repr__(self):
         if self.response_code is None:
-            return '%s %sms' % (self.geoservice, self.response_time)
+            repr_ = '%s %sms' % (self.geoservice, self.response_time)
         else:
-            return '%s %s %sms' % (self.geoservice, self.response_code, self.response_time)
+            repr_ = '%s %s %sms' % (self.geoservice, self.response_code, self.response_time)
+        return '<%s>' % repr_
 
 
 class GeocodeService():
