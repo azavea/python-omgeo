@@ -56,4 +56,3 @@ Take a closer look at the information in our address Candidate objects::
 	  'wkid': 4326,
 	  'x': -75.158434,
 	  'y': 39.958728}]
-	>>>
