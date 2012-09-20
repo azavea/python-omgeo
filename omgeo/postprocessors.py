@@ -124,7 +124,7 @@ class AttrRename(_PostProcessor):
         return '<%s: %s %s Map of %s (old:new): %s>' \
             % (self.__class__.__name__, self.is_exact(), self.is_case_sensitive(), self.attr, self.attr_map)
 
-class UseHighScoreIfAtLeast(_PostProcessor):s
+class UseHighScoreIfAtLeast(_PostProcessor):
     """
     Limit results to results with at least the given score,
     if and only if one or more results has, at least, the
