@@ -619,6 +619,7 @@ class EsriWGS(GeocodeService):
                      )
 
         # Postal-code only searches work in the single-line but not multipart geocoder
+        # Remember that with the default postprocessors, postcode-level results will be eliminated
         if pq.query == pq.address == '' and pq.postal != '':
             pq.query = pq.postal
 

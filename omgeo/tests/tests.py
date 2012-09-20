@@ -29,6 +29,11 @@ class OmgeoTestCase(unittest.TestCase):
         """Case-insensitive assertEqual with built-in error message"""
         self.assertEqual_(str(output).upper(), str(expected).upper())
 
+    def assertOneCandidate(self, candidates):
+        count = len(candidates)
+        self.assertEqual(count > 0, True, 'No candidates returned.')
+        self.assertEqual(count > 1, False, 'More than one candidate returned.')        
+
 class GeocoderTest(OmgeoTestCase):
     """Tests using various geocoding APIs. Requires internet connection."""
     g = None # not set until set up
@@ -40,9 +45,11 @@ class GeocoderTest(OmgeoTestCase):
         # Viewbox objects - callowhill is from BSS Spring Garden station to Wash. Sq.
         vb = {'callowhill': Viewbox(-75.162628, 39.962769, -75.150963, 39.956322)}
         # PlaceQuery objects
-        self.pq = { 'azavea': PlaceQuery('340 N 12th St Ste 402 Philadelphia PA'),
+        self.pq = { # North American Addresses:
+                    'azavea': PlaceQuery('340 N 12th St Ste 402 Philadelphia PA'),
                     'ambiguous_azavea': PlaceQuery('340 12th St Ste 402 Philadelphia PA'),
-                    # North American Addresses:
+                    'zip_plus_4_in_postal_plus_country': PlaceQuery(postal='19127-1115', country='US'),
+                    'zip_plus_4_as_query': PlaceQuery('19127-1115'),
                     'wolf': PlaceQuery('Wolf Building'),
                     'wolf_philly': PlaceQuery('Wolf Building, Philadelphia PA'),
                     'wolf_bounded': PlaceQuery('Wolf Building',
@@ -95,6 +102,23 @@ class GeocoderTest(OmgeoTestCase):
         self.g_esri_wgs = Geocoder([['omgeo.services.EsriWGS', {}]])
         self.g_nom = Geocoder([['omgeo.services.Nominatim', {}]])
 
+        ESRI_WGS_LOCATOR_MAP = {'PointAddress': 'rooftop',
+                                'StreetAddress': 'interpolation',
+                                'PostalExt': 'postal_specific', # accept ZIP+4
+                                'Postal': 'postal'}
+        ESRI_WGS_POSTPROCESSORS_POSTAL_OK = [
+            AttrExclude(['USA.Postal'], 'locator'), #accept postal from everywhere but US (need PostalExt)
+            AttrFilter(['PointAddress', 'StreetAddress', 'PostalExt', 'Postal'], 'locator_type'),
+            AttrSorter(['PointAddress', 'StreetAddress', 'PostalExt', 'Postal'], 'locator_type'),
+            AttrRename('locator', ESRI_WGS_LOCATOR_MAP), # after filter to avoid searching things we toss out
+            UseHighScoreIfAtLeast(99.8),
+            ScoreSorter(),
+            GroupBy('match_addr'),
+            GroupBy(('x', 'y')),
+        ]
+        GEOCODERS_POSTAL_OK = [['omgeo.services.EsriWGS', {'postprocessors': ESRI_WGS_POSTPROCESSORS_POSTAL_OK}]]
+        self.g_esri_wgs_postal_ok = Geocoder(GEOCODERS_POSTAL_OK)
+
         #: geocoder with fast timeout
         self.impatient_geocoder = Geocoder([['omgeo.services.EsriWGS', {'settings': {'timeout': 0.01}}]])
         
@@ -103,8 +127,7 @@ class GeocoderTest(OmgeoTestCase):
 
     def test_geocode_azavea(self):
         candidates = self.g.get_candidates(self.pq['azavea'])
-        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
-        self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
+        self.assertOneCandidate(candidates)
         
     def test_impatiently_geocode_azavea(self):
         candidates = self.impatient_geocoder.get_candidates(self.pq['azavea'])
@@ -116,8 +139,7 @@ class GeocoderTest(OmgeoTestCase):
         and one with city as Readington Twp. This test checks that only one is picked.
         """
         candidates = self.g_esri_na.get_candidates(self.pq['8_kirkbride'])
-        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
-        self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
+        self.assertOneCandidate(candidates)
         
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_snap_points_2(self):
@@ -126,8 +148,7 @@ class GeocoderTest(OmgeoTestCase):
         and one with city as Phillipsburg. This test checks that only one is picked.
         """
         candidates = self.g_bing.get_candidates(self.pq['alpha_774_W_Central_Ave_Rear'])
-        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
-        self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
+        self.assertOneCandidate(candidates)
 
     def test_geocode_esri_wgs_340_12th_bounded(self):
         """
@@ -136,10 +157,18 @@ class GeocoderTest(OmgeoTestCase):
         we should only get the former.
         """
         candidates = self.g_esri_wgs.get_candidates(self.pq['bounded_340_12th'])
-        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
-        self.assertEqual(len(candidates) > 1, False, 'More than one candidate returned.')
+        self.assertOneCandidate(candidates)
         self.assertEqual('340 N 12th' in candidates[0].match_addr, True,
                          '"340 N 12th" not found in match_addr. Got "%s"' % candidates[0].match_addr)
+
+    def test_geocode_esri_wgs_zip_plus_4(self):
+        """
+        Check that geocoding 19127-1112 returns one result.
+        """
+        candidates = self.g_esri_wgs_postal_ok.get_candidates(self.pq['zip_plus_4_in_postal_plus_country'])
+        self.assertOneCandidate(candidates)
+        candidates = self.g_esri_wgs_postal_ok.get_candidates(self.pq['zip_plus_4_as_query'])
+        self.assertOneCandidate(candidates)                
 
     def test_bounded_no_viewbox(self):
         """
