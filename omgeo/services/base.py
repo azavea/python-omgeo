@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 class UpstreamResponseInfo():
     """
     Description of API call result from an upstream provider.
-    For cleaning and consistency, set attributes using the given methods.
+    For cleaning and consistency, set attributes using the given methods
+    (the constructor will automatically use these methods, as well).
     """
 
     def set_response_code(self, response_code):
@@ -62,6 +63,9 @@ class UpstreamResponseInfo():
         self.set_response_time(response_time)
         self.set_success(success)
         self.errors = errors
+
+    def __repr__(self):
+        '%s %s %sms' % (self.geoservice, self.response_code, self.response_time)
 
 
 class GeocodeService():
