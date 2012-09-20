@@ -618,6 +618,10 @@ class EsriWGS(GeocodeService):
                      maxLocations=20, # default 1; max is 20
                      )
 
+        # Postal-code only searches work in the single-line but not multipart geocoder
+        if pq.query == pq.address == '' and pq.postal != '':
+            pq.query = pq.postal
+
         if pq.query == '': # multipart
             method = 'findAddressCandidates'
             query = dict(query,

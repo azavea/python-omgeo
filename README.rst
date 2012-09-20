@@ -26,10 +26,8 @@ or `PDF <http://media.readthedocs.org/pdf/python-omgeo/latest/python-omgeo.pdf>`
 
 	>>> from omgeo import Geocoder 
 	>>> g = Geocoder() 
-	>>> result = g.geocode('340 12th St, Philadelphia PA')
+	>>> g.geocode('340 12th St, Philadelphia PA')
 	>>> candidates = result['candidates']
-	>>> for c in candidates:
-	...   print c.x, c.y, c.match_addr
-	...
-	-75.15843 39.95872 340 N 12th St, Philadelphia, PA, 19107
-	-75.16136 39.94531 340 S 12th St, Philadelphia, PA, 19107
+	{'candidates': [340 S 12th St, Philadelphia, PA, 19107 (-75.161461, 39.94532) via EsriWGS,
+	  				340 N 12th St, Philadelphia, PA, 19107 (-75.158434, 39.958728) via EsriWGS],
+	 'upstream_response_info': [EsriWGS 200 1047ms]}
