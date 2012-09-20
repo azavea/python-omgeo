@@ -11,6 +11,8 @@ supported geocoders:
 * MapQuest Licensed Data API
 * MapQuest-hosted Nominatim Open Data API
 
+.. highlight:: sh
+
 **Installation**::
 
     sudo pip install python-omgeo
@@ -21,6 +23,8 @@ Docs are available in `HTML <http://python-omgeo.readthedocs.org/en/latest/>`_
 or `PDF <http://media.readthedocs.org/pdf/python-omgeo/latest/python-omgeo.pdf>`_ format.
 
 **Usage Example**
+
+.. highlight:: python
 
 Make a new geocoder and geocode and address::
 
