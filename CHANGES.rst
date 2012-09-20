@@ -111,4 +111,5 @@ v1.5.0, 2012-09-19
 v1.5.1, 2012-09-20
 ------------------
  * Fix ordering of default postprocessors for EsriWGS geocoder
+ * Add repr() method to UpstreamResponseInfo class
  * Minor documentation updates
