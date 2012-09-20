@@ -8,6 +8,18 @@ class _PostProcessor(_Processor):
         raise NotImplementedError(
             'PostProcessor subclasses must implement process().')
 
+    def is_case_sensitive(self):
+        try:
+            return 'CS' if self.case_sensitive else 'CI'
+        except ValueError:
+            return 'NA'
+
+    def is_exact(self):
+        try:
+            return 'EXACT_MATCH' if self.exact_match else 'INEXACT_MATCH'
+        except ValueError:
+            return 'NA'
+
 class LocatorFilter(_PostProcessor):
     """
     PostProcessor used to ditch results with lousy locators.
@@ -31,6 +43,9 @@ class LocatorFilter(_PostProcessor):
                 candidates.remove(c)
          
         return candidates
+
+    def __repr__(self):
+        return '<%s: %s>' % (self.__class__.__name__, self.good_locators)
 
 class LocatorSorter(_PostProcessor):
     """
@@ -62,6 +77,9 @@ class LocatorSorter(_PostProcessor):
         # (whose locator values are not in ordered_locators)
         # and return the new list
         return ordered_candidates + unordered_candidates
+
+    def __repr__(self):
+        return '<%s: %s>' % (self.__class__.__name__, self.ordered_locators)
 
 class AttrRename(_PostProcessor):
     """
@@ -102,7 +120,11 @@ class AttrRename(_PostProcessor):
             new_candidates.append(c)
         return new_candidates
 
-class UseHighScoreIfAtLeast(_PostProcessor):
+    def __repr__(self):
+        return '<%s: %s %s Map of %s (old:new): %s>' \
+            % (self.__class__.__name__, self.is_exact(), self.is_case_sensitive(), self.attr, self.attr_map)
+
+class UseHighScoreIfAtLeast(_PostProcessor):s
     """
     Limit results to results with at least the given score,
     if and only if one or more results has, at least, the
@@ -124,6 +146,9 @@ class UseHighScoreIfAtLeast(_PostProcessor):
             return high_score_candidates
         return candidates
 
+    def __repr__(self):
+        return '<%s: %s>' % (self.__class__.__name__, self.min_score)
+
 class ScoreSorter(_PostProcessor):
     """PostProcessor class to sort :py:class:`Candidate` scores."""
     
@@ -140,6 +165,10 @@ class ScoreSorter(_PostProcessor):
         :returns: score-sorted list of Candidates
         """
         return sorted(candidates, key=attrgetter('score'), reverse=self.reverse)
+
+    def __repr__(self):
+        order = 'high to low' if self.reverse else 'low to high'
+        return '<%s: %s>' % (self.__class__.__name__, order)
 
 class AttrSorter(_PostProcessor):
     """
@@ -166,6 +195,10 @@ class AttrSorter(_PostProcessor):
         # and return the new list
         return ordered_candidates + unordered_candidates
 
+    def __repr__(self):
+        return '<%s: %s sorted by %s>' % \
+            (self.__class__.__name__, self.attr, self.ordered_values)
+
 class AttrReverseSorter(_PostProcessor):
     """
     PostProcessor used to sort by the given attributes in reverse order,
@@ -189,6 +222,10 @@ class AttrReverseSorter(_PostProcessor):
         ordered_values.reverse()
         sorter = AttrSorter(ordered_values, self.attr)
         return sorter.process(unordered_candidates)
+
+    def __repr__(self):
+        return '<%s: %s reverse sorted by %s>' % \
+            (self.__class__.__name__, self.attr, self.ordered_values)
 
 class AttrMigrator(_PostProcessor):
     """
@@ -220,6 +257,10 @@ class AttrMigrator(_PostProcessor):
             new_candidates.append(c)
         return new_candidates
 
+    def __repr__(self):
+        return '<%s: %s reverse sorted by %s>' % \
+            (self.__class__.__name__, self.attr, self.ordered_values)
+
 class AttrFilter(_PostProcessor):
     """
     PostProcessor used to ditch results with unwanted attribute values.
@@ -243,6 +284,10 @@ class AttrFilter(_PostProcessor):
             return [c for c in candidates if getattr(c, self.attr) in self.good_values]
         else:
             return [c for c in candidates if any(gv in getattr(c, self.attr) for gv in self.good_values)]
+
+    def __repr__(self):
+        return '<%s: %s %s in %s>' % \
+            (self.__class__.__name__, self.is_exact(), self.attr, self.good_values)
 
 class AttrExclude(_PostProcessor):
     """
@@ -268,6 +313,11 @@ class AttrExclude(_PostProcessor):
             return [c for c in candidates if getattr(c, self.attr) not in self.bad_values]
         else:
             return [c for c in candidates if not any(bv in getattr(c, self.attr) for bv in self.bad_values)]
+
+    def __repr__(self):
+        return '<%s: %s %s in %s>' % \
+            (self.__class__.__name__, self.is_exact(), self.attr, self.bad_values)
+
 
 class DupePicker(_PostProcessor):
     """
@@ -373,6 +423,13 @@ class DupePicker(_PostProcessor):
                     new_candidates.append(nc)
         return new_candidates
 
+    def __repr__(self):
+        repr_ =  '%s: SORT BY %s %s -> GROUP BY %s' % \
+            (self.__class__.__name__, self.attr_sort, self.ordered_list, self.attr_dupes)
+        if self.return_clean:
+            repr_ += ' -> CLEAN'
+        return '<%s>' % repr_
+
 class GroupBy(_PostProcessor):
     """
     Groups results by a certain attribute by choosing the
@@ -399,6 +456,10 @@ class GroupBy(_PostProcessor):
                 for m in matches:
                     candidates.remove(m)
         return keepers
+
+    def __repr__(self):
+        return '<%s: %s>' % \
+            (self.__class__.__name__, self.attr)
     
 class GroupByMultiple(_PostProcessor):
     """
@@ -424,6 +485,10 @@ class GroupByMultiple(_PostProcessor):
                 for m in matches:
                     candidates.remove(m)
         return keepers   
+
+    def __repr__(self):
+        return '<%s: %s>' % \
+            (self.__class__.__name__, self.attrs)
     
 class SnapPoints(_PostProcessor):
     """
@@ -433,13 +498,11 @@ class SnapPoints(_PostProcessor):
     
     def __init__(self, distance=50):
         """
-        :arg tuple pnt1: x,y coordinate pair for first location 
-        :arg tuple pnt2: x,y coordinate pair for second location 
         :arg distance: maximum distance (in metres) between two points in which
                        the the first will be kept and the second thrown out
                        (default 50).
         """
-        self._init_helper(vars())
+        self.distance = distance
         
     def _get_distance(self, pnt1, pnt2):
         """Get distance in meters between two lat/long points"""
@@ -469,3 +532,7 @@ class SnapPoints(_PostProcessor):
                 for m in matches:
                     candidates.remove(m)
         return keepers
+
+    def __repr__(self):
+        return '<%s: distance=%sm>' % \
+            (self.__class__.__name__, self.distance)

@@ -165,7 +165,7 @@ class CountryPreProcessor(_PreProcessor):
         return pq
 
     def __repr__(self):
-        return '%s: Accept %s mapped as %s' % (self.__class__.__name__,
+        return '<%s: Accept %s mapped as %s>' % (self.__class__.__name__,
             self.acceptable_countries, self.country_map)
     
     
@@ -206,7 +206,7 @@ class CancelIfRegexInAttr(_PreProcessor):
 
     def __repr__(self):
         case_sensitive = 'insensitive' if self.ignorecase else 'sensitive'
-        return '%s: Break if %s in any of %s (case %s)' % (self.__class__.__name__,
+        return '<%s: Break if %s in %s (case %s)>' % (self.__class__.__name__,
             self.regex, self.attrs, case_sensitive)
     
 
