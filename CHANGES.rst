@@ -114,3 +114,7 @@ v1.5.1, 2012-09-20
  * Improve handling of ZIP+4-only searching using EsriWGS
  * Add repr() method to UpstreamResponseInfo class
  * Minor documentation updates
+
+v1.5.2, 2012-09-21
+------------------
+ * Fix bug in AttrMigrator.__repr__()

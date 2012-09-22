@@ -258,8 +258,8 @@ class AttrMigrator(_PostProcessor):
         return new_candidates
 
     def __repr__(self):
-        return '<%s: %s reverse sorted by %s>' % \
-            (self.__class__.__name__, self.attr, self.ordered_values)
+        return '<%s: %s -> %s %s %s>' % \
+            (self.__class__.__name__, self.attr_from, self.attr_to, self.is_exact(), self.is_case_sensitive())
 
 class AttrFilter(_PostProcessor):
     """
