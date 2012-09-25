@@ -118,3 +118,8 @@ v1.5.1, 2012-09-20
 v1.5.2, 2012-09-21
 ------------------
  * Fix bug in AttrMigrator.__repr__()
+
+v1.5.3, 2012-09-25
+------------------
+ * Fix bug using wrong keys for ESRI
+   findAddressCandidates endpoint in EsriWGS class
