@@ -165,6 +165,11 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g_esri_wgs_postal_ok.get_candidates(self.pq['zip_plus_4_in_postal_plus_country'])
         self.assertOneCandidate(candidates)
 
+    def test_geocode_esri_wgs_multipart(self):
+        """Check that geocoding multipart address returns one result."""
+        candidates = self.g_esri_wgs.get_candidates(self.pq['london_pieces'])
+        self.assertOneCandidate(candidates)
+
     def test_bounded_no_viewbox(self):
         """
         Should return a nice error saying that PlaceQuery can't be bounded without Viewbox.

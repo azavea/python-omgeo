@@ -650,16 +650,22 @@ class EsriWGS(GeocodeService):
         response_obj = self._get_json_obj(endpoint, query)
         returned_candidates = [] # this will be the list returned
         try: 
-            for location in response_obj['locations']:         
+            if method == 'find':
+                locations = response_obj['locations']
+            else:
+                locations = response_obj['candidates']
+
+            for location in locations:         
                 c = Candidate()
-                attributes = location['feature']['attributes']
+                if method == 'find': #singlepart
+                    attributes = location['feature']['attributes']
+                else: #findAddressCandidates / multipart
+                    attributes = location['attributes']
+                c.match_addr = attributes['Match_Addr']
                 c.locator = attributes['Loc_name']
                 c.locator_type = attributes['Addr_Type']
                 c.score = attributes['Score']
-                c.match_addr = location['name']
-                #: "represents the actual location of the address. It differs from the X value"
-                c.x = attributes['DisplayX'] 
-                #: "represents the actual location of the address. It differs from the Y value"
+                c.x = attributes['DisplayX']  #represents the actual location of the address.
                 c.y = attributes['DisplayY']
                 c.wkid = response_obj['spatialReference']['wkid']
                 c.geoservice = self.__class__.__name__
