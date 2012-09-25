@@ -578,7 +578,7 @@ class EsriWGS(GeocodeService):
         outFields = ('Loc_name',
                      #'Shape',
                      'Score',
-                     #'Match_Addr', #based on address standards for the country
+                     'Match_Addr', #based on address standards for the country
                      #'Address', # returned by default
                      #'Country' # 3-digit ISO 3166-1 code for a country. Example: Canada = "CAN"
                      #'Admin',
