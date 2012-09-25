@@ -64,6 +64,8 @@ class GeocoderTest(OmgeoTestCase):
                     'pine_needles_terr': PlaceQuery('5359 pine needles providence forge'),
                     'moorestown_hyphenated': PlaceQuery('111-113 W Main St Moorestown NJ'),
                     'willow_street': PlaceQuery('2819F Willow Street Pike Willow Street PA'),
+                    'willow_street_parts': PlaceQuery(address='2819F Willow Street Pike',
+                                                      city='Willow Street', state='PA', country='US'),
                     'quebec': PlaceQuery('756 Rue Berri Montreal QC', country='CA'),
                     'quebec_accent': PlaceQuery('527 Ch. Beauséjour, Saint-Elzéar-de-Témiscouata QC'),
                     'quebec_hyphenated': PlaceQuery('227-227A Rue Commerciale, Saint-Louis-du-Ha! Ha! QC'),
@@ -167,7 +169,7 @@ class GeocoderTest(OmgeoTestCase):
 
     def test_geocode_esri_wgs_multipart(self):
         """Check that geocoding multipart address returns one result."""
-        candidates = self.g_esri_wgs.get_candidates(self.pq['london_pieces'])
+        candidates = self.g_esri_wgs.get_candidates(self.pq['willow_street_parts'])
         self.assertOneCandidate(candidates)
 
     def test_bounded_no_viewbox(self):
