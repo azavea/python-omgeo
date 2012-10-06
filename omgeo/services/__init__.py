@@ -704,7 +704,7 @@ class MapQuest(GeocodeService):
         if location == {}:
             location = get_appended_location(location, street=pq.address)
         location = get_appended_location(location, city=pq.city, state=pq.state,
-                                         postal=pq.postal, country=pq.country)
+                                         postalCode=pq.postal, country=pq.country)
         json_ = dict(location=location)
         json_ = json.dumps(json_)
         logger.debug('MQ json: %s', json_)
