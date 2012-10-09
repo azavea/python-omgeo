@@ -123,3 +123,7 @@ v1.5.3, 2012-09-25
 ------------------
  * Fix bug using wrong keys for ESRI
    findAddressCandidates endpoint in EsriWGS class
+
+v1.5.4, 2012-10-09
+------------------
+ * Fix bug using wrong key for MapQuest postalCode
