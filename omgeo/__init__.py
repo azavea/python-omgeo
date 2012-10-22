@@ -75,7 +75,7 @@ class Geocoder():
         self.set_sources(sources)
         self.waterfall = waterfall
         
-    def geocode(self, pq, waterfall=None):
+    def geocode(self, pq, waterfall=None, force_stats_logging=False):
         """
         :arg PlaceQuery pq:  PlaceQuery object (required).
         :arg bool waterfall: Boolean set to True if all geocoders listed should
@@ -117,7 +117,11 @@ class Geocoder():
                       upstream_response_info=upstream_response_info_list)
         stats_dict = self.convert_geocode_result_to_nested_dicts(result)
         stats_dict = dict(stats_dict, original_pq=pq.__dict__)
-        stats_logger.info(stats_dict)
+        try:
+            stats_logger.info(stats_dict)
+        except Exception as exception:
+            if force_stats_logging:
+                raise exception
         return result
     
     def get_candidates(self, pq, waterfall=None):
