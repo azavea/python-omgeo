@@ -7,8 +7,8 @@ supported geocoders:
 * Citizen Atlas (Washington DC)
 * ESRI European address locator (REST & SOAP)
 * ESRI North American locator (REST & SOAP)
-* ESRI `World Geocoding Service <http://geocode.arcgis.com/arcgis/geocoding.html>`_
-* MapQuest Licensed Data API
+* ESRI `World Geocoding Service <http://resources.arcgis.com/en/help/arcgis-online-geocoding-rest-api/>`_
+* `MapQuest Licensed Data API` <http://developer.mapquest.com/web/products/dev-services/geocoding-ws>`_
 * MapQuest-hosted Nominatim Open Data API
 
 **Installation**::
