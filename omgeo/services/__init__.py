@@ -421,8 +421,8 @@ class EsriEU(_EsriGeocodeService, _EsriEUGeocodeService):
                 c.geoservice = self.__class__.__name__
                 returned_candidates.append(c)
         except KeyError as ex:
-            logger.warning('Received unusual JSON result from geocode: %s, %s' %
-                (response_obj, ex))
+            logger.warning('Received unusual JSON result from geocode: %s, %s', 
+                response_obj, ex)
             return []
         return returned_candidates
 

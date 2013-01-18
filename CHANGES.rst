@@ -127,3 +127,9 @@ v1.5.3, 2012-09-25
 v1.5.4, 2012-10-09
 ------------------
  * Fix bug using wrong key for MapQuest postalCode
+
+v1.5.5, 2013-01-18
+------------------
+ * Add try...except to stats logging command in geocode method
+ * Add option to raise exception on stats logging failure or add exception to general log.
+ * Add more documentation for Geocoder methods

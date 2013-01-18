@@ -4,6 +4,7 @@ from omgeo.places import PlaceQuery
 from omgeo.postprocessors import DupePicker, SnapPoints
 import time
 
+logger = logging.getLogger(__name__)
 stats_logger = logging.getLogger('omgeo.stats')
 
 class Geocoder():
@@ -127,6 +128,7 @@ class Geocoder():
         try:
             stats_logger.info(stats_dict)
         except Exception as exception:
+            logger.error('Encountered exception while logging stats %s:\n%s', stats_dict, exception)
             if force_stats_logging:
                 raise exception
         return result
