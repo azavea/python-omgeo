@@ -33,10 +33,16 @@ class Geocoder():
             raise Exception("%s" % (ex))
 
     def add_source(self, source):
+        """
+        Add a geocoding service to this instance.
+        """
         geocode_service = self._get_service_by_name(source[0])
         self._sources.append(geocode_service(**source[1]))
 
     def remove_source(self, source):
+        """
+        Remove a geocoding service from this instance.
+        """
         geocode_service = self._get_service_by_name(source[0])
         self._sources.remove(geocode_service(**source[1]))        
 
@@ -82,6 +88,7 @@ class Geocoder():
                              be used to find results, instead of stopping after
                              the first geocoding service with valid candidates
                              (defaults to self.waterfall).
+        :arg force_stats_logging: Raise exception if stats logging fails (default False).
         :returns: Returns a dictionary including:
                    * candidates - list of Candidate objects
                    * upstream_response_info - list of UpstreamResponseInfo objects
@@ -125,6 +132,9 @@ class Geocoder():
         return result
     
     def get_candidates(self, pq, waterfall=None):
+        """
+        Geocode and return just the list of Candidate objects.
+        """
         return self.geocode(pq, waterfall)['candidates']
     
     def convert_geocode_result_to_nested_dicts(self, result):
