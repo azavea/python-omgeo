@@ -105,78 +105,78 @@ class Bing(GeocodeService):
             returned_candidates.append(c)
         return returned_candidates
     
-class CitizenAtlas(GeocodeService):
-    '''
-    Class to geocode using the `Washington DC CitizenAtlas <http://citizenatlas.dc.gov/newwebservices>`_
-    '''
+# class CitizenAtlas(GeocodeService):
+#     '''
+#     Class to geocode using the `Washington DC CitizenAtlas <http://citizenatlas.dc.gov/newwebservices>`_
+#     '''
 
-    _endpoint = 'http://citizenatlas.dc.gov/newwebservices/locationverifier.asmx/findLocation'
+#     _endpoint = 'http://citizenatlas.dc.gov/newwebservices/locationverifier.asmx/findLocation'
 
-    def _geocode(self, place_query):
+#     def _geocode(self, place_query):
 
-        # Define helper functions
+#         # Define helper functions
 
-        def _get_text_from_nodelist(nodelist):
-            rc = []
-            for node in nodelist:
-                if node.nodeType == node.TEXT_NODE:
-                    rc.append(node.data)
-            return ''.join(rc)
+#         def _get_text_from_nodelist(nodelist):
+#             rc = []
+#             for node in nodelist:
+#                 if node.nodeType == node.TEXT_NODE:
+#                     rc.append(node.data)
+#             return ''.join(rc)
 
-        def _create_candidate_from_intersection_element(intersection_element, source_operation):
-            c = Candidate()
-            c.locator = source_operation
-            c.match_addr = _get_text_from_nodelist(
-                intersection_element.getElementsByTagName("FULLINTERSECTION")[0].childNodes) + ", WASHINGTON, DC"
-            c.y = float(_get_text_from_nodelist(intersection_element.getElementsByTagName("LATITUDE")[0].childNodes))
-            c.x = float(_get_text_from_nodelist(intersection_element.getElementsByTagName("LONGITUDE")[0].childNodes))
-            confidence_level_elements = intersection_element.getElementsByTagName("ConfidenceLevel")
-            c.score = float(_get_text_from_nodelist(confidence_level_elements[0].childNodes))
-            c.geoservice = self.__class__.__name__
-            return c
+#         def _create_candidate_from_intersection_element(intersection_element, source_operation):
+#             c = Candidate()
+#             c.locator = source_operation
+#             c.match_addr = _get_text_from_nodelist(
+#                 intersection_element.getElementsByTagName("FULLINTERSECTION")[0].childNodes) + ", WASHINGTON, DC"
+#             c.y = float(_get_text_from_nodelist(intersection_element.getElementsByTagName("LATITUDE")[0].childNodes))
+#             c.x = float(_get_text_from_nodelist(intersection_element.getElementsByTagName("LONGITUDE")[0].childNodes))
+#             confidence_level_elements = intersection_element.getElementsByTagName("ConfidenceLevel")
+#             c.score = float(_get_text_from_nodelist(confidence_level_elements[0].childNodes))
+#             c.geoservice = self.__class__.__name__
+#             return c
 
-        def _create_candidate_from_address_element(match, source_operation):
-            if match.getElementsByTagName("FULLADDRESS").length > 0:
-                full_address = _get_text_from_nodelist(match.getElementsByTagName("FULLADDRESS")[0].childNodes)
-            else:
-                full_address = _get_text_from_nodelist(
-                    match.getElementsByTagName("STNAME")[0].childNodes) + " " + _get_text_from_nodelist(match.getElementsByTagName("STREET_TYPE")[0].childNodes)
-            city = _get_text_from_nodelist(match.getElementsByTagName("CITY")[0].childNodes)
-            state = _get_text_from_nodelist(match.getElementsByTagName("STATE")[0].childNodes)
-            zipcode = _get_text_from_nodelist(match.getElementsByTagName("ZIPCODE")[0].childNodes)
-            c = Candidate()
-            c.match_addr = full_address + ", " + city + ", " + state + ", " + zipcode
-            confidence_level_elements = match.getElementsByTagName("ConfidenceLevel")
-            c.score = float(_get_text_from_nodelist(confidence_level_elements[0].childNodes))
-            c.y = float(_get_text_from_nodelist(match.getElementsByTagName("LATITUDE")[0].childNodes))
-            c.x = float(_get_text_from_nodelist(match.getElementsByTagName("LONGITUDE")[0].childNodes))
-            c.locator = source_operation
-            c.geoservice = self.__class__.__name__
-            return c
+#         def _create_candidate_from_address_element(match, source_operation):
+#             if match.getElementsByTagName("FULLADDRESS").length > 0:
+#                 full_address = _get_text_from_nodelist(match.getElementsByTagName("FULLADDRESS")[0].childNodes)
+#             else:
+#                 full_address = _get_text_from_nodelist(
+#                     match.getElementsByTagName("STNAME")[0].childNodes) + " " + _get_text_from_nodelist(match.getElementsByTagName("STREET_TYPE")[0].childNodes)
+#             city = _get_text_from_nodelist(match.getElementsByTagName("CITY")[0].childNodes)
+#             state = _get_text_from_nodelist(match.getElementsByTagName("STATE")[0].childNodes)
+#             zipcode = _get_text_from_nodelist(match.getElementsByTagName("ZIPCODE")[0].childNodes)
+#             c = Candidate()
+#             c.match_addr = full_address + ", " + city + ", " + state + ", " + zipcode
+#             confidence_level_elements = match.getElementsByTagName("ConfidenceLevel")
+#             c.score = float(_get_text_from_nodelist(confidence_level_elements[0].childNodes))
+#             c.y = float(_get_text_from_nodelist(match.getElementsByTagName("LATITUDE")[0].childNodes))
+#             c.x = float(_get_text_from_nodelist(match.getElementsByTagName("LONGITUDE")[0].childNodes))
+#             c.locator = source_operation
+#             c.geoservice = self.__class__.__name__
+#             return c
 
-        # Geocode
-        query = { 'str': place_query.query }
-        response_doc = self._get_xml_doc(self._endpoint, query)
+#         # Geocode
+#         query = { 'str': place_query.query }
+#         response_doc = self._get_xml_doc(self._endpoint, query)
 
-        address_matches = response_doc.getElementsByTagName("Table1")
-        if address_matches.length == 0:
-            return []
+#         address_matches = response_doc.getElementsByTagName("Table1")
+#         if address_matches.length == 0:
+#             return []
 
-        if response_doc.getElementsByTagName("sourceOperation").length > 0:
-            source_operation = _get_text_from_nodelist(
-                response_doc.getElementsByTagName("sourceOperation")[0].childNodes)
-        else:
-            source_operation = ""
+#         if response_doc.getElementsByTagName("sourceOperation").length > 0:
+#             source_operation = _get_text_from_nodelist(
+#                 response_doc.getElementsByTagName("sourceOperation")[0].childNodes)
+#         else:
+#             source_operation = ""
 
-        candidates = [] # this will be the list returned
+#         candidates = [] # this will be the list returned
 
-        for match in address_matches:
-            if source_operation == "DC Intersection":
-                candidates.append(_create_candidate_from_intersection_element(match, source_operation))
-            elif source_operation == "DC Address" or source_operation == "DC Place":
-                candidates.append(_create_candidate_from_address_element(match, source_operation))
+#         for match in address_matches:
+#             if source_operation == "DC Intersection":
+#                 candidates.append(_create_candidate_from_intersection_element(match, source_operation))
+#             elif source_operation == "DC Address" or source_operation == "DC Place":
+#                 candidates.append(_create_candidate_from_address_element(match, source_operation))
 
-        return candidates
+#         return candidates
 
 class _EsriGeocodeService(GeocodeService):
     """

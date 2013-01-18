@@ -95,7 +95,7 @@ class GeocoderTest(OmgeoTestCase):
         old_esri_params = {'settings': esri_settings}
 
         # geocoders using individual services
-        self.g_dc = Geocoder([['omgeo.services.CitizenAtlas', {}]])
+        # self.g_dc = Geocoder([['omgeo.services.CitizenAtlas', {}]])
         self.g_esri_na = Geocoder([['omgeo.services.EsriNA', old_esri_params]])
         self.g_esri_eu = Geocoder([['omgeo.services.EsriEU', old_esri_params]])
         self.g_esri_na_soap = Geocoder([['omgeo.services.EsriNASoap', {}]])
@@ -236,23 +236,23 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(y_type == float, True, 'y coord is of type %s instead of float' % y_type)
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
     
-    def test_geocode_dc_address(self):
-        """
-        Check that '1600 Pennsylvania' returns first result using DC address locator.
-        """
-        candidates = self.g_dc.get_candidates(PlaceQuery('1600 pennsylvania'))
-        self.assertTrue(len(candidates) > 0, 'No candidates returned.')
-        self.assertTrue(candidates[0].locator == 'DC Address',
-                        'Expected 1600 pennsylvania to be an address match')
+    # def test_geocode_dc_address(self):
+    #     """
+    #     Check that '1600 Pennsylvania' returns first result using DC address locator.
+    #     """
+    #     candidates = self.g_dc.get_candidates(PlaceQuery('1600 pennsylvania'))
+    #     self.assertTrue(len(candidates) > 0, 'No candidates returned.')
+    #     self.assertTrue(candidates[0].locator == 'DC Address',
+    #                     'Expected 1600 pennsylvania to be an address match')
 
-    def test_geocode_dc_intersection(self):
-        """
-        Check that 'H and 15th' returns first result using DC intersection locator.
-        """
-        candidates = self.g_dc.get_candidates(PlaceQuery('h and 15th'))
-        self.assertTrue(len(candidates) > 0, 'No candidates returned.')
-        self.assertTrue(candidates[0].locator == 'DC Intersection',
-                        'h and 15th to be an intersection match')
+    # def test_geocode_dc_intersection(self):
+    #     """
+    #     Check that 'H and 15th' returns first result using DC intersection locator.
+    #     """
+    #     candidates = self.g_dc.get_candidates(PlaceQuery('h and 15th'))
+    #     self.assertTrue(len(candidates) > 0, 'No candidates returned.')
+    #     self.assertTrue(candidates[0].locator == 'DC Intersection',
+    #                     'h and 15th to be an intersection match')
 
     def test_geocode_dupepicker(self):
         """
