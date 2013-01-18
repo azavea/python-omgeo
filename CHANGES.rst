@@ -130,6 +130,7 @@ v1.5.4, 2012-10-09
 
 v1.5.5, 2013-01-18
 ------------------
+ * Remove support for DC CitizenAtlas API
  * Add try...except to stats logging command in geocode method
  * Add option to raise exception on stats logging failure or add exception to general log.
  * Add more documentation for Geocoder methods
