@@ -88,7 +88,7 @@ class Geocoder():
                              be used to find results, instead of stopping after
                              the first geocoding service with valid candidates
                              (defaults to self.waterfall).
-        :arg force_stats_logging: Raise exception if stats logging fails (default False).
+        :arg bool force_stats_logging: Raise exception if stats logging fails (default False).
         :returns: Returns a dictionary including:
                    * candidates - list of Candidate objects
                    * upstream_response_info - list of UpstreamResponseInfo objects
