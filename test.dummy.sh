@@ -1,4 +1,4 @@
 # RUN AS ROOT
 export BING_MAPS_API_KEY=YOUR_BING_KEY_HERE
 export MAPQUEST_API_KEY=YOUR_MAPQUEST_KEY_HERE
-python setup.py test
+python setup.py test $@
