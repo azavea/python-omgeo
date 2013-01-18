@@ -56,3 +56,10 @@ Take a closer look at the information in our address Candidate objects::
 	  'wkid': 4326,
 	  'x': -75.158434,
 	  'y': 39.958728}]
+
+**Testing**
+
+There is a shell script in the root of the repository called *test.dummy.sh*.
+Copy it using ``cp test.dummy.sh test.sh``. Edit *test.sh* to include the
+API keys that you obtained from the given geocoding service providers. Then, run
+the tests using ``./test.sh``.
