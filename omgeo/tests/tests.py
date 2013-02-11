@@ -69,6 +69,7 @@ class GeocoderTest(OmgeoTestCase):
                     'quebec': PlaceQuery('756 Rue Berri Montreal QC', country='CA'),
                     'quebec_accent': PlaceQuery('527 Ch. Beauséjour, Saint-Elzéar-de-Témiscouata QC'),
                     'quebec_hyphenated': PlaceQuery('227-227A Rue Commerciale, Saint-Louis-du-Ha! Ha! QC'),
+                    'senado_mx': PlaceQuery('Paseo de la Reforma 135, Tabacalera, Cuauhtémoc, Distrito Federal, 06030'),
                     # European Addresses:
                     'london_pieces': PlaceQuery(address='31 Maiden Lane', city='London', country='UK'),
                     'london_one_line': PlaceQuery('31 Maiden Lane, London WC2E', country='UK'),
@@ -151,6 +152,18 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g_bing.get_candidates(self.pq['alpha_774_W_Central_Ave_Rear'])
         self.assertOneCandidate(candidates)
 
+    def test_geocode_esri_wgs_senado_mx(self):
+        """
+        Attempt to geocode ``Paseo de la Reforma 135, Tabacalera,
+        Cuauhtémoc, Distrito Federal, 06030``.
+        """
+        candidates = self.g_esri_wgs.get_candidates(self.pq['senado_mx'])
+        self.assertOneCandidate(candidates)
+        search_text = 'Paseo de la Reforma 135'
+        self.assertEqual(search_text in candidates[0].match_addr, True,
+                         '"%s" not found in match_addr. Got "%s".'
+                         % (search_text, candidates[0].match_addr))
+
     def test_geocode_esri_wgs_340_12th_bounded(self):
         """
         Trying to geocode ``340 12th St, Philadelphia PA`` would normally return results
@@ -229,7 +242,7 @@ class GeocoderTest(OmgeoTestCase):
         Test 1200 Callowhill Street using Nominatim geocoder.
         Also check to make sure coordinate values are floats and not some other data type.
         """
-        candidates = self.g_nom.get_candidates(PlaceQuery('1200 Callowhill St, Philadelphia, PA, 19123'))
+        candidates = self.g_nom.get_candidates(PlaceQuery('1200 Callowhill St, Philadelphia, PA'))
         x_type = type(candidates[0].x)
         y_type = type(candidates[0].y)
         self.assertEqual(x_type == float, True, 'x coord is of type %s instead of float' % x_type)
