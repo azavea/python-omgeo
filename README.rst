@@ -1,4 +1,4 @@
-![OMGeo](http://auto2.cdn.azavea.com/files/8813/6804/5771/70x80xomgeo-logo-color-70px.png.pagespeed.ic.R2Hq0Yficw.png)
+image:: http://auto2.cdn.azavea.com/files/8813/6804/5771/70x80xomgeo-logo-color-70px.png.pagespeed.ic.R2Hq0Yficw.png
 
 **OMGeo - Python Edition**
 
