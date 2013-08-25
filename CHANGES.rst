@@ -134,3 +134,8 @@ v1.5.5, 2013-01-18
  * Add try...except to stats logging command in geocode method
  * Add option to raise exception on stats logging failure or add exception to general log.
  * Add more documentation for Geocoder methods
+
+v1.5.6, 2013-01-18
+------------------
+ * Add test shell script template (test.dummy.sh) to source distribution.
+ * Remove unneeded requirements.txt from source distribution.
