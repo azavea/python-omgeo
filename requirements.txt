@@ -1,1 +1,0 @@
-git+git://github.com/htj/suds-htj.git@4f5326eb7a9d5b19b0e21c6007d908371085d449
