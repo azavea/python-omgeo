@@ -60,7 +60,7 @@ class Geocoder():
     def __init__(self, sources=None, preprocessors=None, postprocessors=None,
                  waterfall=False):
         """
-        :arg dict sources: an array of GeocodeServiceConfig() parameters,
+        :arg list sources: an array of GeocodeServiceConfig() parameters,
                            keyed by module name for the GeocodeService to use, e.g.::
 
                                [['esri_wgs', {}],
