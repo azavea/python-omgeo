@@ -60,14 +60,14 @@ class Geocoder():
     def __init__(self, sources=None, preprocessors=None, postprocessors=None,
                  waterfall=False):
         """
-        :arg dict sources: a dictionary of GeocodeServiceConfig() parameters,
+        :arg dict sources: an array of GeocodeServiceConfig() parameters,
                            keyed by module name for the GeocodeService to use, e.g.::
 
-                               {'esri_wgs':{}, 
-                                'bing': {'settings': {},
+                               [['esri_wgs', {}],
+                                ['bing', {'settings': {},
                                          'preprocessors': [],
-                                         'postprocessors': []},
-                                 ...}
+                                         'postprocessors': []}],
+                                 ...]
 
         :arg list preprocessors: list of universal preprocessors to use
         :arg list postprocessors: list of universal postprocessors to use
