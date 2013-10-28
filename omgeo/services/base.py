@@ -6,7 +6,7 @@ import socket
 import time
 from traceback import format_exc
 from urllib import urlencode
-from urllib2 import HTTPError, urlopen, URLError
+from urllib2 import HTTPError, urlopen, URLError, Request
 from xml.dom import minidom
 
 logger = logging.getLogger(__name__)
@@ -131,9 +131,11 @@ class GeocodeService():
     def _get_response(self, endpoint, query):
         """Returns response or False in event of failure"""
         timeout_secs = self._settings.get('timeout', 10)
+        user_agent = self._settings.get('user-agent', 'python-omgeo')
         try:
-            response = urlopen('%s?%s' % (endpoint, urlencode(query)),
-                               timeout=timeout_secs)
+            request = Request('%s?%s' % (endpoint, urlencode(query)),
+                              headers={'User-Agent': user_agent})
+            response = urlopen(request, timeout=timeout_secs)
         except Exception as ex:
             if type(ex) == socket.timeout:
                 raise Exception('API request timed out after %s seconds.' % timeout_secs)
