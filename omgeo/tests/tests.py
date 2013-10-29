@@ -70,6 +70,7 @@ class GeocoderTest(OmgeoTestCase):
                     'quebec_accent': PlaceQuery('527 Ch. Beauséjour, Saint-Elzéar-de-Témiscouata QC'),
                     'quebec_hyphenated': PlaceQuery('227-227A Rue Commerciale, Saint-Louis-du-Ha! Ha! QC'),
                     'senado_mx': PlaceQuery('Paseo de la Reforma 135, Tabacalera, Cuauhtémoc, Distrito Federal, 06030'),
+                    'senado_mx_struct': PlaceQuery(address='Paseo de la Reforma 135', neighborhood='Tabacalera, Cuauhtémoc', state='Distrito Federal', postal='06030', country='MX'),
                     # European Addresses:
                     'london_pieces': PlaceQuery(address='31 Maiden Lane', city='London', country='UK'),
                     'london_one_line': PlaceQuery('31 Maiden Lane, London WC2E', country='UK'),
@@ -158,6 +159,19 @@ class GeocoderTest(OmgeoTestCase):
         Cuauhtémoc, Distrito Federal, 06030``.
         """
         candidates = self.g_esri_wgs.get_candidates(self.pq['senado_mx'])
+        self.assertOneCandidate(candidates)
+        search_text = 'Paseo de la Reforma 135'
+        self.assertEqual(search_text in candidates[0].match_addr, True,
+                         '"%s" not found in match_addr. Got "%s".'
+                         % (search_text, candidates[0].match_addr))
+
+    def test_geocode_structured_esri_wgs_senado_mx(self):
+        """
+        Attempt to geocode ``Paseo de la Reforma 135, Tabacalera,
+        Cuauhtémoc, Distrito Federal, 06030`` using a structured query to
+        EsriWGS.
+        """
+        candidates = self.g_esri_wgs.get_candidates(self.pq['senado_mx_struct'])
         self.assertOneCandidate(candidates)
         search_text = 'Paseo de la Reforma 135'
         self.assertEqual(search_text in candidates[0].match_addr, True,

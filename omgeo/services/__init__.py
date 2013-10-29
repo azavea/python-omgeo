@@ -626,11 +626,11 @@ class EsriWGS(GeocodeService):
         if pq.query == '': # multipart
             method = 'findAddressCandidates'
             query = dict(query,
-                         Address=pq.address, # commonly represents the house number and street name of a complete address
-                         Admin1=pq.city,
-                         Admin2=pq.state,
-                         #Admin3=
-                         #Admin4=
+                         Address=pq.address,  # commonly represents the house number and street name of a complete address
+                         Neighborhood=pq.neighborhood,
+                         City=pq.city,
+                         Subregion=pq.subregion,
+                         Region=pq.state,
                          Postal=pq.postal,
                          #PostalExt=
                          CountryCode=pq.country, # full country name or ISO 3166-1 2- or 3-digit country code
@@ -703,7 +703,7 @@ class MapQuest(GeocodeService):
         location = get_appended_location(location, street=pq.query)
         if location == {}:
             location = get_appended_location(location, street=pq.address)
-        location = get_appended_location(location, city=pq.city, state=pq.state,
+        location = get_appended_location(location, city=pq.city, county=pq.subregion, state=pq.state,
                                          postalCode=pq.postal, country=pq.country)
         json_ = dict(location=location)
         json_ = json.dumps(json_)
