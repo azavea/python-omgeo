@@ -21,7 +21,7 @@ class Geocoder():
         DupePicker('match_addr', 'locator',
                    ['rooftop', 'parcel', 'interpolation_offset', 'interpolation'])
             ]
-    
+
     def _get_service_by_name(self, service_name):
         try:
             module, separator, class_name = service_name.rpartition('.')
@@ -45,7 +45,7 @@ class Geocoder():
         Remove a geocoding service from this instance.
         """
         geocode_service = self._get_service_by_name(source[0])
-        self._sources.remove(geocode_service(**source[1]))        
+        self._sources.remove(geocode_service(**source[1]))
 
     def set_sources(self, sources):
         """
@@ -64,7 +64,7 @@ class Geocoder():
                            keyed by module name for the GeocodeService to use, e.g.::
 
                                [['esri_wgs', {}],
-                                ['bing', {'settings': {},
+                                ['bing', {'settings': {'request_headers': {'User-Agent': 'Custom User Agent'} },
                                          'preprocessors': [],
                                          'postprocessors': []}],
                                  ...]
@@ -81,7 +81,7 @@ class Geocoder():
         sources = Geocoder.DEFAULT_SOURCES if sources is None else sources
         self.set_sources(sources)
         self.waterfall = waterfall
-        
+
     def geocode(self, pq, waterfall=None, force_stats_logging=False):
         """
         :arg PlaceQuery pq:  PlaceQuery object (required).
@@ -93,19 +93,19 @@ class Geocoder():
         :returns: Returns a dictionary including:
                    * candidates - list of Candidate objects
                    * upstream_response_info - list of UpstreamResponseInfo objects
-        """      
+        """
 
         start_time = time.time()
         waterfall = self.waterfall if waterfall is None else waterfall
         if type(pq) in (str, unicode):
             pq = PlaceQuery(pq)
         processed_pq = copy.copy(pq)
-        
+
         for p in self._preprocessors: # apply universal address preprocessing
             processed_pq = p.process(processed_pq)
             if processed_pq == False:
                 return get_result() # universal preprocessor rejects PlaceQuery
-            
+
         upstream_response_info_list = []
         processed_candidates = []
         for gs in self._sources: # iterate through each GeocodeService
@@ -120,7 +120,7 @@ class Geocoder():
             if processed_candidates == []:
                 break; # avoid post-processing empty list
             processed_candidates = p.process(processed_candidates)
-            
+
         result = dict(candidates=processed_candidates,
                       upstream_response_info=upstream_response_info_list)
         stats_dict = self.convert_geocode_result_to_nested_dicts(result)
@@ -132,13 +132,13 @@ class Geocoder():
             if force_stats_logging:
                 raise exception
         return result
-    
+
     def get_candidates(self, pq, waterfall=None):
         """
         Geocode and return just the list of Candidate objects.
         """
         return self.geocode(pq, waterfall)['candidates']
-    
+
     def convert_geocode_result_to_nested_dicts(self, result):
         def get_uri_dict(uri_item):
             uri_dict = copy.copy(uri_item).__dict__
