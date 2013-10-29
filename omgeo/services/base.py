@@ -131,10 +131,9 @@ class GeocodeService():
     def _get_response(self, endpoint, query):
         """Returns response or False in event of failure"""
         timeout_secs = self._settings.get('timeout', 10)
-        user_agent = self._settings.get('user-agent', 'python-omgeo')
+        headers = self._settings.get('request_headers', None)
         try:
-            request = Request('%s?%s' % (endpoint, urlencode(query)),
-                              headers={'User-Agent': user_agent})
+            request = Request('%s?%s' % (endpoint, urlencode(query)), headers=headers)
             response = urlopen(request, timeout=timeout_secs)
         except Exception as ex:
             if type(ex) == socket.timeout:
