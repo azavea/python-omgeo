@@ -70,7 +70,7 @@ class GeocoderTest(OmgeoTestCase):
                     'quebec_accent': PlaceQuery('527 Ch. Beauséjour, Saint-Elzéar-de-Témiscouata QC'),
                     'quebec_hyphenated': PlaceQuery('227-227A Rue Commerciale, Saint-Louis-du-Ha! Ha! QC'),
                     'senado_mx': PlaceQuery('Paseo de la Reforma 135, Tabacalera, Cuauhtémoc, Distrito Federal, 06030'),
-                    'senado_mx_struct': PlaceQuery(address='Paseo de la Reforma 135', neighborhood='Tabacalera, Cuauhtémoc', state='Distrito Federal', postal='06030', country='MX'),
+                    'senado_mx_struct': PlaceQuery(address='Paseo de la Reforma 135', neighborhood='Tabacalera, Cuauhtémoc', subregion='', state='Distrito Federal', postal='06030', country='MX'),
                     # European Addresses:
                     'london_pieces': PlaceQuery(address='31 Maiden Lane', city='London', country='UK'),
                     'london_one_line': PlaceQuery('31 Maiden Lane, London WC2E', country='UK'),
