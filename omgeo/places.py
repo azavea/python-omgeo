@@ -95,8 +95,9 @@ class PlaceQuery():
     """
     Class representing an address or place that will be passed to geocoders.
     """
-    def __init__(self, query='', address='', city='', state='', postal='', country='', 
-                viewbox=None, bounded=False, **kwargs):
+    def __init__(self, query='', address='', neighborhood='', city='',
+                 subregion='', state='', postal='', country='',
+                 viewbox=None, bounded=False, **kwargs):
         """
         :arg str query: A string containing the query to parse
                         and match to a coordinate on the map.
@@ -104,9 +105,13 @@ class PlaceQuery():
                         or "Wolf Building, Philadelphia"*
         :arg str address: A string for the street line of an address.
                           *ex: "340 N 12th St"*
+        :arg str neighborhood: A string for the subdivision of a city. Not used
+                               in US addresses, but used in Mexico and other places.
         :arg str city: A string specifying the populated place for the address.
                        This commonly refers to a city, but may refer to a suburb
                        or neighborhood in certain countries.
+        :arg str subregion: A string for a region between the city and state level.
+                            Not used in US addresses.
         :arg str state: A string for the state, province, territory, etc.
         :arg str postal: A string for the postal / ZIP Code
         :arg str country: A string for the country or region. Because the geocoder
