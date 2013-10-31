@@ -139,3 +139,9 @@ v1.5.6, 2013-01-18
 ------------------
  * Add test shell script template (test.dummy.sh) to source distribution.
  * Remove unneeded requirements.txt from source distribution.
+
+v1.6.0, 2013-10-31
+------------------
+ * Add subregion and neighborhood parameters to queries
+ * Allow HTTP request headers to be specified in geocoder settings
+ * Documentation updates

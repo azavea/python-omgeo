@@ -48,7 +48,7 @@ copyright = u'2012-2013 Azavea'
 # built documents.
 #
 # The short X.Y version.
-version = '1.5.6'
+version = '1.6.0'
 # The full version, including alpha/beta/rc tags.
 release = version
 
