@@ -12,6 +12,9 @@ supported geocoders:
 * `MapQuest Licensed Data API <http://developer.mapquest.com/web/products/dev-services/geocoding-ws>`_
 * `MapQuest-hosted Nominatim Open Data API <http://developer.mapquest.com/web/products/open/geocoding-service>`_
 
+.. NOTE::
+   Check out `this project's page on GitHub <https://github.com/azavea/python-omgeo/>`_.
+
 **Installation**::
 
     sudo pip install python-omgeo
