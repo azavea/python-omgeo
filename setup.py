@@ -8,8 +8,8 @@ def read(fname):
 
 setup(
     name="python-omgeo",
-    version="1.6.0",
-    description="Geocoding Library using ESRI, Bing Maps, and MapQuest geocoders",
+    version="1.7.0",
+    description="Geocoding Library using ESRI, Bing Maps, US Census, and MapQuest geocoders",
     author="Azavea, Inc.",
     author_email="info@azavea.com",
     url="http://github.com/azavea/python-omgeo",
