@@ -145,3 +145,8 @@ v1.6.0, 2013-10-31
  * Add subregion and neighborhood parameters to queries
  * Allow HTTP request headers to be specified in geocoder settings
  * Documentation updates
+
+v1.7.0, 2014-05-08
+------------------
+ * Add US Census geocoder
+

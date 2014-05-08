@@ -12,6 +12,7 @@ from urllib import unquote
 
 logger = logging.getLogger(__name__)
 
+
 class Bing(GeocodeService):
     """
     Class to geocode using Bing services:
@@ -27,7 +28,7 @@ class Bing(GeocodeService):
     DEFAULT_PREPROCESSORS = [
         ReplaceRangeWithNumber()
     ]
-    
+
     DEFAULT_POSTPROCESSORS = [
        AttrMigrator('confidence', 'score',
                     {'High':100, 'Medium':85, 'Low':50}),
@@ -64,7 +65,7 @@ class Bing(GeocodeService):
        GroupBy(('x', 'y')),
        GroupBy('match_addr')]
     DEFAULT_POSTPROCESSORS = []
-    
+
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         preprocessors = Bing.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
         postprocessors = Bing.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
@@ -73,38 +74,40 @@ class Bing(GeocodeService):
     def _geocode(self, pq):
         if pq.query.strip() == '':
             # No single line query string; use address elements:
-            query = {'addressLine':pq.address,
-                     'locality':pq.city,
-                     'adminDistrict':pq.state,
-                     'postalCode':pq.postal,
-                     'countryRegion':pq.country}
+            query = {'addressLine': pq.address,
+                     'locality': pq.city,
+                     'adminDistrict': pq.state,
+                     'postalCode': pq.postal,
+                     'countryRegion': pq.country}
         else:
-            query = {'query':pq.query}
-        
+            query = {'query': pq.query}
+
         if pq.viewbox is not None:
             query = dict(query, **{'umv':pq.viewbox.to_bing_str()})
-        if hasattr(pq, 'culture'): query = dict(query, c=pq.culture)
-        if hasattr(pq, 'user_ip'): query = dict(query, uip=pq.user_ip)
+        if hasattr(pq, 'culture'):
+            query = dict(query, c=pq.culture)
+        if hasattr(pq, 'user_ip'):
+            query = dict(query, uip=pq.user_ip)
         if hasattr(pq, 'user_lat') and hasattr(pq, 'user_lon'):
             query = dict(query, **{'ul':'%f,%f' % (pq.user_lat, pq.user_lon)})
 
         addl_settings = {'key':self._settings['api_key']}
         query = dict(query, **addl_settings)
         response_obj = self._get_json_obj(self._endpoint, query)
-        returned_candidates = [] # this will be the list returned
-        for r in response_obj['resourceSets'][0]['resources']:    
+        returned_candidates = []  # this will be the list returned
+        for r in response_obj['resourceSets'][0]['resources']:
             c = Candidate()
             c.entity = r['entityType']
-            c.locator = r['geocodePoints'][0]['calculationMethod'] # ex. "Parcel"
-            c.confidence = r['confidence'] # High|Medium|Low
-            c.match_addr = r['name'] # ex. "1 Microsoft Way, Redmond, WA 98052"
-            c.x = r['geocodePoints'][0]['coordinates'][1] # long, ex. -122.13
-            c.y = r['geocodePoints'][0]['coordinates'][0] # lat, ex. 47.64
+            c.locator = r['geocodePoints'][0]['calculationMethod']  # ex. "Parcel"
+            c.confidence = r['confidence']  # High|Medium|Low
+            c.match_addr = r['name']  # ex. "1 Microsoft Way, Redmond, WA 98052"
+            c.x = r['geocodePoints'][0]['coordinates'][1]  # long, ex. -122.13
+            c.y = r['geocodePoints'][0]['coordinates'][0]  # lat, ex. 47.64
             c.wkid = 4326
             c.geoservice = self.__class__.__name__
             returned_candidates.append(c)
         return returned_candidates
-    
+
 # class CitizenAtlas(GeocodeService):
 #     '''
 #     Class to geocode using the `Washington DC CitizenAtlas <http://citizenatlas.dc.gov/newwebservices>`_
@@ -178,6 +181,7 @@ class Bing(GeocodeService):
 
 #         return candidates
 
+
 class _EsriGeocodeService(GeocodeService):
     """
     Base class for older ESRI geocoders (EsriEU, EsriNA).
@@ -188,7 +192,7 @@ class _EsriGeocodeService(GeocodeService):
         :arg list preprocessors: preprocessors
         :arg list postprocessors: postprocessors
         :arg dict settings: Settings used by an _EsriGeocodeService object may include
-                            the ``api_key`` used to access ESRI premium services.  
+                            the ``api_key`` used to access ESRI premium services.
                             If this key is present, the object's endpoint will be
                             set to use premium tasks.
 
@@ -203,12 +207,13 @@ class _EsriGeocodeService(GeocodeService):
             query_dict.update({'token': self._settings['api_key']})
         return query_dict
 
+
 class _EsriSoapGeocodeService(_EsriGeocodeService):
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         # First, initialize the usual geocoder stuff like settings and
         # processors
         _EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
-        
+
         # Our suds client
         self._client = None
 
@@ -239,33 +244,34 @@ class _EsriSoapGeocodeService(_EsriGeocodeService):
             ps.Value = v
             props.append(ps)
         return props
-    
+
     def _get_candidates_from_record_set(self, record_set):
         """
         Given a RecordSet, create a list of Candidate objects for processing
         """
         candidates = []
         for record in record_set.Records.Record:
-            
+
             c_dict = {}
 
             for field, value in zip(record_set.Fields.FieldArray.Field,
                         record.Values.Value):
-                    
+
                 if field.Name in self._mapping:
                     c_dict[self._mapping[field.Name]] = value
-                
+
             candidate = Candidate(**c_dict)
             candidate.wkid = self._wkid
             candidate.geoservice = self.__class__.__name__
             candidates.append(candidate)
         return candidates
 
+
 class _EsriEUGeocodeService():
     """
     Base class including for Esri EU REST and SOAP Geocoders
 
-    As of 29 Dec 2011, the ESRI website claims to support Andorra, Austria, 
+    As of 29 Dec 2011, the ESRI website claims to support Andorra, Austria,
     Belgium, Denmark, Finland, France, Germany, Gibraltar, Ireland, Italy,
     Liechtenstein, Luxembourg, Monaco, The Netherlands, Norway, Portugal,
     San Marino, Spain, Sweden, Switzerland, United Kingdom, and Vatican City.
@@ -273,11 +279,11 @@ class _EsriEUGeocodeService():
     _wkid = 4326
 
     #: FIPS codes of supported countries
-    SUPPORTED_COUNTRIES_FIPS = ['AN', 'AU', 'BE', 'DA', 'FI', 'FR', 'GM', 'GI', 'EI', 
+    SUPPORTED_COUNTRIES_FIPS = ['AN', 'AU', 'BE', 'DA', 'FI', 'FR', 'GM', 'GI', 'EI',
         'IT', 'LS', 'LU', 'MN', 'NL', 'NO', 'PO', 'SM', 'SP', 'SW', 'SZ', 'UK', 'VT']
 
     #: ISO-2 codes of supported countries
-    SUPPORTED_COUNTRIES_ISO2 = ['AD', 'AT', 'BE', 'DK', 'FI', 'FR', 'DE', 'GI', 'IE', 
+    SUPPORTED_COUNTRIES_ISO2 = ['AD', 'AT', 'BE', 'DK', 'FI', 'FR', 'DE', 'GI', 'IE',
         'IT', 'LI', 'LU', 'MC', 'NL', 'NO', 'PT', 'SM', 'ES', 'SE', 'CH', 'GB', 'VC']
 
     #: Map of FIPS to ISO-2 codes, if they are different.
@@ -308,7 +314,7 @@ class _EsriEUGeocodeService():
             MAP_FIPS_TO_ISO2),
         ParseSingleLine(),
     ]
-        
+
     DEFAULT_POSTPROCESSORS = [
         AttrFilter(['EU_Street_Addr'], 'locator', False),
         AttrRename('locator', LOCATOR_MAP),
@@ -316,6 +322,7 @@ class _EsriEUGeocodeService():
         GroupBy('match_addr'),
         ScoreSorter(),
     ]
+
 
 class _EsriNAGeocodeService():
     """
@@ -340,18 +347,19 @@ class _EsriNAGeocodeService():
         ScoreSorter(),
     ]
 
+
 class EsriEUSoap(_EsriSoapGeocodeService, _EsriEUGeocodeService):
     _task_endpoint = '/services/Locators/TA_Address_EU/GeocodeServer'
 
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         preprocessors = _EsriEUGeocodeService.DEFAULT_PREPROCESSORS \
             if preprocessors is None else preprocessors
-        
+
         postprocessors = _EsriEUGeocodeService.DEFAULT_POSTPROCESSORS \
             if postprocessors is None else postprocessors
 
         _EsriSoapGeocodeService.__init__(self, preprocessors, postprocessors, settings)
-        
+
         self._mapping = {
             'Loc_name': 'locator',
             'Match_addr': 'match_addr',
@@ -384,9 +392,10 @@ class EsriEUSoap(_EsriSoapGeocodeService, _EsriEUGeocodeService):
 
         return candidates
 
+
 class EsriEU(_EsriGeocodeService, _EsriEUGeocodeService):
     _task_endpoint = '/rest/services/Locators/TA_Address_EU/GeocodeServer/findAddressCandidates'
-            
+
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         preprocessors = _EsriEUGeocodeService.DEFAULT_PREPROCESSORS \
             if preprocessors is None else preprocessors
@@ -408,9 +417,9 @@ class EsriEU(_EsriGeocodeService, _EsriEUGeocodeService):
         query = self.append_token_if_needed(query)
 
         response_obj = self._get_json_obj(self._endpoint, query)
-        returned_candidates = [] # this will be the list returned
+        returned_candidates = []  # this will be the list returned
         try:
-            for rc in response_obj['candidates']: 
+            for rc in response_obj['candidates']:
                 c = Candidate()
                 c.locator = rc['attributes']['Loc_name']
                 c.score = rc['score']
@@ -421,10 +430,11 @@ class EsriEU(_EsriGeocodeService, _EsriEUGeocodeService):
                 c.geoservice = self.__class__.__name__
                 returned_candidates.append(c)
         except KeyError as ex:
-            logger.warning('Received unusual JSON result from geocode: %s, %s', 
+            logger.warning('Received unusual JSON result from geocode: %s, %s',
                 response_obj, ex)
             return []
         return returned_candidates
+
 
 class EsriNASoap(_EsriSoapGeocodeService, _EsriNAGeocodeService):
     """
@@ -432,14 +442,14 @@ class EsriNASoap(_EsriSoapGeocodeService, _EsriNAGeocodeService):
     """
     _task_endpoint = '/services/Locators/TA_Address_NA_10/GeocodeServer'
     _wkid = 4326
-    
+
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         preprocessors = _EsriNAGeocodeService.DEFAULT_PREPROCESSORS \
             if preprocessors is None else preprocessors
-        
+
         postprocessors = _EsriNAGeocodeService.DEFAULT_POSTPROCESSORS \
             if postprocessors is None else postprocessors
-        
+
         _EsriSoapGeocodeService.__init__(self, preprocessors, postprocessors, settings)
 
         self._mapping = {
@@ -478,18 +488,19 @@ class EsriNASoap(_EsriSoapGeocodeService, _EsriNAGeocodeService):
                 return []
 
         return candidates
-         
+
+ 
 class EsriNA(_EsriGeocodeService, _EsriNAGeocodeService):
     """Esri REST Geocoder for North America"""
     _task_endpoint = '/rest/services/Locators/TA_Address_NA_10/GeocodeServer/findAddressCandidates'
-            
+
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         preprocessors = _EsriNAGeocodeService.DEFAULT_PREPROCESSORS \
             if preprocessors is None else preprocessors
-        
+
         postprocessors = _EsriNAGeocodeService.DEFAULT_POSTPROCESSORS \
             if postprocessors is None else postprocessors
-        
+
         _EsriGeocodeService.__init__(self, preprocessors, postprocessors, settings)
 
     def _geocode(self, location):
@@ -510,8 +521,8 @@ class EsriNA(_EsriGeocodeService, _EsriNAGeocodeService):
             wkid = response_obj['spatialReference']['wkid']
         except KeyError:
             pass
-        
-        returned_candidates = [] # this will be the list returned
+
+        returned_candidates = []  # this will be the list returned
         try: 
             for rc in response_obj['candidates']:         
                 c = Candidate()
@@ -526,7 +537,8 @@ class EsriNA(_EsriGeocodeService, _EsriNAGeocodeService):
         except KeyError:
             pass
         return returned_candidates
-    
+
+
 class EsriWGS(GeocodeService):
     """
     Class to geocode using the `ESRI World Geocoding service
@@ -539,7 +551,7 @@ class EsriWGS(GeocodeService):
     LOCATOR_MAP = {
         'PointAddress': 'rooftop',
         'StreetAddress': 'interpolation',
-        'PostalExt': 'postal_specific', # accept ZIP+4
+        'PostalExt': 'postal_specific',  # accept ZIP+4
         'Postal': 'postal'
     }
 
@@ -679,12 +691,51 @@ class EsriWGS(GeocodeService):
         postprocessors = EsriWGS.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
         GeocodeService.__init__(self, preprocessors, postprocessors, settings)
 
+
 class EsriWGSSSL(EsriWGS):
     """ 
     Class to geocode using the `ESRI World Geocoding service over SSL
     <https://geocode.arcgis.com/arcgis/geocoding.html>_`
     """
     _endpoint = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
+
+
+class USCensus(GeocodeService):
+
+    # set endpoint based on whether we geocode by single-line address, or with keyed components
+    _endpoint = ''
+    _endpoint_base = 'http://geocoding.geo.census.gov/geocoder/locations/'
+            
+    def _geocode(self, pq):
+        query = {
+            'format': 'json',
+            'benchmark': 'Public_AR_Current'
+        }
+        
+        if pq.query:
+            _this_endpoint = '%s%s' % (self._endpoint_base, 'onelineaddress')
+            query['address'] = pq.query
+        else:
+            _this_endpoint = '%s%s' % (self._endpoint_base, 'address')
+            query['street'] = pq.address
+            query['city'] = pq.city
+            query['state'] = pq.state
+            query['zip'] = pq.postal
+            
+        logger.debug('CENSUS QUERY: %s', query)
+        response_obj = self._get_json_obj(_this_endpoint, query)
+        logger.debug('CENSUS RESPONSE: %s', response_obj)
+        
+        returned_candidates = [] # this will be the list returned
+        for r in response_obj['result']['addressMatches']:
+            c = Candidate()
+            c.match_addr = r['matchedAddress']
+            c.x = r['coordinates']['x']
+            c.y = r['coordinates']['y']
+            c.geoservice = self.__class__.__name__
+            returned_candidates.append(c)
+        return returned_candidates
+
 
 class MapQuest(GeocodeService):
     """
@@ -728,7 +779,8 @@ class MapQuest(GeocodeService):
             c.geoservice = self.__class__.__name__
             returned_candidates.append(c)
         return returned_candidates
-    
+
+  
 class MapQuestSSL(MapQuest):
     _endpoint = 'https://www.mapquestapi.com/geocoding/v1/address'
 
