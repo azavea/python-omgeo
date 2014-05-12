@@ -104,6 +104,7 @@ class GeocoderTest(OmgeoTestCase):
         self.g_esri_eu_soap = Geocoder([['omgeo.services.EsriEUSoap', {}]])
         self.g_esri_wgs = Geocoder([['omgeo.services.EsriWGS', {}]])
         self.g_nom = Geocoder([['omgeo.services.Nominatim', {}]])
+        self.g_census = Geocoder([['omgeo.services.USCensus', {}]])
 
         ESRI_WGS_LOCATOR_MAP = {'PointAddress': 'rooftop',
                                 'StreetAddress': 'interpolation',
@@ -261,6 +262,11 @@ class GeocoderTest(OmgeoTestCase):
         y_type = type(candidates[0].y)
         self.assertEqual(x_type == float, True, 'x coord is of type %s instead of float' % x_type)
         self.assertEqual(y_type == float, True, 'y coord is of type %s instead of float' % y_type)
+        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
+
+    def test_geocode_census(self):
+        """Test Azavea's address using US Census geocoder."""
+        candidates = self.g_census.get_candidates(PlaceQuery('1200 Callowhill St, Philadelphia, PA'))
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
     
     # def test_geocode_dc_address(self):
