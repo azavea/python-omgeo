@@ -268,7 +268,13 @@ class GeocoderTest(OmgeoTestCase):
         """Test Azavea's address using US Census geocoder."""
         candidates = self.g_census.get_candidates(PlaceQuery('1200 Callowhill St, Philadelphia, PA'))
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
-    
+
+    def test_address_components(self):
+        """Make sure EsriWGS returns address components"""
+        candidate = self.g_esri_wgs.get_candidates(self.pq['azavea'])[0]
+        self._test_address_components(candidate)
+        candidate = self.g_census.get_candidates(self.pq['azavea'])[0]
+        self._test_address_components(candidate)
     # def test_geocode_dc_address(self):
     #     """
     #     Check that '1600 Pennsylvania' returns first result using DC address locator.

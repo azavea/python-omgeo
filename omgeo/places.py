@@ -172,7 +172,18 @@ class Candidate():
 
         Keyword arguments can be added in order to be able to use postprocessors
         with API output fields are not well-fitted for one of the definitions
-        above
+        above.
+
+        If possible, it is suggested for geocoders to additionally return the following
+        address components:
+            * match_streetaddr (the street address, e.g. '340 N 12th Street')
+            * match_city
+            * match_subregion (county)
+            * match_region (state / province)
+            * match_postal
+            * match_country
+        However, these are not required. Currently the EsriWGS and US Census geocoders
+        return these values.
         """
 
         for k in locals().keys():

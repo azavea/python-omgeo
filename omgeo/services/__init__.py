@@ -1,3 +1,5 @@
+import re
+
 from base import GeocodeService
 import json
 import logging
@@ -602,16 +604,21 @@ class EsriWGS(GeocodeService):
                      'Addr_Type',
                      #'Type',
                      #'Rank',
-                     #'AddNum',
-                     #'StPreDir',
-                     #'StPreType',
-                     #'StName',
-                     #'StType',
-                     #'StDir',
+                     'AddNum',
+                     'StPreDir',
+                     'StPreType',
+                     'StName',
+                     'StType',
+                     'StDir',
                      #'Side',
                      #'AddNumFrom',
                      #'AddNumTo',
                      #'AddBldg',
+                     'City',
+                     'Subregion',
+                     'Region',
+                     'Postal',
+                     'Country',
                      #'Ymax',
                      #'Ymin',
                      #'Xmin',
@@ -660,31 +667,55 @@ class EsriWGS(GeocodeService):
 
         endpoint = self._endpoint + '/' + method
         response_obj = self._get_json_obj(endpoint, query)
-        returned_candidates = [] # this will be the list returned
-        try: 
+        returned_candidates = []  # this will be the list returned
+        try:
             if method == 'find':
                 locations = response_obj['locations']
             else:
                 locations = response_obj['candidates']
 
-            for location in locations:         
+            for location in locations:
                 c = Candidate()
-                if method == 'find': #singlepart
+                if method == 'find':  # singlepart
                     attributes = location['feature']['attributes']
-                else: #findAddressCandidates / multipart
+                else:  # findAddressCandidates / multipart
                     attributes = location['attributes']
                 c.match_addr = attributes['Match_Addr']
                 c.locator = attributes['Loc_name']
                 c.locator_type = attributes['Addr_Type']
                 c.score = attributes['Score']
-                c.x = attributes['DisplayX']  #represents the actual location of the address.
+                c.x = attributes['DisplayX']  # represents the actual location of the address.
                 c.y = attributes['DisplayY']
                 c.wkid = response_obj['spatialReference']['wkid']
                 c.geoservice = self.__class__.__name__
+
+                # Optional address component fields.
+                for in_key, out_key in [('City', 'match_city'), ('Subregion', 'match_subregion'),
+                                        ('Region', 'match_region'), ('Postal', 'match_postal'),
+                                        ('Country', 'match_country')]:
+                    setattr(c, out_key, attributes.get(in_key, ''))
+                setattr(c, 'match_streetaddr', self._street_addr_from_response(attributes))
                 returned_candidates.append(c)
         except KeyError:
             pass
-        return returned_candidates   
+        return returned_candidates
+
+    def _street_addr_from_response(self, attributes):
+        """Construct a street address (no city, region, etc.) from a geocoder response.
+
+        :param attributes: A dict of address attributes as returned by the Esri geocoder.
+        """
+        # The exact ordering of the address component fields that should be
+        # used to reconstruct the full street address is not specified in the
+        # Esri documentation, but the examples imply that it is this.
+        ordered_fields = ['AddNum', 'StPreDir', 'StPreType', 'StName', 'StType', 'StDir']
+        result = []
+        for field in ordered_fields:
+            result.append(attributes.get(field, ''))
+        if any(result):
+            return ' '.join([s for s in result if s])  # Filter out empty strings.
+        else:
+            return ''
 
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         preprocessors = EsriWGS.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
@@ -733,8 +764,42 @@ class USCensus(GeocodeService):
             c.x = r['coordinates']['x']
             c.y = r['coordinates']['y']
             c.geoservice = self.__class__.__name__
+            # Optional address component fields.
+            for in_key, out_key in [('city', 'match_city'), ('state', 'match_region'),
+                                    ('zip', 'match_postal')]:
+                setattr(c, out_key, r['addressComponents'].get(in_key, ''))
+            setattr(c, 'match_subregion', '')  # No county from Census geocoder.
+            setattr(c, 'match_country', 'USA')  # Only US results from Census geocoder
+            setattr(c, 'match_streetaddr', self._street_addr_from_response(r))
             returned_candidates.append(c)
         return returned_candidates
+
+    def _street_addr_from_response(self, match):
+        """Construct a street address (no city, region, etc.) from a geocoder response.
+
+        :param match: The match object returned by the geocoder.
+        """
+        # Same caveat as above regarding the ordering of these fields; the
+        # documentation is not explicit about the correct ordering for
+        # reconstructing a full address, but implies that this is the ordering.
+        ordered_fields = ['preQualifier', 'preDirection', 'preType', 'streetName',
+                          'suffixType', 'suffixDirection', 'suffixQualifier']
+        result = []
+        # The address components only contain a from and to address, not the
+        # actual number of the address that was matched, so we need to cheat a
+        # bit and extract it from the full address string. This is likely to
+        # miss some edge cases (hopefully only a few since this is a US-only
+        # geocoder).
+        addr_num_re = re.match(r'([0-9]+)', match['matchedAddress'])
+        if not addr_num_re:  # Give up
+            return ''
+        result.append(addr_num_re.group(0))
+        for field in ordered_fields:
+            result.append(match['addressComponents'].get(field, ''))
+        if any(result):
+            return ' '.join([s for s in result if s])  # Filter out empty strings.
+        else:
+            return ''
 
 
 class MapQuest(GeocodeService):
