@@ -32,7 +32,7 @@ class OmgeoTestCase(unittest.TestCase):
     def assertOneCandidate(self, candidates):
         count = len(candidates)
         self.assertEqual(count > 0, True, 'No candidates returned.')
-        self.assertEqual(count > 1, False, 'More than one candidate returned.')        
+        self.assertEqual(count > 1, False, 'More than one candidate returned.')
 
 class GeocoderTest(OmgeoTestCase):
     """Tests using various geocoding APIs. Requires internet connection."""
@@ -40,7 +40,7 @@ class GeocoderTest(OmgeoTestCase):
     BING_KEY_REQUIRED_MSG = 'Enter a Bing Maps API key to run the Bing tests.'
     MAPQUEST_KEY_REQUIRED_MSG = 'Enter a MapQuest API key to run the MapQuest tests. '\
                                 'Keys can be obtained at http://developer.mapquest.com/.'
-    
+
     def setUp(self):
         # Viewbox objects - callowhill is from BSS Spring Garden station to Wash. Sq.
         vb = {'callowhill': Viewbox(-75.162628, 39.962769, -75.150963, 39.956322)}
@@ -79,7 +79,7 @@ class GeocoderTest(OmgeoTestCase):
                     # Oceanian Addresses:
                     'karori': PlaceQuery('102 Karori Road Karori Wellington', country='NZ'),
                     }
-        
+
         if BING_MAPS_API_KEY is not None:
             bing_settings = dict(api_key=BING_MAPS_API_KEY)
             self.g_bing = Geocoder([['omgeo.services.Bing', {'settings': bing_settings}]])
@@ -87,10 +87,10 @@ class GeocoderTest(OmgeoTestCase):
         if MAPQUEST_API_KEY is not None:
             mapquest_settings = dict(api_key=MAPQUEST_API_KEY)
             self.g_mapquest = Geocoder([['omgeo.services.MapQuest', {'settings': mapquest_settings}]])
-            self.g_mapquest_ssl = Geocoder([['omgeo.services.MapQuestSSL', {'settings': mapquest_settings}]])            
+            self.g_mapquest_ssl = Geocoder([['omgeo.services.MapQuestSSL', {'settings': mapquest_settings}]])
 
         #: main geocoder used for tests, using default APIs
-        self.g = Geocoder() 
+        self.g = Geocoder()
 
         # Set up params for old ESRI rest services:
         esri_settings = {} if ESRI_MAPS_API_KEY is None else {'api_key': ESRI_MAPS_API_KEY}
@@ -125,18 +125,18 @@ class GeocoderTest(OmgeoTestCase):
 
         #: geocoder with fast timeout
         self.impatient_geocoder = Geocoder([['omgeo.services.EsriWGS', {'settings': {'timeout': 0.01}}]])
-        
+
     def tearDown(self):
         pass
 
     def test_geocode_azavea(self):
         candidates = self.g.get_candidates(self.pq['azavea'])
         self.assertOneCandidate(candidates)
-        
+
     def test_impatiently_geocode_azavea(self):
         candidates = self.impatient_geocoder.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) == 0, True, 'Candidates were unexpectedly returned in under 10ms.')
-        
+
     def test_geocode_snap_points_1(self):
         """
         Geocoder expected to return the same place twice -- one with city as Flemington,
@@ -144,7 +144,7 @@ class GeocoderTest(OmgeoTestCase):
         """
         candidates = self.g_esri_na.get_candidates(self.pq['8_kirkbride'])
         self.assertOneCandidate(candidates)
-        
+
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_snap_points_2(self):
         """
@@ -239,7 +239,7 @@ class GeocoderTest(OmgeoTestCase):
         """Test Azavea's address using Bing geocoder"""
         candidates = self.g_bing.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
-        
+
     @unittest.skipIf(MAPQUEST_API_KEY is None, MAPQUEST_KEY_REQUIRED_MSG)
     def test_geocode_mapquest(self):
         """Test Azavea's address using MapQuest geocoder."""
@@ -251,7 +251,7 @@ class GeocoderTest(OmgeoTestCase):
         """Test Azavea's address using secure MapQuest geocoder."""
         candidates = self.g_mapquest_ssl.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
-        
+
     def test_geocode_nom(self):
         """
         Test 1200 Callowhill Street using Nominatim geocoder.
@@ -293,7 +293,7 @@ class GeocoderTest(OmgeoTestCase):
         """
         candidates = self.g.get_candidates(self.pq['ambiguous_azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
-        
+
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_karori(self):
         """
@@ -305,13 +305,19 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(any([('102' in c.match_addr and '6012' in c.match_addr) for c in candidates]),
             True, 'Could not find bldg. no. "102" and postcode "6012" in any address.')
 
+    def _test_address_components(self, candidate):
+            for field in ['match_streetaddr', 'match_city', 'match_subregion', 'match_region',
+                          'match_postal', 'match_country']:
+                self.assertIsNotNone(getattr(candidate, field, None),
+                                     msg='Missing address component %s' % field)
+
     def _test_geocode_results_all_(self, verbosity=0, geocoder=Geocoder(),
                                    expected_results=16):
         """
-        Geocode a list of addresses. Some of these only work with Bing so 
+        Geocode a list of addresses. Some of these only work with Bing so
         fewer results are expected when Bing is not used as a geocoder.
         """
-        if verbosity > 1: 
+        if verbosity > 1:
             logger.setLevel(logging.INFO)
 
         queries_with_results = 0
@@ -325,8 +331,8 @@ class GeocoderTest(OmgeoTestCase):
                 queries_with_results += 1
                 logger.info('Input:  %s' % self.pq[place].query)
                 logger.info(map(lambda c: 'Output: %r (%s %s)\n' %
-                    (c.match_addr, 
-                    c.geoservice, 
+                    (c.match_addr,
+                    c.geoservice,
                     [c.locator, c.score, c.confidence, c.entity]),
                     candidates))
         self.assertEqual(expected_results, queries_with_results,
@@ -424,67 +430,67 @@ class GeocoderProcessorTest(OmgeoTestCase):
         place_out = RequireCountry().process(place_in)
         place_exp = False
         self.assertEqual_(place_out, place_exp)
-        
+
     def test_pro_CancelIfRegexInAttr(self):
         """Test CancelIfRegexInAttr preprocessor."""
         place_in = PlaceQuery('PO Box 123, Philadelphia, PA')
         place_out = CancelIfRegexInAttr(regex="po box", attrs=('query',)).process(place_in)
         place_exp = False
         self.assertEqual_(place_out, place_exp)
-        
+
     def test_pro_CancelIfRegexInAttr_case_sensitive(self):
         """Test CancelIfRegexInAttr preprocessor using case-sensitive option."""
         place_in = PlaceQuery('PO Box 123, Philadelphia, PA')
         place_out = CancelIfRegexInAttr(regex="PO BOX", attrs=('query',), ignorecase=False).process(place_in)
         place_exp = place_in # we should still have it because PO BOX does not match exactly
         self.assertEqual_(place_out, place_exp)
-        
+
     def test_pro_CancelIfPOBox(self):
         """Test CancelIfPOBox preprocessor."""
         place_in = PlaceQuery('PO Box 123, Philadelphia, PA')
         place_out = CancelIfPOBox().process(place_in)
         self.assertEqual_(place_out, False)
-        
+
         place_in = PlaceQuery(address='PO Box 123', city='Philadelphia', state='PA')
         place_out = CancelIfPOBox().process(place_in)
         self.assertEqual_(place_out, False)
-        
+
         place_in = PlaceQuery(address='P.O Box 123', city='Philadelphia', state='PA')
         place_out = CancelIfPOBox().process(place_in)
-        self.assertEqual_(place_out, False)  
-        
+        self.assertEqual_(place_out, False)
+
         place_in = PlaceQuery(address='P  O  box 123', city='Philadelphia', state='PA')
         place_out = CancelIfPOBox().process(place_in)
         self.assertEqual_(place_out, False)
-        
+
         place_in = PlaceQuery(address='P.O. Box 123', city='Philadelphia', state='PA')
         place_out = CancelIfPOBox().process(place_in)
-        self.assertEqual_(place_out, False)  
-        
+        self.assertEqual_(place_out, False)
+
         place_in = PlaceQuery(address='P.O. Box K', city='New Stanton', state='PA')
         place_out = CancelIfPOBox().process(place_in)
         self.assertEqual_(place_out, False)
-        
+
         place_in = PlaceQuery(address='PO. Box K', city='New Stanton', state='PA')
         place_out = CancelIfPOBox().process(place_in)
         self.assertEqual_(place_out, False)
-        
+
         place_in = PlaceQuery(address='P.O.B. 123', city='Philadelphia', state='PA')
         place_out = CancelIfPOBox().process(place_in)
-        self.assertEqual_(place_out, False)      
-        
+        self.assertEqual_(place_out, False)
+
         place_in = PlaceQuery(address='P.O. BX123', city='Philadelphia', state='PA')
         place_out = CancelIfPOBox().process(place_in)
         self.assertEqual_(place_out, False)
-        
+
         place_in = PlaceQuery(address='POB 123', city='Philadelphia', state='PA')
         place_out = CancelIfPOBox().process(place_in)
         self.assertEqual_(place_out, False)
-        
+
         place_in = PlaceQuery('POBOX 123, Philadelphia, PA')
         place_out = CancelIfPOBox().process(place_in)
-        self.assertEqual_(place_out, False)  
-        
+        self.assertEqual_(place_out, False)
+
         place_in = PlaceQuery('1200 Callowhill St, PO Box 466, Philadelphia, PA')
         place_out = CancelIfPOBox().process(place_in)
         self.assertEqual_(place_out, place_in) # should still geocode because we a physical address
@@ -531,7 +537,7 @@ class GeocoderProcessorTest(OmgeoTestCase):
         candidates_exp = [self.best, self.wolf_best]
         candidates_out = GroupBy('match_addr').process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
-        
+
     def test_postpro_GroupByMultiple(self):
         candidates_in = [self.wolf_best, self.wolf_340]
         candidates_exp = [self.wolf_best]
@@ -616,7 +622,7 @@ class GeocoderProcessorTest(OmgeoTestCase):
         candidates_exp = [candidates_in[0]] # should just keep the first one.
         candidates_out = SnapPoints(distance=50).process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
-        
+
 
 if __name__ == '__main__':
     logging.basicConfig(stream=sys.stdout)

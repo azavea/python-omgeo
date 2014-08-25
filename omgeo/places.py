@@ -79,7 +79,7 @@ class Viewbox():
             if align == 'C':
                 num_spaces = int(num_spaces / 2)
             padding = num_spaces * ' '
-            return '%s%s' % (padding, str_) 
+            return '%s%s' % (padding, str_)
 
         return    '          %s\n'\
                   '        ------------\n'\
@@ -137,7 +137,7 @@ class PlaceQuery():
             raise Exception('Must provide query or one or more of address, city, state, and postal.')
         for k in kwargs:
             setattr(self, k, kwargs[k])
-            
+
     def __repr__(self):
         return '<%s%s %s>' % (self.query, self.address, self.postal)
 
@@ -161,7 +161,7 @@ class Candidate():
                       We try to standardize this to
                        * ``rooftop``,
                        * ``interpolated``,
-                       * ``postal_specific``, and 
+                       * ``postal_specific``, and
                        * ``postal``.
 
         :arg score: Standardized score (default ``0``)

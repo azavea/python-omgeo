@@ -23,7 +23,7 @@ class UpstreamResponseInfo():
             raise Exception('response_code must be an integer.')
         else:
             self.response_code = response_code
-            
+
     def set_response_time(self, response_time):
         if response_time is not None:
             if type(response_time) not in (int, float):
@@ -33,15 +33,15 @@ class UpstreamResponseInfo():
                 raise Exception('response_time cannot be negative.')
             self.response_time = int(round(response_time))
         else:
-            self.response_time = None        
-            
+            self.response_time = None
+
     def set_success(self, success):
         if type(success) is not bool:
             raise ('success must be a boolean value.')
         else:
             self.success = success
-    
-    def __init__(self, geoservice, processed_pq, response_code=None, response_time=None, 
+
+    def __init__(self, geoservice, processed_pq, response_code=None, response_time=None,
                  success=True, errors=None):
         """
         :arg str geoservice: name of the upstream provider used (required)
@@ -91,13 +91,13 @@ class GeocodeService():
         #: overwritten in subclass.
         self._preprocessors = []
 
-        #: Postprocessor classes to apply to the list of Candidates obtained, 
+        #: Postprocessor classes to apply to the list of Candidates obtained,
         #: usually overwritten in subclass.
         self._postprocessors = []
 
         #: Settings for this geocoder, usually overwritten by subclass
         self._settings = {}
- 
+
         if preprocessors is not None:
             self._preprocessors = preprocessors
         if postprocessors is not None:
@@ -127,7 +127,7 @@ class GeocodeService():
                 if accept_none is False and self._settings[keyname] is None:
                     return keyname
         return True
-    
+
     def _get_response(self, endpoint, query):
         """Returns response or False in event of failure"""
         timeout_secs = self._settings.get('timeout', 10)
@@ -146,7 +146,7 @@ class GeocodeService():
                                self.get_service_name(),
                                response.read()))
         return response
-    
+
     def _get_json_obj(self, endpoint, query):
         """
         Return False if connection could not be made.
@@ -154,7 +154,7 @@ class GeocodeService():
         """
         response = self._get_response(endpoint, query)
         content = response.read()
-        try:  
+        try:
             return loads(content)
         except ValueError:
             raise Exception('Could not decode content to JSON:\n%s'
@@ -182,21 +182,21 @@ class GeocodeService():
         :rtype: tuple
         :returns: post-processed list of Candidate objects and
                   and UpstreamResponseInfo object if an API call was made.
-        
+
                   Examples:
 
                   Preprocessor throws out request::
 
                       ([], None)
-                    
+
                   Postprocessor throws out some candidates::
 
                       ([<Candidate obj>, <Candidate obj>, ...], <UpstreamResponseInfo obj>)
-                    
+
                   Postprocessor throws out all candidates::
 
                       ([], <UpstreamResponseInfo obj>)
-                    
+
                   An exception occurs while making the API call::
 
                       ([], <UpstreamResponseInfo obj>)
@@ -224,6 +224,6 @@ class GeocodeService():
             for p in self._postprocessors: # apply universal candidate postprocessing
                 candidates = p.process(candidates) # merge lists
         return candidates, upstream_response_info
-    
+
     def get_service_name(self):
         return self.__class__.__name__
