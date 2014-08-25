@@ -149,3 +149,7 @@ v1.6.0, 2013-10-31
 v1.7.0, 2014-05-12
 ------------------
  * Add Census geocoder
+
+v1.7.1, 2014-08-25
+------------------
+ * Return address components from US Census, EsriWGS geocoders.

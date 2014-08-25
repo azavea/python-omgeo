@@ -62,6 +62,26 @@ Take a closer look at the information in our address Candidate objects::
 	  'x': -75.158434,
 	  'y': 39.958728}]
 
+Some geocoders (EsriWGS and US Census) can return address components in addition to the
+full address::
+
+    >>> [{'geoservice': 'EsriWGS',
+        'locator': 'interpolation',
+        'locator_type': u'StreetAddress',
+        'match_addr': u'340 N 12th St, Phila, Pennsylvania, 19107',
+        'match_city': u'Phila',
+        'match_country': u'USA',
+        'match_postal': u'19107',
+        'match_region': u'Pennsylvania',
+        'match_streetaddr': u'340 N 12th St',
+        'match_subregion': u'',
+        'score': 90.1,
+        'wkid': 4326,
+        'x': -75.158384,
+        'y': 39.958774}]
+
+These are optional; their existence may change depending on the response from the geocoder.
+
 **Testing**
 
 There is a shell script in the root of the repository called *test.dummy.sh*.

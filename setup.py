@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name="python-omgeo",
-    version="1.7.0",
+    version="1.7.1",
     description="Geocoding Library using ESRI, Bing Maps, and MapQuest geocoders",
     author="Azavea, Inc.",
     author_email="info@azavea.com",
@@ -24,6 +24,6 @@ setup(
         'Programming Language :: Python :: 2.6'
     ],
     dependency_links=['http://github.com/htj/suds-htj/tarball/master#suds=0.4.1-htj'],
-    install_requires=['suds>=0.4'], 
+    install_requires=['suds>=0.4'],
     test_suite='omgeo.tests.tests',
 )
