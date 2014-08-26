@@ -79,7 +79,7 @@ class Viewbox():
             if align == 'C':
                 num_spaces = int(num_spaces / 2)
             padding = num_spaces * ' '
-            return '%s%s' % (padding, str_) 
+            return '%s%s' % (padding, str_)
 
         return    '          %s\n'\
                   '        ------------\n'\
@@ -137,7 +137,7 @@ class PlaceQuery():
             raise Exception('Must provide query or one or more of address, city, state, and postal.')
         for k in kwargs:
             setattr(self, k, kwargs[k])
-            
+
     def __repr__(self):
         return '<%s%s %s>' % (self.query, self.address, self.postal)
 
@@ -161,7 +161,7 @@ class Candidate():
                       We try to standardize this to
                        * ``rooftop``,
                        * ``interpolated``,
-                       * ``postal_specific``, and 
+                       * ``postal_specific``, and
                        * ``postal``.
 
         :arg score: Standardized score (default ``0``)
@@ -172,7 +172,18 @@ class Candidate():
 
         Keyword arguments can be added in order to be able to use postprocessors
         with API output fields are not well-fitted for one of the definitions
-        above
+        above.
+
+        If possible, it is suggested for geocoders to additionally return the following
+        address components:
+            * match_streetaddr (the street address, e.g. '340 N 12th Street')
+            * match_city
+            * match_subregion (county)
+            * match_region (state / province)
+            * match_postal
+            * match_country
+        However, these are not required. Currently the EsriWGS and US Census geocoders
+        return these values.
         """
 
         for k in locals().keys():

@@ -1,3 +1,5 @@
+import re
+
 from base import GeocodeService
 import json
 import logging
@@ -33,7 +35,7 @@ class Bing(GeocodeService):
        AttrMigrator('confidence', 'score',
                     {'High':100, 'Medium':85, 'Low':50}),
        UseHighScoreIfAtLeast(100),
-       AttrFilter(['Address', 'AdministrativeBuilding', 
+       AttrFilter(['Address', 'AdministrativeBuilding',
                    'AgriculturalStructure',
                    'BusinessName', 'BusinessStructure',
                    'BusStation', 'Camp', 'Church', 'CityHall',
@@ -44,7 +46,7 @@ class Bing(GeocodeService):
                    'InformationCenter', 'Junction',
                    'LandmarkBuilding', 'Library', 'Lighthouse',
                    'Marina', 'MedicalStructure', 'MetroStation',
-                   'Mine', 'Mission', 'Monument', 'Mosque', 
+                   'Mine', 'Mission', 'Monument', 'Mosque',
                    'Museum', 'NauticalStructure', 'NavigationalStructure',
                    'OfficeBuilding', 'ParkAndRide', 'PlayingField',
                    'PoliceStation', 'PostOffice', 'PowerStation',
@@ -57,7 +59,7 @@ class Bing(GeocodeService):
                                   ParcelCentroid='parcel',
                                   Interpolation='interpolation',
                                   InterpolationOffset='interpolation_offset')),
-       AttrSorter(['rooftop', 'parcel', 
+       AttrSorter(['rooftop', 'parcel',
                    'interpolation_offset', 'interpolation'],
                    'locator'),
        AttrSorter(['Address'], 'entity'),
@@ -399,7 +401,7 @@ class EsriEU(_EsriGeocodeService, _EsriEUGeocodeService):
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         preprocessors = _EsriEUGeocodeService.DEFAULT_PREPROCESSORS \
             if preprocessors is None else preprocessors
-        
+
         postprocessors = _EsriEUGeocodeService.DEFAULT_POSTPROCESSORS \
             if postprocessors is None else postprocessors
 
@@ -489,7 +491,7 @@ class EsriNASoap(_EsriSoapGeocodeService, _EsriNAGeocodeService):
 
         return candidates
 
- 
+
 class EsriNA(_EsriGeocodeService, _EsriNAGeocodeService):
     """Esri REST Geocoder for North America"""
     _task_endpoint = '/rest/services/Locators/TA_Address_NA_10/GeocodeServer/findAddressCandidates'
@@ -523,8 +525,8 @@ class EsriNA(_EsriGeocodeService, _EsriNAGeocodeService):
             pass
 
         returned_candidates = []  # this will be the list returned
-        try: 
-            for rc in response_obj['candidates']:         
+        try:
+            for rc in response_obj['candidates']:
                 c = Candidate()
                 c.locator = rc['attributes']['Loc_name']
                 c.score = rc['score']
@@ -573,7 +575,7 @@ class EsriWGS(GeocodeService):
                    'locator_type'),
         AttrRename('locator', LOCATOR_MAP), # after filter to avoid searching things we toss out
         UseHighScoreIfAtLeast(99.8),
-        ScoreSorter(),      
+        ScoreSorter(),
         GroupBy('match_addr'),
         GroupBy(('x', 'y')),
     ]
@@ -602,16 +604,21 @@ class EsriWGS(GeocodeService):
                      'Addr_Type',
                      #'Type',
                      #'Rank',
-                     #'AddNum',
-                     #'StPreDir',
-                     #'StPreType',
-                     #'StName',
-                     #'StType',
-                     #'StDir',
+                     'AddNum',
+                     'StPreDir',
+                     'StPreType',
+                     'StName',
+                     'StType',
+                     'StDir',
                      #'Side',
                      #'AddNumFrom',
                      #'AddNumTo',
                      #'AddBldg',
+                     'City',
+                     'Subregion',
+                     'Region',
+                     'Postal',
+                     'Country',
                      #'Ymax',
                      #'Ymin',
                      #'Xmin',
@@ -648,7 +655,7 @@ class EsriWGS(GeocodeService):
                          CountryCode=pq.country, # full country name or ISO 3166-1 2- or 3-digit country code
                          )
             if pq.bounded and pq.viewbox is not None:
-                query = dict(query, searchExtent=pq.viewbox.to_esri_wgs_json())            
+                query = dict(query, searchExtent=pq.viewbox.to_esri_wgs_json())
         else: # single-line
             method = 'find'
             query = dict(query,
@@ -660,31 +667,55 @@ class EsriWGS(GeocodeService):
 
         endpoint = self._endpoint + '/' + method
         response_obj = self._get_json_obj(endpoint, query)
-        returned_candidates = [] # this will be the list returned
-        try: 
+        returned_candidates = []  # this will be the list returned
+        try:
             if method == 'find':
                 locations = response_obj['locations']
             else:
                 locations = response_obj['candidates']
 
-            for location in locations:         
+            for location in locations:
                 c = Candidate()
-                if method == 'find': #singlepart
+                if method == 'find':  # singlepart
                     attributes = location['feature']['attributes']
-                else: #findAddressCandidates / multipart
+                else:  # findAddressCandidates / multipart
                     attributes = location['attributes']
                 c.match_addr = attributes['Match_Addr']
                 c.locator = attributes['Loc_name']
                 c.locator_type = attributes['Addr_Type']
                 c.score = attributes['Score']
-                c.x = attributes['DisplayX']  #represents the actual location of the address.
+                c.x = attributes['DisplayX']  # represents the actual location of the address.
                 c.y = attributes['DisplayY']
                 c.wkid = response_obj['spatialReference']['wkid']
                 c.geoservice = self.__class__.__name__
+
+                # Optional address component fields.
+                for in_key, out_key in [('City', 'match_city'), ('Subregion', 'match_subregion'),
+                                        ('Region', 'match_region'), ('Postal', 'match_postal'),
+                                        ('Country', 'match_country')]:
+                    setattr(c, out_key, attributes.get(in_key, ''))
+                setattr(c, 'match_streetaddr', self._street_addr_from_response(attributes))
                 returned_candidates.append(c)
         except KeyError:
             pass
-        return returned_candidates   
+        return returned_candidates
+
+    def _street_addr_from_response(self, attributes):
+        """Construct a street address (no city, region, etc.) from a geocoder response.
+
+        :param attributes: A dict of address attributes as returned by the Esri geocoder.
+        """
+        # The exact ordering of the address component fields that should be
+        # used to reconstruct the full street address is not specified in the
+        # Esri documentation, but the examples imply that it is this.
+        ordered_fields = ['AddNum', 'StPreDir', 'StPreType', 'StName', 'StType', 'StDir']
+        result = []
+        for field in ordered_fields:
+            result.append(attributes.get(field, ''))
+        if any(result):
+            return ' '.join([s for s in result if s])  # Filter out empty strings.
+        else:
+            return ''
 
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         preprocessors = EsriWGS.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
@@ -693,7 +724,7 @@ class EsriWGS(GeocodeService):
 
 
 class EsriWGSSSL(EsriWGS):
-    """ 
+    """
     Class to geocode using the `ESRI World Geocoding service over SSL
     <https://geocode.arcgis.com/arcgis/geocoding.html>_`
     """
@@ -705,13 +736,13 @@ class USCensus(GeocodeService):
     # set endpoint based on whether we geocode by single-line address, or with keyed components
     _endpoint = ''
     _endpoint_base = 'http://geocoding.geo.census.gov/geocoder/locations/'
-            
+
     def _geocode(self, pq):
         query = {
             'format': 'json',
             'benchmark': 'Public_AR_Current'
         }
-        
+
         if pq.query:
             _this_endpoint = '%s%s' % (self._endpoint_base, 'onelineaddress')
             query['address'] = pq.query
@@ -721,20 +752,54 @@ class USCensus(GeocodeService):
             query['city'] = pq.city
             query['state'] = pq.state
             query['zip'] = pq.postal
-            
+
         logger.debug('CENSUS QUERY: %s', query)
         response_obj = self._get_json_obj(_this_endpoint, query)
         logger.debug('CENSUS RESPONSE: %s', response_obj)
-        
-        returned_candidates = [] # this will be the list returned
+
+        returned_candidates = []  # this will be the list returned
         for r in response_obj['result']['addressMatches']:
             c = Candidate()
             c.match_addr = r['matchedAddress']
             c.x = r['coordinates']['x']
             c.y = r['coordinates']['y']
             c.geoservice = self.__class__.__name__
+            # Optional address component fields.
+            for in_key, out_key in [('city', 'match_city'), ('state', 'match_region'),
+                                    ('zip', 'match_postal')]:
+                setattr(c, out_key, r['addressComponents'].get(in_key, ''))
+            setattr(c, 'match_subregion', '')  # No county from Census geocoder.
+            setattr(c, 'match_country', 'USA')  # Only US results from Census geocoder
+            setattr(c, 'match_streetaddr', self._street_addr_from_response(r))
             returned_candidates.append(c)
         return returned_candidates
+
+    def _street_addr_from_response(self, match):
+        """Construct a street address (no city, region, etc.) from a geocoder response.
+
+        :param match: The match object returned by the geocoder.
+        """
+        # Same caveat as above regarding the ordering of these fields; the
+        # documentation is not explicit about the correct ordering for
+        # reconstructing a full address, but implies that this is the ordering.
+        ordered_fields = ['preQualifier', 'preDirection', 'preType', 'streetName',
+                          'suffixType', 'suffixDirection', 'suffixQualifier']
+        result = []
+        # The address components only contain a from and to address, not the
+        # actual number of the address that was matched, so we need to cheat a
+        # bit and extract it from the full address string. This is likely to
+        # miss some edge cases (hopefully only a few since this is a US-only
+        # geocoder).
+        addr_num_re = re.match(r'([0-9]+)', match['matchedAddress'])
+        if not addr_num_re:  # Give up
+            return ''
+        result.append(addr_num_re.group(0))
+        for field in ordered_fields:
+            result.append(match['addressComponents'].get(field, ''))
+        if any(result):
+            return ' '.join([s for s in result if s])  # Filter out empty strings.
+        else:
+            return ''
 
 
 class MapQuest(GeocodeService):
@@ -742,7 +807,7 @@ class MapQuest(GeocodeService):
     Class to geocode using MapQuest licensed services.
     """
     _endpoint = 'http://www.mapquestapi.com/geocoding/v1/address'
-    
+
     def _geocode(self, pq):
         def get_appended_location(location, **kwargs):
             """Add key/value pair to given dict only if value is not empty string."""
@@ -762,7 +827,7 @@ class MapQuest(GeocodeService):
         query = dict(key=unquote(self._settings['api_key']),
                      json=json_)
         if pq.viewbox is not None:
-            query = dict(query, viewbox=pq.viewbox.to_mapquest_str())        
+            query = dict(query, viewbox=pq.viewbox.to_mapquest_str())
         response_obj = self._get_json_obj(self._endpoint, query)
         logger.debug('MQ RESPONSE: %s', response_obj)
         returned_candidates = [] # this will be the list returned
@@ -780,22 +845,22 @@ class MapQuest(GeocodeService):
             returned_candidates.append(c)
         return returned_candidates
 
-  
+
 class MapQuestSSL(MapQuest):
     _endpoint = 'https://www.mapquestapi.com/geocoding/v1/address'
 
 class Nominatim(GeocodeService):
     """
-    Class to geocode using `Nominatim services hosted 
+    Class to geocode using `Nominatim services hosted
     by MapQuest <http://open.mapquestapi.com/nominatim/>`_.
     """
     _wkid = 4326
     _endpoint = 'http://open.mapquestapi.com/nominatim/v1/search'
 
-    DEFAULT_ACCEPTED_ENTITIES = ['building.', 'historic.castle', 'leisure.ice_rink', 
+    DEFAULT_ACCEPTED_ENTITIES = ['building.', 'historic.castle', 'leisure.ice_rink',
                                  'leisure.miniature_golf',
                                  'leisure.sports_centre', 'lesiure.stadium', 'leisure.track',
-                                 'lesiure.water_park', 'man_made.lighthouse', 'man_made.works', 
+                                 'lesiure.water_park', 'man_made.lighthouse', 'man_made.works',
                                  'military.barracks', 'military.bunker', 'office.', 'place.house',
                                  'amenity.',  'power.generator', 'railway.station',
                                  'shop.', 'tourism.']
@@ -805,15 +870,15 @@ class Nominatim(GeocodeService):
                                  'amentity.grit_bin', 'amentity.atm',
                                  'amentity.hunting_stand', 'amentity.post_box']
 
-    DEFAULT_PREPROCESSORS = [ReplaceRangeWithNumber()] # 766-68 Any St. -> 766 Any St. 
+    DEFAULT_PREPROCESSORS = [ReplaceRangeWithNumber()] # 766-68 Any St. -> 766 Any St.
     """Preprocessors to use with this geocoder service, in order of desired execution."""
-    
+
     DEFAULT_POSTPROCESSORS = [
         AttrFilter(DEFAULT_ACCEPTED_ENTITIES, 'entity', exact_match=False),
         AttrExclude(DEFAULT_REJECTED_ENTITIES, 'entity')
     ]
     """Postprocessors to use with this geocoder service, in order of desired execution."""
-    
+
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         preprocessors = Nominatim.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
         postprocessors = Nominatim.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
@@ -823,14 +888,14 @@ class Nominatim(GeocodeService):
         query = {'q':pq.query,
                  'countrycodes':pq.country, # only takes ISO-2
                  'format':'json'}
-        
+
         if pq.viewbox is not None:
             query = dict(query, **{'viewbox':pq.viewbox.to_mapquest_str(), 'bounded':pq.bounded})
 
         response_obj = self._get_json_obj(self._endpoint, query)
-  
+
         returned_candidates = [] # this will be the list returned
-        for r in response_obj:    
+        for r in response_obj:
             c = Candidate()
             c.locator = 'parcel' # we don't have one but this is the closest match
             c.entity = '%s.%s' % (r['class'], r['type']) # ex.: "place.house"
