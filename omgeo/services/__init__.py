@@ -548,6 +548,17 @@ class EsriWGS(GeocodeService):
 
     This uses two endpoints -- one for single-line addresses,
     and one for multi-part addresses.
+
+    An optional (key) parameter can be passed to the PlaceQuery
+    which will be passed as a magicKey to the find endpoint if
+    using a single line address/text search. This allows omgeo
+    to be used with the `Esri suggest endpoint
+    <https://developers.arcgis.com/rest/geocode/api-reference/geocoding-suggest.htm>`_.
+
+    Note: Based on tests using the magicKey parameter, it is
+    recommended that a viewbox not be used with in conjuction
+    with the magicKey. Additionally, address/search text passed
+    via the query may be ignored when using a magicKey.
     """
 
     LOCATOR_MAP = {
@@ -658,10 +669,13 @@ class EsriWGS(GeocodeService):
                 query = dict(query, searchExtent=pq.viewbox.to_esri_wgs_json())
         else: # single-line
             method = 'find'
+            magic_key = pq.key if hasattr(pq, 'key') else ''
             query = dict(query,
                          text=pq.query, # This can be a street address, place name, postal code, or POI.
                          sourceCountry=pq.country, # full country name or ISO 3166-1 2- or 3-digit country code
                          )
+            if magic_key:
+                query['magicKey'] = magic_key # This is a lookup key returned from the suggest endpoint.
             if pq.bounded and pq.viewbox is not None:
                 query = dict(query, bbox=pq.viewbox.to_esri_wgs_json())
 
