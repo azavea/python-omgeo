@@ -153,3 +153,7 @@ v1.7.0, 2014-05-12
 v1.7.1, 2014-08-25
 ------------------
  * Return address components from US Census, EsriWGS geocoders.
+
+v1.7.2, 2015-04-14
+------------------
+ * Support EsriWGS magicKey.
