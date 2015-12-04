@@ -931,7 +931,9 @@ class Mapzen(GeocodeService):
 
     """
     _wkid = 4326
-    _endpoint = 'https://search.mapzen.com/v1/search'
+    _default_endpoint = 'https://search.mapzen.com/v1/search'
+    _key_endpoint = 'https://search.mapzen.com/v1/place'
+    _endpoint = _default_endpoint
 
     DEFAULT_PREPROCESSORS = [ReplaceRangeWithNumber()] # 766-68 Any St. -> 766 Any St.
 
@@ -952,19 +954,33 @@ class Mapzen(GeocodeService):
             box = pq.viewbox.to_mapzen_dict()
             query = dict(query, **box)
 
+        if hasattr(pq, 'key'):
+            # Swap to the place endpoint and return a single result.
+            self._endpoint = self._key_endpoint
+            query = {'ids':pq.key,
+                     'api_key':self._settings['api_key']
+                    }
+
         response_obj = self._get_json_obj(self._endpoint, query)
         returned_candidates = [] # this will be the list returned
         features_in_response = response_obj['features']
         for r in features_in_response:
+            properties = r['properties']
+            geometry = r['geometry']
+            score = 100 * float(properties['confidence']) \
+                    if hasattr(properties, 'confidence') else 0
+            locality = properties['locality'] \
+                       if hasattr(properties, 'locality') else ''
+
             c = Candidate()
-            c.locator = r['properties']['layer']
-            c.match_addr = r['properties']['label']
-            c.match_region = r['properties']['region']
-            c.match_city = r['properties']['locality']
-            c.locator_type = r['properties']['layer']
-            c.x = float(r['geometry']['coordinates'][0])
-            c.y = float(r['geometry']['coordinates'][1])
-            c.score = 100 * float(r['properties']['confidence'])
+            c.locator = properties['layer']
+            c.match_addr = properties['label']
+            c.match_region = properties['region']
+            c.match_city = locality
+            c.locator_type = properties['layer']
+            c.x = float(geometry['coordinates'][0])
+            c.y = float(geometry['coordinates'][1])
+            c.score = score
             c.wkid = self._wkid
             c.geoservice = self.__class__.__name__
             returned_candidates.append(c)
