@@ -920,3 +920,52 @@ class Nominatim(GeocodeService):
             c.geoservice = self.__class__.__name__
             returned_candidates.append(c)
         return returned_candidates
+
+class Mapzen(GeocodeService):
+    """
+    Class to geocode using `Mapzen search service
+    <https://mapzen.com/projects/search>`_.
+
+    Settings used by the Mapzen GeocodeService object include:
+     * api_key --  The API key used to access search service.
+
+    """
+    _wkid = 4326
+    _endpoint = 'https://search.mapzen.com/v1/search'
+
+    DEFAULT_PREPROCESSORS = [ReplaceRangeWithNumber()] # 766-68 Any St. -> 766 Any St.
+
+    def __init__(self, preprocessors=None, postprocessors=None, settings=None):
+        preprocessors = Mapzen.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
+        postprocessors = Mapzen.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
+        GeocodeService.__init__(self, preprocessors, postprocessors, settings)
+
+    def _geocode(self, pq):
+        query = {'text':pq.query,
+                 'api_key':self._settings['api_key']
+                }
+
+        if pq.country:
+            query = dict(query, **{'boundary.country':pq.country})
+
+        if pq.viewbox is not None:
+            box = pq.viewbox.to_mapzen_dict()
+            query = dict(query, **box)
+
+        response_obj = self._get_json_obj(self._endpoint, query)
+        returned_candidates = [] # this will be the list returned
+        features_in_response = response_obj['features']
+        for r in features_in_response:
+            c = Candidate()
+            c.locator = r['properties']['layer']
+            c.match_addr = r['properties']['label']
+            c.match_region = r['properties']['region']
+            c.match_city = r['properties']['locality']
+            c.locator_type = r['properties']['layer']
+            c.x = float(r['geometry']['coordinates'][0])
+            c.y = float(r['geometry']['coordinates'][1])
+            c.score = 100 * float(r['properties']['confidence'])
+            c.wkid = self._wkid
+            c.geoservice = self.__class__.__name__
+            returned_candidates.append(c)
+        return returned_candidates

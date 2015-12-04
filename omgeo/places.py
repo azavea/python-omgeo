@@ -33,6 +33,19 @@ class Viewbox():
         vb = self.convert_srs(4326)
         return '%s,%s,%s,%s' % (vb.bottom, vb.left, vb.top, vb.right)
 
+    def to_mapzen_dict(self):
+        """
+        Convert Viewbox object to a string that can be used by Mapzen
+        as a query parameter.
+        """
+        vb = self.convert_srs(4326)
+        return {
+            'boundary.rect.min_lat': vb.bottom,
+            'boundary.rect.min_lon': vb.left,
+            'boundary.rect.max_lat': vb.top,
+            'boundary.rect.max_lon': vb.right
+        }
+
     def to_mapquest_str(self):
         """
         Convert Viewbox object to a string that can be used by
