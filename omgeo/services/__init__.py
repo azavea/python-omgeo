@@ -931,21 +931,32 @@ class Mapzen(GeocodeService):
 
     """
     _wkid = 4326
-    _default_endpoint = 'https://search.mapzen.com/v1/search'
-    _key_endpoint = 'https://search.mapzen.com/v1/place'
-    _endpoint = _default_endpoint
 
     DEFAULT_PREPROCESSORS = [ReplaceRangeWithNumber()] # 766-68 Any St. -> 766 Any St.
 
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
+        if settings.has_key('api_version'):
+            self._api_version = 'v' + str(settings['api_version'])
+        else:
+            self._api_version = 'v1'
+
+        if settings.has_key('instance_url'):
+            self._base_url = settings['instance_url']
+        else:
+            self._base_url = 'https://search.mapzen.com'
+
+        self._default_endpoint = self._base_url + '/' + \
+                            self._api_version + '/search'
+        self._key_endpoint = self._base_url + '/' + \
+                             self._api_version + '/place'
+        self._endpoint = self._default_endpoint
+
         preprocessors = Mapzen.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
         postprocessors = Mapzen.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
         GeocodeService.__init__(self, preprocessors, postprocessors, settings)
 
     def _geocode(self, pq):
-        query = {'text':pq.query,
-                 'api_key':self._settings['api_key']
-                }
+        query = {'text':pq.query}
 
         if pq.country:
             query = dict(query, **{'boundary.country':pq.country})
@@ -957,9 +968,10 @@ class Mapzen(GeocodeService):
         if hasattr(pq, 'key'):
             # Swap to the place endpoint and return a single result.
             self._endpoint = self._key_endpoint
-            query = {'ids':pq.key,
-                     'api_key':self._settings['api_key']
-                    }
+            query = { 'ids':pq.key }
+
+        if self._settings.has_key('api_key'):
+            query['api_key'] = self._settings['api_key']
 
         response_obj = self._get_json_obj(self._endpoint, query)
         returned_candidates = [] # this will be the list returned
@@ -967,17 +979,24 @@ class Mapzen(GeocodeService):
         for r in features_in_response:
             properties = r['properties']
             geometry = r['geometry']
+
             score = 100 * float(properties['confidence']) \
-                    if hasattr(properties, 'confidence') else 0
+                    if properties.has_key('confidence') else 0
             locality = properties['locality'] \
-                       if hasattr(properties, 'locality') else ''
+                       if properties.has_key('locality') else ''
+            region = properties['region'] \
+                     if properties.has_key('region') else ''
+            label = properties['label'] \
+                    if properties.has_key('label') else ''
+            layer = properties['layer'] \
+                    if properties.has_key('layer') else ''
 
             c = Candidate()
-            c.locator = properties['layer']
-            c.match_addr = properties['label']
-            c.match_region = properties['region']
+            c.locator = layer
+            c.match_addr = label
+            c.match_region = region
             c.match_city = locality
-            c.locator_type = properties['layer']
+            c.locator_type = layer
             c.x = float(geometry['coordinates'][0])
             c.y = float(geometry['coordinates'][1])
             c.score = score
