@@ -11,6 +11,8 @@ from omgeo.postprocessors import AttrFilter, AttrExclude, AttrRename, AttrSorter
 from suds.client import Client
 import time
 from urllib import unquote
+from urlparse import urljoin
+from posixpath import join as posixjoin
 
 logger = logging.getLogger(__name__)
 
@@ -932,7 +934,9 @@ class Mapzen(GeocodeService):
     """
     _wkid = 4326
 
-    DEFAULT_PREPROCESSORS = [ReplaceRangeWithNumber()] # 766-68 Any St. -> 766 Any St.
+    # 766-68 Any St. -> 766 Any St.
+    DEFAULT_PREPROCESSORS = [ReplaceRangeWithNumber()]
+    DEFAULT_POSTPROCESSORS = []
 
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         if settings.has_key('api_version'):
@@ -945,10 +949,10 @@ class Mapzen(GeocodeService):
         else:
             self._base_url = 'https://search.mapzen.com'
 
-        self._default_endpoint = self._base_url + '/' + \
-                            self._api_version + '/search'
-        self._key_endpoint = self._base_url + '/' + \
-                             self._api_version + '/place'
+        self._default_endpoint = urljoin(self._base_url,
+                                    posixjoin(self._api_version, 'search'))
+        self._key_endpoint = urljoin(self._base_url,
+                                posixjoin(self._api_version, 'place'))
         self._endpoint = self._default_endpoint
 
         preprocessors = Mapzen.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
