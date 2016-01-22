@@ -15,6 +15,7 @@ from omgeo.postprocessors import AttrFilter, AttrExclude, AttrRename,\
 BING_MAPS_API_KEY = os.getenv("BING_MAPS_API_KEY")
 ESRI_MAPS_API_KEY = os.getenv("ESRI_MAPS_API_KEY")
 MAPQUEST_API_KEY = os.getenv("MAPQUEST_API_KEY")
+MAPZEN_API_KEY = os.getenv("MAPZEN_API_KEY")
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level='ERROR')
@@ -40,6 +41,9 @@ class GeocoderTest(OmgeoTestCase):
     BING_KEY_REQUIRED_MSG = 'Enter a Bing Maps API key to run the Bing tests.'
     MAPQUEST_KEY_REQUIRED_MSG = 'Enter a MapQuest API key to run the MapQuest tests. '\
                                 'Keys can be obtained at http://developer.mapquest.com/.'
+    MAPZEN_KEY_REQUIRED_MSG = 'Enter a Mapzen Search API key to run Mapzen ' \
+                              'tests. Keys can be obtained at ' \
+                              'https://mapzen.com/developers/sign_in.'
 
     def setUp(self):
         # Viewbox objects - callowhill is from BSS Spring Garden station to Wash. Sq.
@@ -88,6 +92,11 @@ class GeocoderTest(OmgeoTestCase):
             mapquest_settings = dict(api_key=MAPQUEST_API_KEY)
             self.g_mapquest = Geocoder([['omgeo.services.MapQuest', {'settings': mapquest_settings}]])
             self.g_mapquest_ssl = Geocoder([['omgeo.services.MapQuestSSL', {'settings': mapquest_settings}]])
+
+        if MAPZEN_API_KEY is not None:
+            mapzen_settings = dict(api_key=MAPZEN_API_KEY)
+            self.g_mapzen = Geocoder([['omgeo.services.Mapzen', {'settings':
+            mapzen_settings}]])
 
         #: main geocoder used for tests, using default APIs
         self.g = Geocoder()
@@ -250,6 +259,12 @@ class GeocoderTest(OmgeoTestCase):
     def test_geocode_mapquest_ssl(self):
         """Test Azavea's address using secure MapQuest geocoder."""
         candidates = self.g_mapquest_ssl.get_candidates(self.pq['azavea'])
+        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
+
+    @unittest.skipIf(MAPZEN_API_KEY is None, MAPZEN_KEY_REQUIRED_MSG)
+    def test_geocode_mapzen(self):
+        """Test Azavea's address using Mapzen geocoder"""
+        candidates = self.g_mapzen.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     def test_geocode_nom(self):
