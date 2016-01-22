@@ -157,3 +157,7 @@ v1.7.1, 2014-08-25
 v1.7.2, 2015-04-14
 ------------------
  * Support EsriWGS magicKey.
+
+v1.8.0, 2016-01-22
+------------------
+ * Add support for Mapzen search.
