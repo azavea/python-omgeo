@@ -3,13 +3,13 @@ from datetime import datetime
 from json import loads
 import logging
 import socket
-import time
 from traceback import format_exc
 from urllib import urlencode
 from urllib2 import HTTPError, urlopen, URLError, Request
 from xml.dom import minidom
 
 logger = logging.getLogger(__name__)
+
 
 class UpstreamResponseInfo():
     """
@@ -203,10 +203,9 @@ class GeocodeService():
 
         """
         processed_pq = copy.copy(pq)
-        start_time = time.time()
         for p in self._preprocessors:
             processed_pq = p.process(processed_pq)
-            if processed_pq == False:
+            if not processed_pq:
                 return [], None
         upstream_response_info = UpstreamResponseInfo(self.get_service_name(),
                                                       processed_pq)
@@ -221,8 +220,8 @@ class GeocodeService():
             upstream_response_info.errors.append(format_exc())
             return [], upstream_response_info
         if len(candidates) > 0:
-            for p in self._postprocessors: # apply universal candidate postprocessing
-                candidates = p.process(candidates) # merge lists
+            for p in self._postprocessors:  # apply universal candidate postprocessing
+                candidates = p.process(candidates)  # merge lists
         return candidates, upstream_response_info
 
     def get_service_name(self):
