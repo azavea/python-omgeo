@@ -127,6 +127,19 @@ class ParseSingleLine(_PreProcessor):
         return pq
 
 
+class ComposeSingleLine(_PreProcessor):
+    """ Compose address components into a single-line query if no query is already defined. """
+    def process(self, pq):
+        if pq.query == '':
+            parts = [pq.address, pq.city, pq.subregion]
+            parts.append(' '.join([p for p in (pq.state, pq.postal) if p != '']))
+            if pq.country != '':
+                parts.append(pq.country)
+            pq.query = ', '.join([part for part in parts if part != ''])
+
+        return pq
+
+
 class CountryPreProcessor(_PreProcessor):
     """
     Used to filter acceptable countries
