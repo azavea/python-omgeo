@@ -109,10 +109,14 @@ class GeocoderTest(OmgeoTestCase):
         # self.g_dc = Geocoder([['omgeo.services.CitizenAtlas', {}]])
         self.g_esri_na = Geocoder([['omgeo.services.EsriNA', old_esri_params]])
         self.g_esri_eu = Geocoder([['omgeo.services.EsriEU', old_esri_params]])
-        self.g_esri_na_soap = Geocoder([['omgeo.services.EsriNASoap', {}]])
-        self.g_esri_eu_soap = Geocoder([['omgeo.services.EsriEUSoap', {}]])
         self.g_esri_wgs = Geocoder([['omgeo.services.EsriWGS', {}]])
-        self.g_nom = Geocoder([['omgeo.services.Nominatim', {}]])
+        if ESRI_MAPS_API_KEY is not None:  # SOAP services are subscriber-only now
+            self.g_esri_na_soap = Geocoder([['omgeo.services.EsriNASoap', {}]])
+            self.g_esri_eu_soap = Geocoder([['omgeo.services.EsriEUSoap', {}]])
+
+        if MAPQUEST_API_KEY is not None:  # MapQuest's open Nominatime API now also requires a key
+            self.g_nom = Geocoder([['omgeo.services.Nominatim', {}]])
+
         self.g_census = Geocoder([['omgeo.services.USCensus', {}]])
 
         ESRI_WGS_LOCATOR_MAP = {'PointAddress': 'rooftop',
@@ -146,6 +150,7 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.impatient_geocoder.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) == 0, True, 'Candidates were unexpectedly returned in under 10ms.')
 
+    @unittest.skipIf(ESRI_MAPS_API_KEY is None, ESRI_KEY_REQUIRED_MSG)
     def test_geocode_snap_points_1(self):
         """
         Geocoder expected to return the same place twice -- one with city as Flemington,
@@ -215,24 +220,28 @@ class GeocoderTest(OmgeoTestCase):
         """
         pass
 
+    @unittest.skipIf(ESRI_MAPS_API_KEY is None, ESRI_KEY_REQUIRED_MSG)
     def test_geocode_esri_na_us_soap(self):
         """Test ESRI North America SOAP geocoder"""
         location = '340 N 12th St., Philadelphia, PA, US'
         candidates = self.g_esri_na_soap.get_candidates(location)
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned for %s.' % location)
 
+    @unittest.skipIf(ESRI_MAPS_API_KEY is None, ESRI_KEY_REQUIRED_MSG)
     def test_geocode_esri_na_us(self):
         """Test ESRI North America REST geocoder"""
         location = '340 N 12th St., Philadelphia, PA, US'
         candidates = self.g_esri_na.get_candidates(location)
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned for %s.' % location)
 
+    @unittest.skipIf(ESRI_MAPS_API_KEY is None, ESRI_KEY_REQUIRED_MSG)
     def test_geocode_esri_eu_soap(self):
         """Test ESRI Europe SOAP geocoder"""
         candidates = self.g_esri_eu_soap.get_candidates(PlaceQuery(
             address='31 Maiden Lane', city='London', country='UK'))
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
+    @unittest.skipIf(ESRI_MAPS_API_KEY is None, ESRI_KEY_REQUIRED_MSG)
     def test_geocode_esri_na_nz(self):
         """
         Test ESRI North America REST geocoder using a city in New Zealand.
@@ -267,6 +276,7 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g_mapzen.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
+    @unittest.skipIf(MAPQUEST_API_KEY is None, MAPQUEST_KEY_REQUIRED_MSG)
     def test_geocode_nom(self):
         """
         Test 1200 Callowhill Street using Nominatim geocoder.
