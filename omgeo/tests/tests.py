@@ -6,11 +6,11 @@ import sys
 import unittest
 from omgeo import Geocoder
 from omgeo.places import Viewbox, PlaceQuery, Candidate
-from omgeo.preprocessors import CancelIfPOBox, CancelIfRegexInAttr, CountryPreProcessor,\
-                                           RequireCountry, ParseSingleLine, ReplaceRangeWithNumber
-from omgeo.postprocessors import AttrFilter, AttrExclude, AttrRename,\
-                                            AttrSorter, AttrReverseSorter, UseHighScoreIfAtLeast,\
-                                            GroupBy, GroupByMultiple, ScoreSorter, SnapPoints
+from omgeo.preprocessors import (CancelIfPOBox, CancelIfRegexInAttr, CountryPreProcessor,
+                                 RequireCountry, ParseSingleLine, ReplaceRangeWithNumber)
+from omgeo.postprocessors import (AttrFilter, AttrExclude, AttrRename,
+                                  AttrSorter, AttrReverseSorter, UseHighScoreIfAtLeast,
+                                  GroupBy, GroupByMultiple, ScoreSorter, SnapPoints)
 
 BING_MAPS_API_KEY = os.getenv("BING_MAPS_API_KEY")
 ESRI_MAPS_API_KEY = os.getenv("ESRI_MAPS_API_KEY")
@@ -35,54 +35,56 @@ class OmgeoTestCase(unittest.TestCase):
         self.assertEqual(count > 0, True, 'No candidates returned.')
         self.assertEqual(count > 1, False, 'More than one candidate returned.')
 
+
 class GeocoderTest(OmgeoTestCase):
     """Tests using various geocoding APIs. Requires internet connection."""
-    g = None # not set until set up
+    g = None  # not set until set up
     BING_KEY_REQUIRED_MSG = 'Enter a Bing Maps API key to run the Bing tests.'
     MAPQUEST_KEY_REQUIRED_MSG = 'Enter a MapQuest API key to run the MapQuest tests. '\
                                 'Keys can be obtained at http://developer.mapquest.com/.'
     MAPZEN_KEY_REQUIRED_MSG = 'Enter a Mapzen Search API key to run Mapzen ' \
                               'tests. Keys can be obtained at ' \
                               'https://mapzen.com/developers/sign_in.'
+    ESRI_KEY_REQUIRED_MSG = 'Enter an ESRI API key to run ESRI SOAP tests.'
 
     def setUp(self):
         # Viewbox objects - callowhill is from BSS Spring Garden station to Wash. Sq.
         vb = {'callowhill': Viewbox(-75.162628, 39.962769, -75.150963, 39.956322)}
         # PlaceQuery objects
-        self.pq = { # North American Addresses:
-                    'azavea': PlaceQuery('340 N 12th St Ste 402 Philadelphia PA'),
-                    'ambiguous_azavea': PlaceQuery('340 12th St Ste 402 Philadelphia PA'),
-                    'zip_plus_4_in_postal_plus_country': PlaceQuery(postal='19127-1115', country='US'),
-                    'wolf': PlaceQuery('Wolf Building'),
-                    'wolf_philly': PlaceQuery('Wolf Building, Philadelphia PA'),
-                    'wolf_bounded': PlaceQuery('Wolf Building',
-                        bounded=True, viewbox=vb['callowhill']),
-                    'bounded_340_12th': PlaceQuery('340 12th St, Philadelphia PA',
-                        bounded=True, viewbox=vb['callowhill']),
-                    'alpha_774R_W_Central_Ave': PlaceQuery('774R W Central Ave Alpha NJ'),
-                    'alpha_774_W_Central_Ave_Rear': PlaceQuery('774 W Central Ave Rear, Alpha NJ'),
-                    '8_kirkbride': PlaceQuery('8 Kirkbride Rd 08822'),
-                    'george_washington': PlaceQuery('201 W Montmorency Blvd, George, Washington'),
-                    'pine_needles_dr': PlaceQuery('11761 pine needles providence forge'),
-                    'pine_needles_ct': PlaceQuery('5328 pine needles providence forge'),
-                    'pine_needles_terr': PlaceQuery('5359 pine needles providence forge'),
-                    'moorestown_hyphenated': PlaceQuery('111-113 W Main St Moorestown NJ'),
-                    'willow_street': PlaceQuery('2819F Willow Street Pike Willow Street PA'),
-                    'willow_street_parts': PlaceQuery(address='2819F Willow Street Pike',
-                                                      city='Willow Street', state='PA', country='US'),
-                    'quebec': PlaceQuery('756 Rue Berri Montreal QC', country='CA'),
-                    'quebec_accent': PlaceQuery('527 Ch. Beauséjour, Saint-Elzéar-de-Témiscouata QC'),
-                    'quebec_hyphenated': PlaceQuery('227-227A Rue Commerciale, Saint-Louis-du-Ha! Ha! QC'),
-                    'senado_mx': PlaceQuery('Paseo de la Reforma 135, Tabacalera, Cuauhtémoc, Distrito Federal, 06030'),
-                    'senado_mx_struct': PlaceQuery(address='Paseo de la Reforma 135', neighborhood='Tabacalera, Cuauhtémoc', subregion='', state='Distrito Federal', postal='06030', country='MX'),
-                    # European Addresses:
-                    'london_pieces': PlaceQuery(address='31 Maiden Lane', city='London', country='UK'),
-                    'london_one_line': PlaceQuery('31 Maiden Lane, London WC2E', country='UK'),
-                    'london_pieces_hyphenated': PlaceQuery(address='31-32 Maiden Lane', city='London', country='UK'),
-                    'london_one_line_hyphenated': PlaceQuery('31-32 Maiden Lane London WC2E', country='UK'),
-                    # Oceanian Addresses:
-                    'karori': PlaceQuery('102 Karori Road Karori Wellington', country='NZ'),
-                    }
+        self.pq = {  # North American Addresses:
+            'azavea': PlaceQuery('340 N 12th St Ste 402 Philadelphia PA'),
+            'ambiguous_azavea': PlaceQuery('340 12th St Ste 402 Philadelphia PA'),
+            'zip_plus_4_in_postal_plus_country': PlaceQuery(postal='19127-1115', country='US'),
+            'wolf': PlaceQuery('Wolf Building'),
+            'wolf_philly': PlaceQuery('Wolf Building, Philadelphia PA'),
+            'wolf_bounded': PlaceQuery('Wolf Building', bounded=True, viewbox=vb['callowhill']),
+            'bounded_340_12th': PlaceQuery('340 12th St, Philadelphia PA',
+                                           bounded=True, viewbox=vb['callowhill']),
+            'alpha_774R_W_Central_Ave': PlaceQuery('774R W Central Ave Alpha NJ'),
+            'alpha_774_W_Central_Ave_Rear': PlaceQuery('774 W Central Ave Rear, Alpha NJ'),
+            '8_kirkbride': PlaceQuery('8 Kirkbride Rd 08822'),
+            'george_washington': PlaceQuery('201 W Montmorency Blvd, George, Washington'),
+            'pine_needles_dr': PlaceQuery('11761 pine needles providence forge'),
+            'pine_needles_ct': PlaceQuery('5328 pine needles providence forge'),
+            'pine_needles_terr': PlaceQuery('5359 pine needles providence forge'),
+            'moorestown_hyphenated': PlaceQuery('111-113 W Main St Moorestown NJ'),
+            'willow_street': PlaceQuery('2819F Willow Street Pike Willow Street PA'),
+            'willow_street_parts': PlaceQuery(address='2819F Willow Street Pike',
+                                              city='Willow Street', state='PA', country='US'),
+            'quebec': PlaceQuery('756 Rue Berri Montreal QC', country='CA'),
+            'quebec_accent': PlaceQuery('527 Ch. Beauséjour, Saint-Elzéar-de-Témiscouata QC'),
+            'quebec_hyphenated': PlaceQuery('227-227A Rue Commerciale, Saint-Louis-du-Ha! Ha! QC'),
+            'senado_mx': PlaceQuery('Paseo de la Reforma 135, Tabacalera, Cuauhtémoc, Distrito Federal, 06030'),
+            'senado_mx_struct': PlaceQuery(address='Paseo de la Reforma 135', neighborhood='Tabacalera, Cuauhtémoc', subregion='', state='Distrito Federal', postal='06030', country='MX'),
+            # European Addresses:
+            'london_pieces': PlaceQuery(address='31 Maiden Lane', city='London', country='UK'),
+            'london_one_line': PlaceQuery('31 Maiden Lane, London WC2E', country='UK'),
+            'london_pieces_hyphenated': PlaceQuery(address='31-32 Maiden Lane', city='London',
+                                                   country='UK'),
+            'london_one_line_hyphenated': PlaceQuery('31-32 Maiden Lane London WC2E', country='UK'),
+            # Oceanian Addresses:
+            'karori': PlaceQuery('102 Karori Road Karori Wellington', country='NZ'),
+        }
 
         if BING_MAPS_API_KEY is not None:
             bing_settings = dict(api_key=BING_MAPS_API_KEY)
@@ -90,13 +92,14 @@ class GeocoderTest(OmgeoTestCase):
 
         if MAPQUEST_API_KEY is not None:
             mapquest_settings = dict(api_key=MAPQUEST_API_KEY)
-            self.g_mapquest = Geocoder([['omgeo.services.MapQuest', {'settings': mapquest_settings}]])
-            self.g_mapquest_ssl = Geocoder([['omgeo.services.MapQuestSSL', {'settings': mapquest_settings}]])
+            self.g_mapquest = Geocoder([['omgeo.services.MapQuest',
+                                       {'settings': mapquest_settings}]])
+            self.g_mapquest_ssl = Geocoder([['omgeo.services.MapQuestSSL',
+                                           {'settings': mapquest_settings}]])
 
         if MAPZEN_API_KEY is not None:
             mapzen_settings = dict(api_key=MAPZEN_API_KEY)
-            self.g_mapzen = Geocoder([['omgeo.services.Mapzen', {'settings':
-            mapzen_settings}]])
+            self.g_mapzen = Geocoder([['omgeo.services.Mapzen', {'settings': mapzen_settings}]])
 
         #: main geocoder used for tests, using default APIs
         self.g = Geocoder()
@@ -121,13 +124,13 @@ class GeocoderTest(OmgeoTestCase):
 
         ESRI_WGS_LOCATOR_MAP = {'PointAddress': 'rooftop',
                                 'StreetAddress': 'interpolation',
-                                'PostalExt': 'postal_specific', # accept ZIP+4
+                                'PostalExt': 'postal_specific',  # accept ZIP+4
                                 'Postal': 'postal'}
         ESRI_WGS_POSTPROCESSORS_POSTAL_OK = [
-            AttrExclude(['USA.Postal'], 'locator'), #accept postal from everywhere but US (need PostalExt)
+            AttrExclude(['USA.Postal'], 'locator'),  # accept postal from everywhere but US (need PostalExt)
             AttrFilter(['PointAddress', 'StreetAddress', 'PostalExt', 'Postal'], 'locator_type'),
             AttrSorter(['PointAddress', 'StreetAddress', 'PostalExt', 'Postal'], 'locator_type'),
-            AttrRename('locator', ESRI_WGS_LOCATOR_MAP), # after filter to avoid searching things we toss out
+            AttrRename('locator', ESRI_WGS_LOCATOR_MAP),  # after filter to avoid searching things we toss out
             UseHighScoreIfAtLeast(99.8),
             ScoreSorter(),
             GroupBy('match_addr'),
@@ -148,7 +151,8 @@ class GeocoderTest(OmgeoTestCase):
 
     def test_impatiently_geocode_azavea(self):
         candidates = self.impatient_geocoder.get_candidates(self.pq['azavea'])
-        self.assertEqual(len(candidates) == 0, True, 'Candidates were unexpectedly returned in under 10ms.')
+        self.assertEqual(len(candidates) == 0, True,
+                         'Candidates were unexpectedly returned in under 10ms.')
 
     @unittest.skipIf(ESRI_MAPS_API_KEY is None, ESRI_KEY_REQUIRED_MSG)
     def test_geocode_snap_points_1(self):
@@ -300,23 +304,6 @@ class GeocoderTest(OmgeoTestCase):
         self._test_address_components(candidate)
         candidate = self.g_census.get_candidates(self.pq['azavea'])[0]
         self._test_address_components(candidate)
-    # def test_geocode_dc_address(self):
-    #     """
-    #     Check that '1600 Pennsylvania' returns first result using DC address locator.
-    #     """
-    #     candidates = self.g_dc.get_candidates(PlaceQuery('1600 pennsylvania'))
-    #     self.assertTrue(len(candidates) > 0, 'No candidates returned.')
-    #     self.assertTrue(candidates[0].locator == 'DC Address',
-    #                     'Expected 1600 pennsylvania to be an address match')
-
-    # def test_geocode_dc_intersection(self):
-    #     """
-    #     Check that 'H and 15th' returns first result using DC intersection locator.
-    #     """
-    #     candidates = self.g_dc.get_candidates(PlaceQuery('h and 15th'))
-    #     self.assertTrue(len(candidates) > 0, 'No candidates returned.')
-    #     self.assertTrue(candidates[0].locator == 'DC Intersection',
-    #                     'h and 15th to be an intersection match')
 
     def test_geocode_dupepicker(self):
         """
@@ -362,21 +349,20 @@ class GeocoderTest(OmgeoTestCase):
                 queries_with_results += 1
                 logger.info('Input:  %s' % self.pq[place].query)
                 logger.info(map(lambda c: 'Output: %r (%s %s)\n' %
-                    (c.match_addr,
-                    c.geoservice,
-                    [c.locator, c.score, c.confidence, c.entity]),
-                    candidates))
+                                (c.match_addr,
+                                 c.geoservice,
+                                 [c.locator, c.score, c.confidence, c.entity]),
+                                candidates))
         self.assertEqual(expected_results, queries_with_results,
                          'Got results for %d of %d queries.' % (queries_with_results, len(self.pq)))
 
     def _test_geocode_results_all(self):
         if BING_MAPS_API_KEY is None:
-            expected_results=16
+            expected_results = 16
         else:
-            self.g.add_source(['omgeo.services.Bing',
-                     {'settings':{'api_key':BING_MAPS_API_KEY}}])
-            expected_results=len(self.pq)
-        self._test_geocode_results_all_(geocoder=self.g, expected_results=len(self.pq))
+            self.g.add_source(['omgeo.services.Bing', {'settings': {'api_key': BING_MAPS_API_KEY}}])
+            expected_results = len(self.pq)
+        self._test_geocode_results_all_(geocoder=self.g, expected_results=expected_results)
 
     def test_esri_geocoder_na_default_override(self):
         """
@@ -391,10 +377,9 @@ class GeocoderTest(OmgeoTestCase):
                                 'locator')]}]])
 
         self.assertEqual(1, len(geocoder._sources[0]._postprocessors),
-            'EsriNA geocoder incorrectly processed defaults')
-        self.assertEqual('AttrFilter',
-            geocoder._sources[0]._postprocessors[0].__class__.__name__,
-            'EsriNA geocoder incorrectly processed defaults')
+                         'EsriNA geocoder incorrectly processed defaults')
+        self.assertEqual('AttrFilter', geocoder._sources[0]._postprocessors[0].__class__.__name__,
+                         'EsriNA geocoder incorrectly processed defaults')
 
     def test_esri_geocoder_eu_default_override(self):
         """
@@ -409,10 +394,11 @@ class GeocoderTest(OmgeoTestCase):
                                 'locator')]}]])
 
         self.assertEqual(1, len(geocoder._sources[0]._postprocessors),
-            'EsriEU geocoder incorrectly processed defaults')
+                         'EsriEU geocoder incorrectly processed defaults')
         self.assertEqual('AttrFilter',
-            geocoder._sources[0]._postprocessors[0].__class__.__name__,
-            'EsriEU geocoder incorrectly processed defaults')
+                         geocoder._sources[0]._postprocessors[0].__class__.__name__,
+                         'EsriEU geocoder incorrectly processed defaults')
+
 
 class GeocoderProcessorTest(OmgeoTestCase):
     """Tests using various pre- and post-processors."""
@@ -432,24 +418,23 @@ class GeocoderProcessorTest(OmgeoTestCase):
         self.wolf_best = Candidate(match_addr='1200 Callowhill St', locator='rooftop',
                                    score=99.9, x=-75.158, y=39.959)
         self.wolf_340 = Candidate(match_addr='340 N 12th St', locator='rooftop',
-                                  score=99.5, x=-75.158, y=39.959) # same coords
+                                  score=99.5, x=-75.158, y=39.959)  # same coords
         self.inky = Candidate(match_addr='324 N Broad St', locator='rooftop',
-                              score=99.9, x=-75.163, y=39.959) # same y
+                              score=99.9, x=-75.163, y=39.959)  # same y
         self.capt_thomas = Candidate(match_addr='843 Callowhill St', locator='rooftop',
-                                     score=99.9, x=-75.163, y=39.959) # same y
+                                     score=99.9, x=-75.163, y=39.959)  # same y
         self.reading_term = Candidate(match_addr='1200 Arch St', locator='rooftop',
-                                      score=99.9, x=-75.163, y=39.953) # same x
+                                      score=99.9, x=-75.163, y=39.953)  # same x
 
         self.locators_worse_to_better = ['address', 'parcel', 'rooftop']
 
     def tearDown(self):
         pass
 
-
     def test_pro_country_CountryPreProcessor(self):
         """Test CountryPreProcessor"""
         acceptable_countries = ['US', 'UK']
-        country_map = {'GB':'UK'} # 'from':'to'
+        country_map = {'GB': 'UK'}  # 'from': 'to'
         place_in = self.pq_uk_with_country_GB
         place_out = CountryPreProcessor(acceptable_countries, country_map).process(place_in)
         country_exp = 'UK'
@@ -472,8 +457,9 @@ class GeocoderProcessorTest(OmgeoTestCase):
     def test_pro_CancelIfRegexInAttr_case_sensitive(self):
         """Test CancelIfRegexInAttr preprocessor using case-sensitive option."""
         place_in = PlaceQuery('PO Box 123, Philadelphia, PA')
-        place_out = CancelIfRegexInAttr(regex="PO BOX", attrs=('query',), ignorecase=False).process(place_in)
-        place_exp = place_in # we should still have it because PO BOX does not match exactly
+        place_out = CancelIfRegexInAttr(regex="PO BOX", attrs=('query',),
+                                        ignorecase=False).process(place_in)
+        place_exp = place_in  # we should still have it because PO BOX does not match exactly
         self.assertEqual_(place_out, place_exp)
 
     def test_pro_CancelIfPOBox(self):
@@ -524,13 +510,13 @@ class GeocoderProcessorTest(OmgeoTestCase):
 
         place_in = PlaceQuery('1200 Callowhill St, PO Box 466, Philadelphia, PA')
         place_out = CancelIfPOBox().process(place_in)
-        self.assertEqual_(place_out, place_in) # should still geocode because we a physical address
+        self.assertEqual_(place_out, place_in)  # should still geocode because we a physical address
 
     def test_pro_filter_AttrFilter_exact(self):
         """Test AttrFilter postprocessor."""
         good_values = ['roof', 'parcel']
         candidates_in = [self.best, self.good, self.better]
-        candidates_exp = [self.better] # just the one with the parcel locator
+        candidates_exp = [self.better]  # just the one with the parcel locator
         candidates_out = AttrFilter(good_values, 'locator', exact_match=True).process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
 
@@ -538,7 +524,7 @@ class GeocoderProcessorTest(OmgeoTestCase):
         """Test AttrFilter postprocessor with ``exact_match=False``."""
         good_values = ['roof', 'parcel']
         candidates_in = [self.best, self.good, self.better]
-        candidates_exp = [self.best, self.better] # roof is a substr of rooftop
+        candidates_exp = [self.best, self.better]  # roof is a substr of rooftop
         candidates_out = AttrFilter(good_values, 'locator', exact_match=False).process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
 
@@ -628,19 +614,19 @@ class GeocoderProcessorTest(OmgeoTestCase):
     def test_pro_sort_AttrReverseSorter(self):
         """Test AttrReverseSorter postprocessor."""
         candidates_in = [self.better, self.best, self.good]
-        candidates_exp = [self.best, self.better, self.good] # reverse order of self.locators_worse_to_better
+        candidates_exp = [self.best, self.better, self.good]  # reverse order of self.locators_worse_to_better
         candidates_out = AttrReverseSorter(self.locators_worse_to_better).process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
 
     def test_pro_streetnumber_ReplaceRangeWithNumber(self):
         """Test ReplaceRangeWithNumber preprocessor."""
-        place_in = PlaceQuery('4452-54 Main Street, Philadelphia') #Mom's Pizza in Manayunk
+        place_in = PlaceQuery('4452-54 Main Street, Philadelphia')  # Mom's Pizza in Manayunk
         place_out = ReplaceRangeWithNumber().process(place_in)
         query_exp = '4452 Main Street, Philadelphia'
         self.assertEqual_(place_out.query, query_exp)
 
         zip_plus_4 = '19127-1112'
-        place_in = PlaceQuery(zip_plus_4) # sets PlaceQuery.query to zip_plus_4 on init
+        place_in = PlaceQuery(zip_plus_4)  # sets PlaceQuery.query to zip_plus_4 on init
         place_out = ReplaceRangeWithNumber().process(place_in)
         self.assertEqual_(place_out.query, zip_plus_4)
 
@@ -649,8 +635,8 @@ class GeocoderProcessorTest(OmgeoTestCase):
         candidates_in = [Candidate(match_addr='340 N 12th St, Philadelphia, PA, 19107',
                                    x=-75.158433167, y=39.958727992),
                          Candidate(match_addr='1200 Callowhill St, Philadelphia, PA, 19123',
-                                   x=-75.158303781, y=39.959040684)] # about 40m away
-        candidates_exp = [candidates_in[0]] # should just keep the first one.
+                                   x=-75.158303781, y=39.959040684)]  # about 40m away
+        candidates_exp = [candidates_in[0]]  # should just keep the first one.
         candidates_out = SnapPoints(distance=50).process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
 
