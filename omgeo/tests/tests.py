@@ -16,6 +16,7 @@ BING_MAPS_API_KEY = os.getenv("BING_MAPS_API_KEY")
 ESRI_MAPS_API_KEY = os.getenv("ESRI_MAPS_API_KEY")
 MAPQUEST_API_KEY = os.getenv("MAPQUEST_API_KEY")
 MAPZEN_API_KEY = os.getenv("MAPZEN_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level='ERROR')
@@ -46,6 +47,7 @@ class GeocoderTest(OmgeoTestCase):
                               'tests. Keys can be obtained at ' \
                               'https://mapzen.com/developers/sign_in.'
     ESRI_KEY_REQUIRED_MSG = 'Enter an ESRI API key to run ESRI SOAP tests.'
+    GOOGLE_KEY_REQUIRED_MSG = 'Enter a Google API key to run Google tests.'
 
     def setUp(self):
         # Viewbox objects - callowhill is from BSS Spring Garden station to Wash. Sq.
@@ -100,6 +102,10 @@ class GeocoderTest(OmgeoTestCase):
         if MAPZEN_API_KEY is not None:
             mapzen_settings = dict(api_key=MAPZEN_API_KEY)
             self.g_mapzen = Geocoder([['omgeo.services.Mapzen', {'settings': mapzen_settings}]])
+
+        if GOOGLE_API_KEY is not None:
+            self.g_google = Geocoder([['omgeo.services.Google',
+                                     {'settings': {'api_key': GOOGLE_API_KEY}}]])
 
         #: main geocoder used for tests, using default APIs
         self.g = Geocoder()
@@ -298,10 +304,13 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g_census.get_candidates(PlaceQuery('1200 Callowhill St, Philadelphia, PA'))
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
-    def test_address_components(self):
+    def test_EsriWGS_address_components(self):
         """Make sure EsriWGS returns address components"""
         candidate = self.g_esri_wgs.get_candidates(self.pq['azavea'])[0]
         self._test_address_components(candidate)
+
+    def test_census_address_components(self):
+        """Make sure census geocoder returns address components"""
         candidate = self.g_census.get_candidates(self.pq['azavea'])[0]
         self._test_address_components(candidate)
 
@@ -398,6 +407,26 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual('AttrFilter',
                          geocoder._sources[0]._postprocessors[0].__class__.__name__,
                          'EsriEU geocoder incorrectly processed defaults')
+
+    @unittest.skipIf(GOOGLE_API_KEY is None, GOOGLE_KEY_REQUIRED_MSG)
+    def test_google_geocode_azavea(self):
+        candidates = self.g_google.get_candidates(self.pq['azavea'])
+        self.assertOneCandidate(candidates)
+
+    @unittest.skipIf(GOOGLE_API_KEY is None, GOOGLE_KEY_REQUIRED_MSG)
+    def test_google_geocode_multipart(self):
+        """Check that geocoding multipart address returns one result."""
+        candidates = self.g_google.get_candidates(self.pq['willow_street_parts'])
+        self.assertOneCandidate(candidates)
+
+    @unittest.skipIf(GOOGLE_API_KEY is None, GOOGLE_KEY_REQUIRED_MSG)
+    def test_google_country_filter(self):
+        candidates = self.g_google.get_candidates('York')
+        self.assertOneCandidate(candidates)
+        self.assertEqual(candidates[0].match_region, 'PA')
+        candidates = self.g_google.get_candidates(PlaceQuery('York', country='UK'))
+        self.assertOneCandidate(candidates)
+        self.assertEqual(candidates[0].match_country, 'GB')
 
 
 class GeocoderProcessorTest(OmgeoTestCase):
