@@ -1,6 +1,6 @@
 class _Processor():
     def _init_helper(self, vars_):
-        """Overwrite defaults (if they exist) with arguments passed to constructor"""      
+        """Overwrite defaults (if they exist) with arguments passed to constructor"""
         for k in vars_:
             if k == 'kwargs':
                 for kwarg in vars_[k]:

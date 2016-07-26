@@ -2,6 +2,7 @@ from omgeo.processor import _Processor
 import math
 from operator import attrgetter
 
+
 class _PostProcessor(_Processor):
     """Takes, processes, and returns list of geocoding.places.Candidate objects."""
     def process(self, candidates):
@@ -20,13 +21,13 @@ class _PostProcessor(_Processor):
         except ValueError:
             return 'NA'
 
+
 class LocatorFilter(_PostProcessor):
     """
     PostProcessor used to ditch results with lousy locators.
 
     :arg list good_locators:  A list of locators to accept results from (default [])
     """
-   
     def __init__(self, good_locators):
         """
         :arg list good_locators:  A list of locators to accept results from (default None)
@@ -39,13 +40,14 @@ class LocatorFilter(_PostProcessor):
         """
         for c in candidates[:]:
             if c.locator not in self.good_locators:
-                #TODO: search string, i.e. find "EU_Street_Name" in "EU_Street_Name.GBR_StreetName"
+                # TODO: search string, i.e. find "EU_Street_Name" in "EU_Street_Name.GBR_StreetName"
                 candidates.remove(c)
-         
+
         return candidates
 
     def __repr__(self):
         return '<%s: %s>' % (self.__class__.__name__, self.good_locators)
+
 
 class LocatorSorter(_PostProcessor):
     """
@@ -57,10 +59,9 @@ class LocatorSorter(_PostProcessor):
         :arg list ordered_locators: a list of :py:attr:`Candidate.locator` values
                                     placed in the desired order, such as ``rooftop``,
                                     ``interpolation``, or ``postal``.
-                                    
         """
         self.ordered_locators = ordered_locators
-    
+
     def process(self, unordered_candidates):
         """
         :arg list candidates: list of Candidate instances
@@ -80,6 +81,7 @@ class LocatorSorter(_PostProcessor):
 
     def __repr__(self):
         return '<%s: %s>' % (self.__class__.__name__, self.ordered_locators)
+
 
 class AttrRename(_PostProcessor):
     """
@@ -104,9 +106,9 @@ class AttrRename(_PostProcessor):
         :arg list candidates: list of Candidate instances
         :returns: list of Candidate instances with modified values for the given attribute
         """
-        def _cc(str_): #change case
+        def _cc(str_):  # change case
             return str_ if self.case_sensitive else str_.lower()
-  
+
         new_candidates = []
         for c in candidates[:]:
             attr_val = getattr(c, self.attr)
@@ -123,6 +125,7 @@ class AttrRename(_PostProcessor):
     def __repr__(self):
         return '<%s: %s %s Map of %s (old:new): %s>' \
             % (self.__class__.__name__, self.is_exact(), self.is_case_sensitive(), self.attr, self.attr_map)
+
 
 class UseHighScoreIfAtLeast(_PostProcessor):
     """
@@ -149,9 +152,9 @@ class UseHighScoreIfAtLeast(_PostProcessor):
     def __repr__(self):
         return '<%s: %s>' % (self.__class__.__name__, self.min_score)
 
+
 class ScoreSorter(_PostProcessor):
     """PostProcessor class to sort :py:class:`Candidate` scores."""
-    
     def __init__(self, reverse=True):
         """
         :arg bool reverse: indicates if the scores should be sorted in descending
@@ -170,6 +173,7 @@ class ScoreSorter(_PostProcessor):
         order = 'high to low' if self.reverse else 'low to high'
         return '<%s: %s>' % (self.__class__.__name__, order)
 
+
 class AttrSorter(_PostProcessor):
     """
     PostProcessor used to sort by a the given attribute, with unspecified
@@ -182,7 +186,7 @@ class AttrSorter(_PostProcessor):
     def __init__(self, ordered_values=None, attr='locator'):
         self.ordered_values = [] if ordered_values is None else ordered_values
         self.attr = attr
-    
+
     def process(self, unordered_candidates):
         ordered_candidates = []
         # make a new list of candidates in order of ordered_values
@@ -199,11 +203,12 @@ class AttrSorter(_PostProcessor):
         return '<%s: %s sorted by %s>' % \
             (self.__class__.__name__, self.attr, self.ordered_values)
 
+
 class AttrReverseSorter(_PostProcessor):
     """
     PostProcessor used to sort by the given attributes in reverse order,
     with unspecified attributes appearing at the end of the list.
-    
+
     This is good to use when a list has already been defined in a script
     and you are too lazy to use the reverse() function, or don't want
     to in order to maintain more readable code.
@@ -216,7 +221,7 @@ class AttrReverseSorter(_PostProcessor):
         """
         self.ordered_values = [] if ordered_values is None else ordered_values
         self.attr = attr
-    
+
     def process(self, unordered_candidates):
         ordered_values = self.ordered_values
         ordered_values.reverse()
@@ -226,6 +231,7 @@ class AttrReverseSorter(_PostProcessor):
     def __repr__(self):
         return '<%s: %s reverse sorted by %s>' % \
             (self.__class__.__name__, self.attr, self.ordered_values)
+
 
 class AttrMigrator(_PostProcessor):
     """
@@ -240,9 +246,10 @@ class AttrMigrator(_PostProcessor):
         self.case_sensitive = case_sensitive
 
     def process(self, candidates):
-        def _cc(str_): #change case
-            if self.case_sensitive is False: return str_.lower()
-            return str_   
+        def _cc(str_):  # change case
+            if self.case_sensitive is False:
+                return str_.lower()
+            return str_
 
         new_candidates = []
         for c in candidates[:]:
@@ -260,6 +267,7 @@ class AttrMigrator(_PostProcessor):
     def __repr__(self):
         return '<%s: %s -> %s %s %s>' % \
             (self.__class__.__name__, self.attr_from, self.attr_to, self.is_exact(), self.is_case_sensitive())
+
 
 class AttrFilter(_PostProcessor):
     """
@@ -283,11 +291,13 @@ class AttrFilter(_PostProcessor):
         if self.exact_match is True:
             return [c for c in candidates if getattr(c, self.attr) in self.good_values]
         else:
-            return [c for c in candidates if any(gv in getattr(c, self.attr) for gv in self.good_values)]
+            return [c for c in candidates if any(gv in getattr(c, self.attr)
+                                                 for gv in self.good_values)]
 
     def __repr__(self):
         return '<%s: %s %s in %s>' % \
             (self.__class__.__name__, self.is_exact(), self.attr, self.good_values)
+
 
 class AttrExclude(_PostProcessor):
     """
@@ -324,15 +334,15 @@ class DupePicker(_PostProcessor):
     PostProcessor used to choose the best candidate(s)
     where there are duplicates (or more than one result
     that is very similar*) among high-scoring candidates,
-    such as an address. 
+    such as an address.
 
     * When comparing attribute values, case and commas do not count.
-    
+
     Usage Example:
 
     ================ ===== =======
     match_addr       score locator
-    ================ ===== =======  
+    ================ ===== =======
     123 N Wood St    90    roof
     123 S Wood St    90    address
     123 N WOOD ST    77    address
@@ -346,7 +356,7 @@ class DupePicker(_PostProcessor):
     high as the first two, its locator method is more desirable.
     Since the addresses are the same, we can assume that the fourth result
     will provide better data than the second.
-    
+
     We can get a narrowed list as described above by running the process()
     method in the DupePicker() PostProcessor class as follows, assuming
     that the "candidates" is our list of candidates::
@@ -362,19 +372,19 @@ class DupePicker(_PostProcessor):
 
     ================ ===== =======
     match_addr       score locator
-    ---------------- ----- -------  
+    ---------------- ----- -------
     123 N Wood St    90    roof
     123, S Wood ST   85    roof
-    ================ ===== =======  
+    ================ ===== =======
 
     Output with return_clean=True:
 
     ================ ===== =======
     match_addr       score locator
-    ---------------- ----- -------  
+    ---------------- ----- -------
     123 N WOOD ST    90    roof
     123 S WOOD ST    85    roof
-    ================ ===== =======  
+    ================ ===== =======
     """
 
     def __init__(self, attr_dupes, attr_sort, ordered_list, return_clean=False):
@@ -396,9 +406,10 @@ class DupePicker(_PostProcessor):
             if type(str_) in [str, unicode]:
                 return str_.replace(',', '').upper()
             return str_
-        
+
         # if there are no candidates, then there is nothing to do here
-        if candidates == []: return []
+        if candidates == []:
+            return []
         hi_score = ScoreSorter().process(candidates)[0].score
         hi_score_candidates = AttrFilter([hi_score], 'score').process(candidates)
         new_candidates = []
@@ -424,11 +435,12 @@ class DupePicker(_PostProcessor):
         return new_candidates
 
     def __repr__(self):
-        repr_ =  '%s: SORT BY %s %s -> GROUP BY %s' % \
+        repr_ = '%s: SORT BY %s %s -> GROUP BY %s' % \
             (self.__class__.__name__, self.attr_sort, self.ordered_list, self.attr_dupes)
         if self.return_clean:
             repr_ += ' -> CLEAN'
         return '<%s>' % repr_
+
 
 class GroupBy(_PostProcessor):
     """
@@ -460,17 +472,18 @@ class GroupBy(_PostProcessor):
     def __repr__(self):
         return '<%s: %s>' % \
             (self.__class__.__name__, self.attr)
-    
+
+
 class GroupByMultiple(_PostProcessor):
     """
     Groups results by a certain attribute by choosing the
-    first occurrence in the list of candidates 
+    first occurrence in the list of candidates
     (this means you will want to sort ahead of time).
 
 
     attrs   --  A list or tuple of attributes on which to combine results
     """
-    
+
     def __init__(self, attrs):
         self._init_helper(vars())
 
@@ -484,18 +497,18 @@ class GroupByMultiple(_PostProcessor):
                 keepers.append(matches[0])
                 for m in matches:
                     candidates.remove(m)
-        return keepers   
+        return keepers
 
     def __repr__(self):
         return '<%s: %s>' % \
             (self.__class__.__name__, self.attrs)
-    
+
+
 class SnapPoints(_PostProcessor):
     """
     Chooses the first of two or more points where they are within the given
     sphere-based great circle distance.
     """
-    
     def __init__(self, distance=50):
         """
         :arg distance: maximum distance (in metres) between two points in which
@@ -503,12 +516,12 @@ class SnapPoints(_PostProcessor):
                        (default 50).
         """
         self.distance = distance
-        
+
     def _get_distance(self, pnt1, pnt2):
         """Get distance in meters between two lat/long points"""
         lat1, lon1 = pnt1
         lat2, lon2 = pnt2
-        radius = 6356752 # km
+        radius = 6356752  # km
         dlat = math.radians(lat2-lat1)
         dlon = math.radians(lon2-lon1)
         a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
@@ -516,17 +529,18 @@ class SnapPoints(_PostProcessor):
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
         d = radius * c
         return d
-        
+
     def _points_within_distance(self, pnt1, pnt2):
         """Returns true if lat/lon points are within given distance in metres."""
         if self._get_distance(pnt1, pnt2) <= self.distance:
             return True
         return False
-        
+
     def process(self, candidates):
         keepers = []
         for c_from_all in candidates[:]:
-            matches = [c for c in candidates if self._points_within_distance((c_from_all.x, c_from_all.y), (c.x, c.y))]
+            matches = [c for c in candidates if
+                       self._points_within_distance((c_from_all.x, c_from_all.y), (c.x, c.y))]
             if matches != []:
                 keepers.append(matches[0])
                 for m in matches:

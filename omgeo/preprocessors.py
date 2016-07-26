@@ -1,11 +1,13 @@
 from omgeo.processor import _Processor
 import re
 
+
 class _PreProcessor(_Processor):
     """Takes, processes, and returns a geocoding.places.PlaceQuery object."""
     def process(self, pq):
         raise NotImplementedError(
             'PreProcessor subclasses must implement process().')
+
 
 class ReplaceRangeWithNumber(_PreProcessor):
     """
@@ -29,14 +31,14 @@ class ReplaceRangeWithNumber(_PreProcessor):
 
     .. warning::
 
-       This may cause problems with addresses presented in the 
+       This may cause problems with addresses presented in the
        hyphenated Queens-style format, where the part before the
        hyphen indicates the cross street, and the part after
        indicates the house number.
     """
 
     #: Regular expression to represent ranges like:
-    #:  * 789-791 
+    #:  * 789-791
     #:  * 789-91
     #:  * 201A-201B
     #:  * 201A-B
@@ -56,8 +58,9 @@ class ReplaceRangeWithNumber(_PreProcessor):
         :returns: PlaceQuery instance with truncated address range / number
         """
         pq.query = self.replace_range(pq.query)
-        pq.address = self.replace_range(pq.address)                       
+        pq.address = self.replace_range(pq.address)
         return pq
+
 
 class ParseSingleLine(_PreProcessor):
     """
@@ -82,13 +85,13 @@ class ParseSingleLine(_PreProcessor):
                   converted to individual elements
         """
         if pq.query != '':
-            postcode = address = city = '' # define the vars we'll use
+            postcode = address = city = ''  # define the vars we'll use
 
             # global regex postcode search, pop off last result
             postcode_matches = self.re_UK_postcode.findall(pq.query)
             if len(postcode_matches) > 0:
                 postcode = postcode_matches[-1]
-                            
+
             query_parts = [part.strip() for part in pq.query.split(',')]
 
             if postcode is not '' and re.search(postcode, query_parts[0]):
@@ -98,14 +101,14 @@ class ParseSingleLine(_PreProcessor):
                 if self.re_blank.search(part_before_postcode) is None:
                     address = part_before_postcode
                 else:
-                    address = query_parts[0] #perhaps it isn't really a postcode (apt num, etc)
+                    address = query_parts[0]  # perhaps it isn't really a postcode (apt num, etc)
             else:
-                address = query_parts[0] # no postcode to worry about
-            
+                address = query_parts[0]  # no postcode to worry about
+
             for part in query_parts[1:]:
                 part = part.strip()
                 if postcode is not '' and re.search(postcode, part) is not None:
-                    part = part.replace(postcode, '').strip() # if postcode is in part, remove it
+                    part = part.replace(postcode, '').strip()  # if postcode is in part, remove it
 
                 if self.re_unit_numbered.search(part) is not None:
                     # test to see if part is secondary address, like "Ste 402"
@@ -115,14 +118,28 @@ class ParseSingleLine(_PreProcessor):
                     # test to see if part is secondary address, like "Basement"
                     address = self._comma_join(address, part)
                 else:
-                    city = self._comma_join(city, part)# it's probably a city (or "City, County")                
+                    city = self._comma_join(city, part)  # it's probably a city (or "City, County")
             # set pq parts if they aren't already set (we don't want to overwrite explicit params)
-            if pq.postal == '': pq.postal = postcode
-            if pq.address == '': pq.address = address
-            if pq.city == '': pq.city = city
+            pq.postal = pq.postal or postcode
+            pq.address = pq.address or address
+            pq.city = pq.city or city
 
         return pq
-    
+
+
+class ComposeSingleLine(_PreProcessor):
+    """ Compose address components into a single-line query if no query is already defined. """
+    def process(self, pq):
+        if pq.query == '':
+            parts = [pq.address, pq.city, pq.subregion]
+            parts.append(' '.join([p for p in (pq.state, pq.postal) if p != '']))
+            if pq.country != '':
+                parts.append(pq.country)
+            pq.query = ', '.join([part for part in parts if part != ''])
+
+        return pq
+
+
 class CountryPreProcessor(_PreProcessor):
     """
     Used to filter acceptable countries
@@ -130,7 +147,7 @@ class CountryPreProcessor(_PreProcessor):
     """
 
     def __init__(self, acceptable_countries=None, country_map=None):
-        """ 
+        """
         :arg list acceptable_countries: A list of acceptable countries.
                                         None is used to indicate that all countries are acceptable.
                                         (default ``[]``)
@@ -144,7 +161,7 @@ class CountryPreProcessor(_PreProcessor):
                                For example, suppose that the geocoding service recognizes
                                'GB', but not 'UK' -- and 'US', but not 'USA'::
 
-                                    country_map = {'UK':'GB', 'USA':'US'}      
+                                    country_map = {'UK':'GB', 'USA':'US'} 
 
         """
         self.acceptable_countries = acceptable_countries if acceptable_countries is not None else []
@@ -166,9 +183,9 @@ class CountryPreProcessor(_PreProcessor):
 
     def __repr__(self):
         return '<%s: Accept %s mapped as %s>' % (self.__class__.__name__,
-            self.acceptable_countries, self.country_map)
-    
-    
+                                                 self.acceptable_countries, self.country_map)
+
+
 class CancelIfRegexInAttr(_PreProcessor):
     """
     Return False if given regex is found in ANY of the given
@@ -184,11 +201,11 @@ class CancelIfRegexInAttr(_PreProcessor):
         """
         regex_type = type(regex)
         if type(regex) not in (str, unicode):
-            raise Exception('First param "regex" must be a regex of type'\
+            raise Exception('First param "regex" must be a regex of type'
                             ' str or unicode, not %s.' % regex_type)
         attrs_type = type(attrs)
         if attrs_type not in (list, tuple):
-            raise Exception('Second param "attrs" must be a list or tuple'\
+            raise Exception('Second param "attrs" must be a list or tuple'
                             ' of PlaceQuery attributes, not %s.' % attrs_type)
         if any(type(attr) not in (str, unicode) for attr in attrs):
             raise Exception('All given PlaceQuery attributes must be strings.')
@@ -197,18 +214,18 @@ class CancelIfRegexInAttr(_PreProcessor):
             self.regex = re.compile(regex, re.IGNORECASE)
         else:
             self.regex = re.compile(regex)
-        
+
     def process(self, pq):
         attrs = [getattr(pq, attr) for attr in self.attrs if hasattr(pq, attr)]
         if any([self.regex.match(attr) is not None for attr in attrs]):
-            return False # if a match is found
+            return False  # if a match is found
         return pq
 
     def __repr__(self):
         case_sensitive = 'insensitive' if self.ignorecase else 'sensitive'
         return '<%s: Break if %s in %s (case %s)>' % (self.__class__.__name__,
-            self.regex, self.attrs, case_sensitive)
-    
+                                                      self.regex, self.attrs, case_sensitive)
+
 
 class CancelIfPOBox(_PreProcessor):
     def process(self, pq):
@@ -219,7 +236,7 @@ class CancelIfPOBox(_PreProcessor):
         """
         regex = r'^\s*P\.?\s*O\.?\s*B\.?O?X?[\s\d]'
         return CancelIfRegexInAttr(regex, ('address', 'query')).process(pq)
-    
+
 
 class RequireCountry(_PreProcessor):
     """
@@ -228,11 +245,11 @@ class RequireCountry(_PreProcessor):
     """
     def __init__(self, default_country=''):
         """
-        :arg str default_country: default country to use if there is 
+        :arg str default_country: default country to use if there is
                                   no country set in the PlaceQuery instance sent to this processor.
                                   If this argument is not set or empty and PlaceQuery instance does
                                   not have a country (pq.country == ''), the processor will return
-                                  False and the PlaceQuery will be rejected during geocoding. 
+                                  False and the PlaceQuery will be rejected during geocoding.
                                   (default ``''``)
 
         """
@@ -245,7 +262,6 @@ class RequireCountry(_PreProcessor):
                    * unmodified PlaceQuery instance if pq.country is not empty
                    * PlaceQuery instance with pq.country changed to default country.
                    * ``False`` if pq.country is empty and self.default_country == ''.
-                   
         """
         if pq.country.strip() == '':
             if self.default_country == '':

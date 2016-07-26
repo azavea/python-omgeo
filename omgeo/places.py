@@ -5,7 +5,7 @@ class Viewbox():
     """
     def convert_srs(self, new_wkid):
         """Return a new Viewbox object with the specified SRS."""
-        return self # not yet implemented
+        return self  # not yet implemented
 
     def __init__(self, left=-180, top=90, right=180, bottom=-90, wkid=4326):
         """
@@ -23,7 +23,8 @@ class Viewbox():
         if bottom > top:
             raise ValueError('Bottom y-coord must be less than top y-coord.')
         for k in locals().keys():
-            if k != 'self': setattr(self, k, locals()[k])
+            if k != 'self':
+                setattr(self, k, locals()[k])
 
     def to_bing_str(self):
         """
@@ -45,6 +46,11 @@ class Viewbox():
             'boundary.rect.max_lat': vb.top,
             'boundary.rect.max_lon': vb.right
         }
+
+    def to_google_str(self):
+        """ Convert to Google's bounds format: 'latMin,lonMin|latMax,lonMax' """
+        vb = self.convert_srs(4326)
+        return '%s,%s|%s,%s' % (vb.bottom, vb.left, vb.top, vb.right)
 
     def to_mapquest_str(self):
         """
@@ -75,6 +81,7 @@ class Viewbox():
             raise Exception('One or more values could not be cast to a number. '
                             'Four bounding points must be real numbers. '
                             'WKID must be an integer.')
+
     def __repr__(self):
         top = "y=%s" % self.top
         right = "x=%s" % self.right
@@ -88,7 +95,7 @@ class Viewbox():
                 return str_[:MAX_CHARS]
             if align == 'L':
                 return str_
-            num_spaces = (MAX_CHARS - str_len) # num spaces to pad right-aligned
+            num_spaces = (MAX_CHARS - str_len)  # num spaces to pad right-aligned
             if align == 'C':
                 num_spaces = int(num_spaces / 2)
             padding = num_spaces * ' '
@@ -101,7 +108,6 @@ class Viewbox():
                   '        |          |\n'\
                   '        ------------\n'\
                   '          %s' % (lbl(top, 'C'), lbl(left, 'R'), lbl(right, 'L'), lbl(bottom, 'C'))
-
 
 
 class PlaceQuery():
@@ -145,7 +151,8 @@ class PlaceQuery():
                           instead of "United States".
     """
         for k in locals().keys():
-            if k not in ['self', 'kwargs']: setattr(self, k, locals()[k])
+            if k not in ['self', 'kwargs']:
+                setattr(self, k, locals()[k])
         if query == '' and address == '' and city == '' and state == '' and postal == '':
             raise Exception('Must provide query or one or more of address, city, state, and postal.')
         for k in kwargs:
@@ -167,7 +174,7 @@ class Candidate():
     """
 
     def __init__(self, locator='', score=0, match_addr='', x=None, y=None,
-        wkid=4326, **kwargs):
+                 wkid=4326, **kwargs):
         """
         :arg locator: Locator used for geocoding (default ``''``)
 
@@ -200,7 +207,8 @@ class Candidate():
         """
 
         for k in locals().keys():
-            if k not in ['self', 'kwargs']: setattr(self, k, locals()[k])
+            if k not in ['self', 'kwargs']:
+                setattr(self, k, locals()[k])
         for k in kwargs:
             setattr(self, k, kwargs[k])
 
