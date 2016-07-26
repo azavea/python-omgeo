@@ -161,3 +161,7 @@ v1.7.2, 2015-04-14
 v1.8.0, 2016-01-22
 ------------------
  * Add support for Mapzen search.
+
+v1.9.0, 2016-07-26
+------------------
+ * Add support for Google geocoder.
