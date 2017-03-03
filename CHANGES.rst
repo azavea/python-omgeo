@@ -165,3 +165,7 @@ v1.8.0, 2016-01-22
 v1.9.0, 2016-07-26
 ------------------
  * Add support for Google geocoder.
+
+v1.9.1, 2017-03-03
+------------------
+ * Fix Google geocoder API key parameter.
