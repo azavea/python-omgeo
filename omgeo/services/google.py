@@ -27,7 +27,7 @@ class Google(GeocodeService):
     def _geocode(self, pq):
         params = {
             'address': pq.query,
-            'api_key': self._settings['api_key']
+            'key': self._settings['api_key']
         }
 
         if pq.country:
