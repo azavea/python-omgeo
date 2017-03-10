@@ -45,6 +45,7 @@ class Google(GeocodeService):
         candidate.x = result['geometry']['location']['lng']
         candidate.y = result['geometry']['location']['lat']
         candidate.locator = self.LOCATOR_MAPPING.get(result['geometry']['location_type'], '')
+        candidate.partial_match = result.get('partial_match', False)
 
         component_lookups = {
             'city': {'type': 'locality', 'key': 'long_name'},
