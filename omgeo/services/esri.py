@@ -430,7 +430,7 @@ class EsriWGS(GeocodeService):
         outFields = ('Loc_name',
                      # 'Shape',
                      'Score',
-                     'Match_Addr',  # based on address standards for the country
+                     'Match_addr',  # based on address standards for the country
                      # 'Address', # returned by default
                      # 'Country' # 3-digit ISO 3166-1 code for a country. Example: Canada = "CAN"
                      # 'Admin',
@@ -439,7 +439,7 @@ class EsriWGS(GeocodeService):
                      # 'Locality',
                      # 'Postal',
                      # 'PostalExt',
-                     'Addr_Type',
+                     'Addr_type',
                      # 'Type',
                      # 'Rank',
                      'AddNum',
@@ -481,7 +481,6 @@ class EsriWGS(GeocodeService):
             pq.query = pq.postal
 
         if pq.query == '':  # multipart
-            method = 'findAddressCandidates'
             query = dict(query,
                          Address=pq.address,  # commonly represents the house number and street name of a complete address
                          Neighborhood=pq.neighborhood,
@@ -492,38 +491,29 @@ class EsriWGS(GeocodeService):
                          # PostalExt=
                          CountryCode=pq.country,  # full country name or ISO 3166-1 2- or 3-digit country code
                          )
-            if pq.bounded and pq.viewbox is not None:
-                query = dict(query, searchExtent=pq.viewbox.to_esri_wgs_json())
         else:  # single-line
-            method = 'find'
             magic_key = pq.key if hasattr(pq, 'key') else ''
             query = dict(query,
-                         text=pq.query,  # This can be a street address, place name, postal code, or POI.
+                         singleLine=pq.query,  # This can be a street address, place name, postal code, or POI.
                          sourceCountry=pq.country,  # full country name or ISO 3166-1 2- or 3-digit country code
                          )
             if magic_key:
                 query['magicKey'] = magic_key  # This is a lookup key returned from the suggest endpoint.
-            if pq.bounded and pq.viewbox is not None:
-                query = dict(query, bbox=pq.viewbox.to_esri_wgs_json())
 
-        endpoint = self._endpoint + '/' + method
+        if pq.bounded and pq.viewbox is not None:
+            query = dict(query, searchExtent=pq.viewbox.to_esri_wgs_json())
+
+        endpoint = self._endpoint + '/findAddressCandidates'
         response_obj = self._get_json_obj(endpoint, query)
         returned_candidates = []  # this will be the list returned
         try:
-            if method == 'find':
-                locations = response_obj['locations']
-            else:
-                locations = response_obj['candidates']
-
+            locations = response_obj['candidates']
             for location in locations:
                 c = Candidate()
-                if method == 'find':  # singlepart
-                    attributes = location['feature']['attributes']
-                else:  # findAddressCandidates / multipart
-                    attributes = location['attributes']
-                c.match_addr = attributes['Match_Addr']
+                attributes = location['attributes']
+                c.match_addr = attributes['Match_addr']
                 c.locator = attributes['Loc_name']
-                c.locator_type = attributes['Addr_Type']
+                c.locator_type = attributes['Addr_type']
                 c.score = attributes['Score']
                 c.x = attributes['DisplayX']  # represents the actual location of the address.
                 c.y = attributes['DisplayY']
