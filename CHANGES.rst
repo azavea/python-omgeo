@@ -169,3 +169,6 @@ v1.9.0, 2016-07-26
 v1.9.2, 2017-03-06
 ------------------
  * Fix Google geocoder API key parameter.
+
+v2.0.0, 2017-06-29
+ * Remove usage of the ESRI WGS geocoder find endpoint.
