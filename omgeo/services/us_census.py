@@ -11,7 +11,7 @@ class USCensus(GeocodeService):
 
     # set endpoint based on whether we geocode by single-line address, or with keyed components
     _endpoint = ''
-    _endpoint_base = 'http://geocoding.geo.census.gov/geocoder/locations/'
+    _endpoint_base = 'https://geocoding.geo.census.gov/geocoder/locations/'
 
     def _geocode(self, pq):
         query = {
