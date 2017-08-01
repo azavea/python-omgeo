@@ -16,6 +16,8 @@ BING_MAPS_API_KEY = os.getenv("BING_MAPS_API_KEY")
 MAPQUEST_API_KEY = os.getenv("MAPQUEST_API_KEY")
 MAPZEN_API_KEY = os.getenv("MAPZEN_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+ESRI_CLIENT_ID = os.getenv("ESRI_CLIENT_ID")
+ESRI_CLIENT_SECRET = os.getenv("ESRI_CLIENT_SECRET")
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level='ERROR')
@@ -46,6 +48,7 @@ class GeocoderTest(OmgeoTestCase):
                               'tests. Keys can be obtained at ' \
                               'https://mapzen.com/developers/sign_in.'
     GOOGLE_KEY_REQUIRED_MSG = 'Enter a Google API key to run Google tests.'
+    ESRI_KEY_REQUIRED_MSG = 'Enter a Esri Client ID & Secret to run authenticated Esri tests.'
 
     def setUp(self):
         # Viewbox objects - callowhill is from BSS Spring Garden station to Wash. Sq.
@@ -110,6 +113,13 @@ class GeocoderTest(OmgeoTestCase):
 
         # geocoders using individual services
         self.g_esri_wgs = Geocoder([['omgeo.services.EsriWGS', {}]])
+
+        if ESRI_CLIENT_ID is not None and ESRI_CLIENT_SECRET is not None:
+            self.g_esri_wgs_auth = Geocoder([['omgeo.services.EsriWGS',
+                                              {'settings': {
+                                                  'client_id': ESRI_CLIENT_ID,
+                                                  'client_secret': ESRI_CLIENT_SECRET
+                                              }}]])
 
         if MAPQUEST_API_KEY is not None:  # MapQuest's open Nominatime API now also requires a key
             self.g_nom = Geocoder([['omgeo.services.Nominatim', {}]])
@@ -203,11 +213,11 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g_esri_wgs.get_candidates(self.pq['willow_street_parts'])
         self.assertOneCandidate(candidates)
 
-    def test_bounded_no_viewbox(self):
-        """
-        Should return a nice error saying that PlaceQuery can't be bounded without Viewbox.
-        """
-        pass
+    @unittest.skipIf(ESRI_CLIENT_SECRET is None or ESRI_CLIENT_ID is None, ESRI_KEY_REQUIRED_MSG)
+    def test_geocode_esri_wgs_auth(self):
+        """Test that using authentication with the ESRI WGS geocoder is working"""
+        candidates = self.g_esri_wgs_auth.get_candidates(self.pq['azavea'])
+        self.assertOneCandidate(candidates)
 
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_bing(self):
@@ -319,7 +329,6 @@ class GeocoderTest(OmgeoTestCase):
             self.g.add_source(['omgeo.services.Bing', {'settings': {'api_key': BING_MAPS_API_KEY}}])
             expected_results = len(self.pq)
         self._test_geocode_results_all_(geocoder=self.g, expected_results=expected_results)
-
 
     @unittest.skipIf(GOOGLE_API_KEY is None, GOOGLE_KEY_REQUIRED_MSG)
     def test_google_geocode_azavea(self):

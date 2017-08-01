@@ -1,5 +1,7 @@
-from base import GeocodeService
+from datetime import datetime, timedelta
 import logging
+
+from omgeo.services.base import GeocodeService
 from omgeo.places import Candidate
 from omgeo.preprocessors import CancelIfPOBox
 from omgeo.postprocessors import (AttrFilter, AttrRename, AttrSorter, UseHighScoreIfAtLeast,
@@ -28,6 +30,17 @@ class EsriWGS(GeocodeService):
         recommended that a viewbox not be used with in conjuction
         with the magicKey. Additionally, address/search text passed
         via the query may be ignored when using a magicKey.
+
+    An optional ``for_storage`` flag can be passed to the :class:`~omgeo.places.PlaceQuery` which
+    will cause ``findStorage=true`` to be passed to the find endpoint.
+    The Esri terms of service requires this if the returned point will be stored
+    in a database.
+    If you pass this flag, you `must` set the client_id and client_secret settings.
+
+    Settings used by the EsriWGS GeocodeService object may include:
+     * client_id --  The Client ID used to access Esri services.
+     * client_secret --  The Client Secret used to access Esri services.
+
     """
 
     LOCATOR_MAP = {
@@ -61,6 +74,23 @@ class EsriWGS(GeocodeService):
     ]
 
     _endpoint = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
+
+    def __init__(self, preprocessors=None, postprocessors=None, settings=None):
+        preprocessors = EsriWGS.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
+        postprocessors = EsriWGS.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
+        settings = {} if settings is None else settings
+
+        if 'client_id' in settings and 'client_secret' in settings:
+            self._authenticated = True
+            self._client_id = settings['client_id']
+            self._client_secret = settings['client_secret']
+            self._token = None
+        elif 'client_id' not in settings and 'client_secret' not in settings:
+            self._authenticated = False
+        else:
+            raise Exception('Must specify both client_id and client_secret to use authentication')
+
+        GeocodeService.__init__(self, preprocessors, postprocessors, settings)
 
     def _geocode(self, pq):
         """
@@ -145,6 +175,17 @@ class EsriWGS(GeocodeService):
         if pq.bounded and pq.viewbox is not None:
             query = dict(query, searchExtent=pq.viewbox.to_esri_wgs_json())
 
+        if self._authenticated:
+            if self._token is None or self._token_expiration < datetime.utcnow():
+                expiration = timedelta(hours=2)
+                self._token = self.get_token(expiration)
+                self._token_expiration = datetime.utcnow() + expiration
+
+            query['token'] = self._token
+
+        if getattr(pq, 'for_storage', False):
+            query['forStorage'] = 'true'
+
         endpoint = self._endpoint + '/findAddressCandidates'
         response_obj = self._get_json_obj(endpoint, query)
         returned_candidates = []  # this will be the list returned
@@ -190,10 +231,26 @@ class EsriWGS(GeocodeService):
         else:
             return ''
 
-    def __init__(self, preprocessors=None, postprocessors=None, settings=None):
-        preprocessors = EsriWGS.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
-        postprocessors = EsriWGS.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
-        GeocodeService.__init__(self, preprocessors, postprocessors, settings)
+    def get_token(self, expires=None):
+        """
+        :param expires: The time until the returned token expires.
+            Must be an instance of :class:`datetime.timedelta`.
+            If not specified, the token will expire in 2 hours.
+        :returns: A token suitable for use with the Esri geocoding API
+        """
+        endpoint = 'https://www.arcgis.com/sharing/rest/oauth2/token/'
+        query = {'client_id': self._client_id,
+                 'client_secret': self._client_secret,
+                 'grant_type': 'client_credentials'}
+
+        if expires is not None:
+            if not isinstance(expires, timedelta):
+                raise Exception('If expires is provided it must be a timedelta instance')
+            query['expiration'] = int(expires.total_seconds() / 60)
+
+        response_obj = self._get_json_obj(endpoint, query, is_post=True)
+
+        return response_obj['access_token']
 
 
 class EsriWGSSSL(EsriWGS):
