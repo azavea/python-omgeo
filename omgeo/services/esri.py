@@ -16,16 +16,18 @@ class EsriWGS(GeocodeService):
     This uses two endpoints -- one for single-line addresses,
     and one for multi-part addresses.
 
-    An optional (key) parameter can be passed to the PlaceQuery
-    which will be passed as a magicKey to the find endpoint if
+    An optional ``key`` parameter can be passed to the :class:`~omgeo.places.PlaceQuery`
+    which will be passed as a ``magicKey`` to the find endpoint if
     using a single line address/text search. This allows omgeo
     to be used with the `Esri suggest endpoint
     <https://developers.arcgis.com/rest/geocode/api-reference/geocoding-suggest.htm>`_.
 
-    Note: Based on tests using the magicKey parameter, it is
-    recommended that a viewbox not be used with in conjuction
-    with the magicKey. Additionally, address/search text passed
-    via the query may be ignored when using a magicKey.
+    .. warning::
+
+        Based on tests using the magicKey parameter, it is
+        recommended that a viewbox not be used with in conjuction
+        with the magicKey. Additionally, address/search text passed
+        via the query may be ignored when using a magicKey.
     """
 
     LOCATOR_MAP = {
@@ -198,5 +200,7 @@ class EsriWGSSSL(EsriWGS):
     """
     Class to geocode using the `ESRI World Geocoding service over SSL
     <https://geocode.arcgis.com/arcgis/geocoding.html>`_.
+
+    See :class:`.EsriWGS` for detailed documentation.
     """
     _endpoint = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
