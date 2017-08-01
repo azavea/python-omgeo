@@ -171,4 +171,9 @@ v1.9.2, 2017-03-06
  * Fix Google geocoder API key parameter.
 
 v2.0.0, 2017-06-29
+------------------
  * Remove usage of the ESRI WGS geocoder find endpoint.
+
+v2.0.1, 2017-08-01
+------------------
+ * Change Census geocoder to use HTTPS
