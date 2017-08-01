@@ -174,6 +174,6 @@ v2.0.0, 2017-06-29
 ------------------
  * Remove usage of the ESRI WGS geocoder find endpoint.
 
-Upcoming Release
-----------------
+v2.0.1, 2017-08-01
+------------------
  * Change Census geocoder to use HTTPS
