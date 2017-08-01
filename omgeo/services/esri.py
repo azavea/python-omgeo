@@ -197,6 +197,6 @@ class EsriWGS(GeocodeService):
 class EsriWGSSSL(EsriWGS):
     """
     Class to geocode using the `ESRI World Geocoding service over SSL
-    <https://geocode.arcgis.com/arcgis/geocoding.html>_`
+    <https://geocode.arcgis.com/arcgis/geocoding.html>`_.
     """
     _endpoint = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'

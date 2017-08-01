@@ -31,7 +31,31 @@ places
 services
 ++++++++
 
-.. automodule:: omgeo.services
+.. automodule:: omgeo.services.bing
+   :members:
+   :inherited-members:
+
+.. automodule:: omgeo.services.esri
+   :members:
+   :inherited-members:
+
+.. automodule:: omgeo.services.google
+   :members:
+   :inherited-members:
+
+.. automodule:: omgeo.services.mapquest
+   :members:
+   :inherited-members:
+
+.. automodule:: omgeo.services.mapzen
+   :members:
+   :inherited-members:
+
+.. automodule:: omgeo.services.nominatim
+   :members:
+   :inherited-members:
+
+.. automodule:: omgeo.services.us_census
    :members:
    :inherited-members:
 
