@@ -177,3 +177,9 @@ v2.0.0, 2017-06-29
 v2.0.1, 2017-08-01
 ------------------
  * Change Census geocoder to use HTTPS
+
+v3.0.0, 2017-08-03
+------------------
+ * Remove unsupported EsriNA and EsriEU services
+ * Add authentication settings for the EsriWGS service
+ * Add for_storage option for the EsriWGS service
