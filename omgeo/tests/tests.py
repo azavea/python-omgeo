@@ -10,13 +10,14 @@ from omgeo.preprocessors import (CancelIfPOBox, CancelIfRegexInAttr, CountryPreP
                                  RequireCountry, ParseSingleLine, ReplaceRangeWithNumber)
 from omgeo.postprocessors import (AttrFilter, AttrExclude, AttrRename,
                                   AttrSorter, AttrReverseSorter, UseHighScoreIfAtLeast,
-                                  GroupBy, GroupByMultiple, ScoreSorter, SnapPoints)
+                                  GroupBy, ScoreSorter, SnapPoints)
 
 BING_MAPS_API_KEY = os.getenv("BING_MAPS_API_KEY")
-ESRI_MAPS_API_KEY = os.getenv("ESRI_MAPS_API_KEY")
 MAPQUEST_API_KEY = os.getenv("MAPQUEST_API_KEY")
 MAPZEN_API_KEY = os.getenv("MAPZEN_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+ESRI_CLIENT_ID = os.getenv("ESRI_CLIENT_ID")
+ESRI_CLIENT_SECRET = os.getenv("ESRI_CLIENT_SECRET")
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level='ERROR')
@@ -46,8 +47,8 @@ class GeocoderTest(OmgeoTestCase):
     MAPZEN_KEY_REQUIRED_MSG = 'Enter a Mapzen Search API key to run Mapzen ' \
                               'tests. Keys can be obtained at ' \
                               'https://mapzen.com/developers/sign_in.'
-    ESRI_KEY_REQUIRED_MSG = 'Enter an ESRI API key to run ESRI SOAP tests.'
     GOOGLE_KEY_REQUIRED_MSG = 'Enter a Google API key to run Google tests.'
+    ESRI_KEY_REQUIRED_MSG = 'Enter a Esri Client ID & Secret to run authenticated Esri tests.'
 
     def setUp(self):
         # Viewbox objects - callowhill is from BSS Spring Garden station to Wash. Sq.
@@ -110,18 +111,15 @@ class GeocoderTest(OmgeoTestCase):
         #: main geocoder used for tests, using default APIs
         self.g = Geocoder()
 
-        # Set up params for old ESRI rest services:
-        esri_settings = {} if ESRI_MAPS_API_KEY is None else {'api_key': ESRI_MAPS_API_KEY}
-        old_esri_params = {'settings': esri_settings}
-
         # geocoders using individual services
-        # self.g_dc = Geocoder([['omgeo.services.CitizenAtlas', {}]])
-        self.g_esri_na = Geocoder([['omgeo.services.EsriNA', old_esri_params]])
-        self.g_esri_eu = Geocoder([['omgeo.services.EsriEU', old_esri_params]])
         self.g_esri_wgs = Geocoder([['omgeo.services.EsriWGS', {}]])
-        if ESRI_MAPS_API_KEY is not None:  # SOAP services are subscriber-only now
-            self.g_esri_na_soap = Geocoder([['omgeo.services.EsriNASoap', {}]])
-            self.g_esri_eu_soap = Geocoder([['omgeo.services.EsriEUSoap', {}]])
+
+        if ESRI_CLIENT_ID is not None and ESRI_CLIENT_SECRET is not None:
+            self.g_esri_wgs_auth = Geocoder([['omgeo.services.EsriWGS',
+                                              {'settings': {
+                                                  'client_id': ESRI_CLIENT_ID,
+                                                  'client_secret': ESRI_CLIENT_SECRET
+                                              }}]])
 
         if MAPQUEST_API_KEY is not None:  # MapQuest's open Nominatime API now also requires a key
             self.g_nom = Geocoder([['omgeo.services.Nominatim', {}]])
@@ -159,15 +157,6 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.impatient_geocoder.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) == 0, True,
                          'Candidates were unexpectedly returned in under 10ms.')
-
-    @unittest.skipIf(ESRI_MAPS_API_KEY is None, ESRI_KEY_REQUIRED_MSG)
-    def test_geocode_snap_points_1(self):
-        """
-        Geocoder expected to return the same place twice -- one with city as Flemington,
-        and one with city as Readington Twp. This test checks that only one is picked.
-        """
-        candidates = self.g_esri_na.get_candidates(self.pq['8_kirkbride'])
-        self.assertOneCandidate(candidates)
 
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_snap_points_2(self):
@@ -224,43 +213,11 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g_esri_wgs.get_candidates(self.pq['willow_street_parts'])
         self.assertOneCandidate(candidates)
 
-    def test_bounded_no_viewbox(self):
-        """
-        Should return a nice error saying that PlaceQuery can't be bounded without Viewbox.
-        """
-        pass
-
-    @unittest.skipIf(ESRI_MAPS_API_KEY is None, ESRI_KEY_REQUIRED_MSG)
-    def test_geocode_esri_na_us_soap(self):
-        """Test ESRI North America SOAP geocoder"""
-        location = '340 N 12th St., Philadelphia, PA, US'
-        candidates = self.g_esri_na_soap.get_candidates(location)
-        self.assertEqual(len(candidates) > 0, True, 'No candidates returned for %s.' % location)
-
-    @unittest.skipIf(ESRI_MAPS_API_KEY is None, ESRI_KEY_REQUIRED_MSG)
-    def test_geocode_esri_na_us(self):
-        """Test ESRI North America REST geocoder"""
-        location = '340 N 12th St., Philadelphia, PA, US'
-        candidates = self.g_esri_na.get_candidates(location)
-        self.assertEqual(len(candidates) > 0, True, 'No candidates returned for %s.' % location)
-
-    @unittest.skipIf(ESRI_MAPS_API_KEY is None, ESRI_KEY_REQUIRED_MSG)
-    def test_geocode_esri_eu_soap(self):
-        """Test ESRI Europe SOAP geocoder"""
-        candidates = self.g_esri_eu_soap.get_candidates(PlaceQuery(
-            address='31 Maiden Lane', city='London', country='UK'))
-        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
-
-    @unittest.skipIf(ESRI_MAPS_API_KEY is None, ESRI_KEY_REQUIRED_MSG)
-    def test_geocode_esri_na_nz(self):
-        """
-        Test ESRI North America REST geocoder using a city in New Zealand.
-        """
-        candidates = self.g_esri_na.get_candidates(self.pq['karori'])
-        self.assertEqual(len(candidates) > 0, False,
-                         'Found New Zealand address when this should only'
-                         'be using the North American ESRI geocoder. '
-                         'Candidates are %s.' % candidates)
+    @unittest.skipIf(ESRI_CLIENT_SECRET is None or ESRI_CLIENT_ID is None, ESRI_KEY_REQUIRED_MSG)
+    def test_geocode_esri_wgs_auth(self):
+        """Test that using authentication with the ESRI WGS geocoder is working"""
+        candidates = self.g_esri_wgs_auth.get_candidates(self.pq['azavea'])
+        self.assertOneCandidate(candidates)
 
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_bing(self):
@@ -372,41 +329,6 @@ class GeocoderTest(OmgeoTestCase):
             self.g.add_source(['omgeo.services.Bing', {'settings': {'api_key': BING_MAPS_API_KEY}}])
             expected_results = len(self.pq)
         self._test_geocode_results_all_(geocoder=self.g, expected_results=expected_results)
-
-    def test_esri_geocoder_na_default_override(self):
-        """
-        Test for default argument bug in 3.1 --
-        EsriNA and EsriEU append processors rather than replace them
-        """
-        geocoder = Geocoder([['omgeo.services.EsriNA',
-                            {'postprocessors': [AttrFilter([
-                                'rooftop',
-                                'interpolation',
-                                'postal_specific'],
-                                'locator')]}]])
-
-        self.assertEqual(1, len(geocoder._sources[0]._postprocessors),
-                         'EsriNA geocoder incorrectly processed defaults')
-        self.assertEqual('AttrFilter', geocoder._sources[0]._postprocessors[0].__class__.__name__,
-                         'EsriNA geocoder incorrectly processed defaults')
-
-    def test_esri_geocoder_eu_default_override(self):
-        """
-        Test for default argument bug in 3.1 --
-        EsriNA and EsriEU append processors rather than replace them
-        """
-        geocoder = Geocoder([['omgeo.services.EsriEU',
-                            {'postprocessors': [AttrFilter([
-                                'rooftop',
-                                'interpolation',
-                                'postal_specific'],
-                                'locator')]}]])
-
-        self.assertEqual(1, len(geocoder._sources[0]._postprocessors),
-                         'EsriEU geocoder incorrectly processed defaults')
-        self.assertEqual('AttrFilter',
-                         geocoder._sources[0]._postprocessors[0].__class__.__name__,
-                         'EsriEU geocoder incorrectly processed defaults')
 
     @unittest.skipIf(GOOGLE_API_KEY is None, GOOGLE_KEY_REQUIRED_MSG)
     def test_google_geocode_azavea(self):
