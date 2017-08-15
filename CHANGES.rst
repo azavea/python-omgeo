@@ -183,3 +183,8 @@ v3.0.0, 2017-08-03
  * Remove unsupported EsriNA and EsriEU services
  * Add authentication settings for the EsriWGS service
  * Add for_storage option for the EsriWGS service
+
+v4.0.0, 2017-08-15
+------------------
+ * Remove EsriWGSSSL service
+ * Use HTTPS instead of HTTP for EsriWGS service
