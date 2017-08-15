@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class EsriWGS(GeocodeService):
     """
     Class to geocode using the `ESRI World Geocoding service
-    <http://geocode.arcgis.com/arcgis/geocoding.html>`_.
+    <https://developers.arcgis.com/features/geocoding/>`_.
 
     This uses two endpoints -- one for single-line addresses,
     and one for multi-part addresses.
@@ -73,7 +73,7 @@ class EsriWGS(GeocodeService):
         GroupBy(('x', 'y')),
     ]
 
-    _endpoint = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
+    _endpoint = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
 
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         preprocessors = EsriWGS.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
@@ -98,7 +98,7 @@ class EsriWGS(GeocodeService):
         :returns: list of location Candidates
         """
         #: List of desired output fields
-        #: See `ESRI docs <http://geocode.arcgis.com/arcgis/geocoding.html#output>_` for details
+        #: See `ESRI docs <https://developers.arcgis.com/rest/geocode/api-reference/geocoding-geocode-addresses.htm>_` for details
         outFields = ('Loc_name',
                      # 'Shape',
                      'Score',
@@ -251,13 +251,3 @@ class EsriWGS(GeocodeService):
         response_obj = self._get_json_obj(endpoint, query, is_post=True)
 
         return response_obj['access_token']
-
-
-class EsriWGSSSL(EsriWGS):
-    """
-    Class to geocode using the `ESRI World Geocoding service over SSL
-    <https://geocode.arcgis.com/arcgis/geocoding.html>`_.
-
-    See :class:`.EsriWGS` for detailed documentation.
-    """
-    _endpoint = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer'
