@@ -5,7 +5,7 @@ import logging
 import socket
 from traceback import format_exc
 from urllib import urlencode
-from urllib2 import HTTPError, urlopen, URLError, Request
+from urllib2 import urlopen, Request
 from xml.dom import minidom
 
 logger = logging.getLogger(__name__)
@@ -128,12 +128,15 @@ class GeocodeService():
                     return keyname
         return True
 
-    def _get_response(self, endpoint, query):
+    def _get_response(self, endpoint, query, is_post=False):
         """Returns response or False in event of failure"""
         timeout_secs = self._settings.get('timeout', 10)
         headers = self._settings.get('request_headers', {})
         try:
-            request = Request('%s?%s' % (endpoint, urlencode(query)), headers=headers)
+            if is_post:
+                request = Request(endpoint, data=urlencode(query), headers=headers)
+            else:
+                request = Request('%s?%s' % (endpoint, urlencode(query)), headers=headers)
             response = urlopen(request, timeout=timeout_secs)
         except Exception as ex:
             if type(ex) == socket.timeout:
@@ -147,7 +150,7 @@ class GeocodeService():
                                response.read()))
         return response
 
-    def _get_json_obj(self, endpoint, query):
+    def _get_json_obj(self, endpoint, query, is_post=False):
         """
         Return False if connection could not be made.
         Otherwise, return a response object from JSON.

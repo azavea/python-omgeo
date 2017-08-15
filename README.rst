@@ -5,8 +5,6 @@ supported geocoders:
 
 * `US Census Geocoder <https://www.census.gov/geo/maps-data/data/geocoder.html>`_
 * `Bing Maps REST Locations API <http://msdn.microsoft.com/en-us/library/ff701715.aspx>`_
-* `ESRI European Address Locator (REST & SOAP) <http://tasks.arcgisonline.com/ArcGIS/rest/services/Locators/TA_Address_EU/GeocodeServer>`_
-* `ESRI North American Locator (TA_Address_NA_10) (REST & SOAP) <http://tasks.arcgisonline.com/ArcGIS/rest/services/Locators/TA_Address_NA_10/GeocodeServer>`_
 * `ESRI World Geocoding Service <http://resources.arcgis.com/en/help/arcgis-online-geocoding-rest-api/>`_
 * `MapQuest Licensed Data API <http://developer.mapquest.com/web/products/dev-services/geocoding-ws>`_
 * `MapQuest-hosted Nominatim Open Data API <http://developer.mapquest.com/web/products/open/geocoding-service>`_
