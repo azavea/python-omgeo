@@ -54,7 +54,7 @@ class Google(GeocodeService):
             'postal': {'type': 'postal_code', 'key': 'long_name'},
             'country': {'type': 'country', 'key': 'short_name'},
         }
-        for (field, lookup) in component_lookups.iteritems():
+        for (field, lookup) in component_lookups.items():
             setattr(candidate, 'match_' + field, self._get_component_from_result(result, lookup))
         candidate.geoservice = self.__class__.__name__
         return candidate

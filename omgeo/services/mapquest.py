@@ -1,8 +1,8 @@
-from base import GeocodeService
+from .base import GeocodeService
 import json
 import logging
 from omgeo.places import Candidate
-from urllib import unquote
+from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
