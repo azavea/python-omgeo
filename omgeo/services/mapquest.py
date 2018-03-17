@@ -2,7 +2,13 @@ from .base import GeocodeService
 import json
 import logging
 from omgeo.places import Candidate
-from urllib.parse import unquote
+
+try:
+    # python 3
+    from urllib.parse import unquote
+except ImportError:
+    # python 2
+    from urllib import unquote
 
 logger = logging.getLogger(__name__)
 
