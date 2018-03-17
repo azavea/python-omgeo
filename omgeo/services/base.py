@@ -12,7 +12,7 @@ try:
     from urllib.request import urlopen, Request
 except ImportError:
     # python 2
-    from urlparse import urlencode
+    from urllib import urlencode
     from urllib2 import urlopen, Request
 
 logger = logging.getLogger(__name__)
