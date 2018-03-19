@@ -1,5 +1,3 @@
-.. image:: http://auto2.cdn.azavea.com/files/8813/6804/5771/70x80xomgeo-logo-color-70px.png.pagespeed.ic.R2Hq0Yficw.png
-
 **OMGeo - Python Edition**
 
 ``python-omgeo`` is a geocoding abstraction layer written in python.  Currently
@@ -7,8 +5,6 @@ supported geocoders:
 
 * `US Census Geocoder <https://www.census.gov/geo/maps-data/data/geocoder.html>`_
 * `Bing Maps REST Locations API <http://msdn.microsoft.com/en-us/library/ff701715.aspx>`_
-* `ESRI European Address Locator (REST & SOAP) <http://tasks.arcgisonline.com/ArcGIS/rest/services/Locators/TA_Address_EU/GeocodeServer>`_
-* `ESRI North American Locator (TA_Address_NA_10) (REST & SOAP) <http://tasks.arcgisonline.com/ArcGIS/rest/services/Locators/TA_Address_NA_10/GeocodeServer>`_
 * `ESRI World Geocoding Service <http://resources.arcgis.com/en/help/arcgis-online-geocoding-rest-api/>`_
 * `MapQuest Licensed Data API <http://developer.mapquest.com/web/products/dev-services/geocoding-ws>`_
 * `MapQuest-hosted Nominatim Open Data API <http://developer.mapquest.com/web/products/open/geocoding-service>`_
@@ -24,15 +20,15 @@ supported geocoders:
 
 **Documentation**
 
-Docs are available in `HTML <http://python-omgeo.readthedocs.org/en/latest/>`_ 
+Docs are available in `HTML <http://python-omgeo.readthedocs.org/en/latest/>`_
 or `PDF <http://media.readthedocs.org/pdf/python-omgeo/latest/python-omgeo.pdf>`_ format.
 
 **Usage Example**
 
 Make a new geocoder and geocode and address::
 
-    >>> from omgeo import Geocoder 
-    >>> g = Geocoder() 
+    >>> from omgeo import Geocoder
+    >>> g = Geocoder()
     >>> result = g.geocode('340 12th St, Philadelphia PA')
 
 Take a look at the result::

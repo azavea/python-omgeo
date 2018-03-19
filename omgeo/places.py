@@ -16,13 +16,13 @@ class Viewbox():
         :arg wkid: Well-known ID for spatial reference system (default ``4326``)
         """
         bounds = left, right, bottom, top
-        if not all([isinstance(x, (int, long, float)) for x in bounds]):
+        if not all([isinstance(x, (int, float)) for x in bounds]):
             raise ValueError('One or more bounds (%s) is not a real number.' % bounds)
         if left > right:
             raise ValueError('Left x-coord must be less than right x-coord.')
         if bottom > top:
             raise ValueError('Bottom y-coord must be less than top y-coord.')
-        for k in locals().keys():
+        for k in list(locals().keys()):
             if k != 'self':
                 setattr(self, k, locals()[k])
 
@@ -150,7 +150,7 @@ class PlaceQuery():
                           would be returned as "Vereinigte Staaten Von Amerika"
                           instead of "United States".
     """
-        for k in locals().keys():
+        for k in list(locals().keys()):
             if k not in ['self', 'kwargs']:
                 setattr(self, k, locals()[k])
         if query == '' and address == '' and city == '' and state == '' and postal == '':
@@ -206,7 +206,7 @@ class Candidate():
         return these values.
         """
 
-        for k in locals().keys():
+        for k in list(locals().keys()):
             if k not in ['self', 'kwargs']:
                 setattr(self, k, locals()[k])
         for k in kwargs:

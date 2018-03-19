@@ -1,0 +1,21 @@
+language: python
+
+sudo: false
+
+python:
+  - '2.7'
+  - '3.6'
+
+script:
+  - python setup.py test
+
+deploy:
+  provider: pypi
+  user: azavea
+  password:
+    secure: Wc/aboeIntZeqgCSIOrd/66vceukY/KmdSLwcLB9gn7kRWRqOM+HiEX9+lJe4IKtMisz3zgRqZNAFJU/UUBBwuclHpbtQtV0FCQOFXEwUHQfouzAvVu/3C4fBgQeoet5KrJFo7OVUmYwyWPm8vJzWIraQWVfsR9Gv/AQBQdfuec=
+  on:
+    tags: true
+    python: '3.6'
+    distributions: sdist bdist_wheel
+    repo: azavea/python-omgeo

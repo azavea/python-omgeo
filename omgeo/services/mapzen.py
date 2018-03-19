@@ -1,9 +1,15 @@
-from base import GeocodeService
+from .base import GeocodeService
 import logging
 from omgeo.places import Candidate
 from omgeo.preprocessors import ReplaceRangeWithNumber
-from urlparse import urljoin
 from posixpath import join as posixjoin
+
+try:
+    # python 3
+    from urllib.parse import urljoin
+except ImportError:
+    # python 2
+    from urlparse import urljoin
 
 logger = logging.getLogger(__name__)
 

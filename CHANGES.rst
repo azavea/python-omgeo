@@ -49,7 +49,7 @@ v1.3.4, 2012-05-11
  * Add test for SnapPoints postprocessor.
  * Change __unicode__() method for places.Candidate to display info
    indicating null or empty values, instead of just displaying "None".
-   
+
 v1.3.5, 2012-05-21
 ------------------
  * Geocoder().geocode() method can take one-line string OR PlaceQuery instance.
@@ -60,11 +60,11 @@ v1.3.6, 2012-05-22
 ------------------
  * Add SSH support for MapQuest
  * Add CancelIfRegexInAttr preprocessor to avoid geocoding attempts if
-   a PlaceQuery instance attribute matches the given regex (such as a 
+   a PlaceQuery instance attribute matches the given regex (such as a
    PO Box)
  * Add timeout option that can be included in the GeocodeService settings
    parameter. There is now a default timeout of 10 seconds.
- 
+
 v1.3.7, 2012-05-23
 ------------------
  * Add CancelIfPOBox preprocessor and tests
@@ -145,7 +145,7 @@ v1.6.0, 2013-10-31
  * Add subregion and neighborhood parameters to queries
  * Allow HTTP request headers to be specified in geocoder settings
  * Documentation updates
- 
+
 v1.7.0, 2014-05-12
 ------------------
  * Add Census geocoder
@@ -169,3 +169,26 @@ v1.9.0, 2016-07-26
 v1.9.2, 2017-03-06
 ------------------
  * Fix Google geocoder API key parameter.
+
+v2.0.0, 2017-06-29
+------------------
+ * Remove usage of the ESRI WGS geocoder find endpoint.
+
+v2.0.1, 2017-08-01
+------------------
+ * Change Census geocoder to use HTTPS
+
+v3.0.0, 2017-08-03
+------------------
+ * Remove unsupported EsriNA and EsriEU services
+ * Add authentication settings for the EsriWGS service
+ * Add for_storage option for the EsriWGS service
+
+v4.0.0, 2017-08-15
+------------------
+ * Remove EsriWGSSSL service
+ * Use HTTPS instead of HTTP for EsriWGS service
+
+v4.1.0, 2018-03-19
+------------------
+ * Add support for Python 3
