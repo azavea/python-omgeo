@@ -20,15 +20,15 @@ supported geocoders:
 
 **Documentation**
 
-Docs are available in `HTML <http://python-omgeo.readthedocs.org/en/latest/>`_ 
+Docs are available in `HTML <http://python-omgeo.readthedocs.org/en/latest/>`_
 or `PDF <http://media.readthedocs.org/pdf/python-omgeo/latest/python-omgeo.pdf>`_ format.
 
 **Usage Example**
 
 Make a new geocoder and geocode and address::
 
-    >>> from omgeo import Geocoder 
-    >>> g = Geocoder() 
+    >>> from omgeo import Geocoder
+    >>> g = Geocoder()
     >>> result = g.geocode('340 12th St, Philadelphia PA')
 
 Take a look at the result::
