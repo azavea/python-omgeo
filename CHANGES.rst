@@ -188,3 +188,7 @@ v4.0.0, 2017-08-15
 ------------------
  * Remove EsriWGSSSL service
  * Use HTTPS instead of HTTP for EsriWGS service
+
+v4.1.0, 2018-03-19
+------------------
+ * Add support for Python 3

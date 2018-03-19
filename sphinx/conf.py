@@ -41,14 +41,14 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'python-omgeo'
-copyright = '2012-2013 Azavea'
+copyright = '2012-2018 Azavea'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '4.0.0'
+version = '4.1.0'
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -216,7 +216,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'python-omgeo', 'python-omgeo Documentation',
-     ['Andrew Jennings, Joseph Tricarico, Justin Walgran'], 1)
+     ['Andrew Jennings, Joseph Tricarico, Justin Walgran, Kathryn Killebrew'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -230,7 +230,9 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'python-omgeo', 'python-omgeo Documentation',
-   'Andrew Jennings, Joseph Tricarico, Justin Walgran', 'python-omgeo', 'One line description of project.',
+   'Andrew Jennings, Joseph Tricarico, Justin Walgran, Kathryn Killebrew',
+   'python-omgeo',
+   'One line description of project.',
    'Miscellaneous'),
 ]
 
