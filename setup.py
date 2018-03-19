@@ -3,12 +3,14 @@
 import os
 from setuptools import setup, find_packages
 
+
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+
 setup(
     name="python-omgeo",
-    version="4.0.0",
+    version="4.1.0",
     description="Geocoding Library using ESRI, Bing Maps, and MapQuest geocoders",
     author="Azavea, Inc.",
     author_email="info@azavea.com",
