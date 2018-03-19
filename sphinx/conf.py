@@ -40,8 +40,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'python-omgeo'
-copyright = u'2012-2013 Azavea'
+project = 'python-omgeo'
+copyright = '2012-2013 Azavea'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -185,8 +185,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'python-omgeo.tex', u'python-omgeo Documentation',
-   u'Azavea Inc.', 'manual'),
+  ('index', 'python-omgeo.tex', 'python-omgeo Documentation',
+   'Azavea Inc.', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -215,8 +215,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'python-omgeo', u'python-omgeo Documentation',
-     [u'Andrew Jennings, Joseph Tricarico, Justin Walgran'], 1)
+    ('index', 'python-omgeo', 'python-omgeo Documentation',
+     ['Andrew Jennings, Joseph Tricarico, Justin Walgran'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -229,8 +229,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'python-omgeo', u'python-omgeo Documentation',
-   u'Andrew Jennings, Joseph Tricarico, Justin Walgran', 'python-omgeo', 'One line description of project.',
+  ('index', 'python-omgeo', 'python-omgeo Documentation',
+   'Andrew Jennings, Joseph Tricarico, Justin Walgran', 'python-omgeo', 'One line description of project.',
    'Miscellaneous'),
 ]
 

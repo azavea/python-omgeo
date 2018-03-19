@@ -314,11 +314,10 @@ class GeocoderTest(OmgeoTestCase):
             else:
                 queries_with_results += 1
                 logger.info('Input:  %s' % self.pq[place].query)
-                logger.info(map(lambda c: 'Output: %r (%s %s)\n' %
+                logger.info(['Output: %r (%s %s)\n' %
                                 (c.match_addr,
                                  c.geoservice,
-                                 [c.locator, c.score, c.confidence, c.entity]),
-                                candidates))
+                                 [c.locator, c.score, c.confidence, c.entity]) for c in candidates])
         self.assertEqual(expected_results, queries_with_results,
                          'Got results for %d of %d queries.' % (queries_with_results, len(self.pq)))
 
@@ -343,7 +342,7 @@ class GeocoderTest(OmgeoTestCase):
 
     @unittest.skipIf(GOOGLE_API_KEY is None, GOOGLE_KEY_REQUIRED_MSG)
     def test_google_country_filter(self):
-        candidates = self.g_google.get_candidates('York')
+        candidates = self.g_google.get_candidates(PlaceQuery('York', country='US'))
         self.assertOneCandidate(candidates)
         self.assertEqual(candidates[0].match_region, 'PA')
         candidates = self.g_google.get_candidates(PlaceQuery('York', country='UK'))

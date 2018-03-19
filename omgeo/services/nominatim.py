@@ -1,4 +1,4 @@
-from base import GeocodeService
+from .base import GeocodeService
 import logging
 from omgeo.places import Candidate
 from omgeo.preprocessors import ReplaceRangeWithNumber

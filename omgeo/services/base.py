@@ -4,9 +4,16 @@ from json import loads
 import logging
 import socket
 from traceback import format_exc
-from urllib import urlencode
-from urllib2 import urlopen, Request
 from xml.dom import minidom
+
+try:
+    # python 3
+    from urllib.parse import urlencode
+    from urllib.request import urlopen, Request
+except ImportError:
+    # python 2
+    from urllib import urlencode
+    from urllib2 import urlopen, Request
 
 logger = logging.getLogger(__name__)
 

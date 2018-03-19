@@ -1,6 +1,6 @@
 import re
 
-from base import GeocodeService
+from .base import GeocodeService
 import logging
 from omgeo.places import Candidate
 
