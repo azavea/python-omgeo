@@ -343,7 +343,7 @@ class GeocoderTest(OmgeoTestCase):
 
     @unittest.skipIf(GOOGLE_API_KEY is None, GOOGLE_KEY_REQUIRED_MSG)
     def test_google_country_filter(self):
-        candidates = self.g_google.get_candidates('York')
+        candidates = self.g_google.get_candidates(PlaceQuery('York', country='US'))
         self.assertOneCandidate(candidates)
         self.assertEqual(candidates[0].match_region, 'PA')
         candidates = self.g_google.get_candidates(PlaceQuery('York', country='UK'))
