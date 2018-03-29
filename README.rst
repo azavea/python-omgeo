@@ -8,7 +8,7 @@ supported geocoders:
 * `ESRI World Geocoding Service <http://resources.arcgis.com/en/help/arcgis-online-geocoding-rest-api/>`_
 * `MapQuest Licensed Data API <http://developer.mapquest.com/web/products/dev-services/geocoding-ws>`_
 * `MapQuest-hosted Nominatim Open Data API <http://developer.mapquest.com/web/products/open/geocoding-service>`_
-* `Mapzen Search API <https://mapzen.com/projects/search/>`_
+* `Pelias geocoder <https://pelias.io/>`_. Defaults to use `geocode.earth <https://geocode.earth/>`_
 * `Google geocoder <https://developers.google.com/maps/documentation/geocoding/intro>`_
 
 .. NOTE::

@@ -47,7 +47,7 @@ services
    :members:
    :inherited-members:
 
-.. automodule:: omgeo.services.mapzen
+.. automodule:: omgeo.services.pelias
    :members:
    :inherited-members:
 
