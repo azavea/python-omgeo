@@ -192,3 +192,7 @@ v4.0.0, 2017-08-15
 v4.1.0, 2018-03-19
 ------------------
  * Add support for Python 3
+
+v5.0.0, 2018-03-29
+------------------
+ * Rename Mapzen geocoder to Pelias

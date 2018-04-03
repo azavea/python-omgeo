@@ -14,12 +14,12 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-class Mapzen(GeocodeService):
+class Pelias(GeocodeService):
     """
-    Class to geocode using `Mapzen search service
-    <https://mapzen.com/projects/search>`_.
+    Class to geocode using `Pelias search service
+    <https://pelias.io/>`_.
 
-    Settings used by the Mapzen GeocodeService object include:
+    Settings used by the Pelias GeocodeService object include:
      * api_key --  The API key used to access search service.
 
     """
@@ -38,7 +38,7 @@ class Mapzen(GeocodeService):
         if 'instance_url' in settings:
             self._base_url = settings['instance_url']
         else:
-            self._base_url = 'https://search.mapzen.com'
+            self._base_url = 'https://api.geocode.earth/'
 
         self._default_endpoint = urljoin(self._base_url,
                                          posixjoin(self._api_version, 'search'))
@@ -46,8 +46,8 @@ class Mapzen(GeocodeService):
                                      posixjoin(self._api_version, 'place'))
         self._endpoint = self._default_endpoint
 
-        preprocessors = Mapzen.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
-        postprocessors = Mapzen.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
+        preprocessors = Pelias.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
+        postprocessors = Pelias.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
         GeocodeService.__init__(self, preprocessors, postprocessors, settings)
 
     def _geocode(self, pq):
@@ -57,7 +57,7 @@ class Mapzen(GeocodeService):
             query = dict(query, **{'boundary.country': pq.country})
 
         if pq.viewbox is not None:
-            box = pq.viewbox.to_mapzen_dict()
+            box = pq.viewbox.to_pelias_dict()
             query = dict(query, **box)
 
         if hasattr(pq, 'key'):

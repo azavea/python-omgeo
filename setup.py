@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name="python-omgeo",
-    version="4.1.0",
+    version="5.0.0",
     description="Geocoding Library using ESRI, Bing Maps, and MapQuest geocoders",
     author="Azavea, Inc.",
     author_email="info@azavea.com",
