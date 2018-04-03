@@ -14,7 +14,7 @@ from omgeo.postprocessors import (AttrFilter, AttrExclude, AttrRename,
 
 BING_MAPS_API_KEY = os.getenv("BING_MAPS_API_KEY")
 MAPQUEST_API_KEY = os.getenv("MAPQUEST_API_KEY")
-MAPZEN_API_KEY = os.getenv("MAPZEN_API_KEY")
+PELIAS_API_KEY = os.getenv("PELIAS_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 ESRI_CLIENT_ID = os.getenv("ESRI_CLIENT_ID")
 ESRI_CLIENT_SECRET = os.getenv("ESRI_CLIENT_SECRET")
@@ -44,9 +44,8 @@ class GeocoderTest(OmgeoTestCase):
     BING_KEY_REQUIRED_MSG = 'Enter a Bing Maps API key to run the Bing tests.'
     MAPQUEST_KEY_REQUIRED_MSG = 'Enter a MapQuest API key to run the MapQuest tests. '\
                                 'Keys can be obtained at http://developer.mapquest.com/.'
-    MAPZEN_KEY_REQUIRED_MSG = 'Enter a Mapzen Search API key to run Mapzen ' \
-                              'tests. Keys can be obtained at ' \
-                              'https://mapzen.com/developers/sign_in.'
+    PELIAS_KEY_REQUIRED_MSG = 'Enter a Pelias service search API key to run Pelias tests. '\
+                              'Keys can be obtained at https://geocode.earth/.'
     GOOGLE_KEY_REQUIRED_MSG = 'Enter a Google API key to run Google tests.'
     ESRI_KEY_REQUIRED_MSG = 'Enter a Esri Client ID & Secret to run authenticated Esri tests.'
 
@@ -100,9 +99,9 @@ class GeocoderTest(OmgeoTestCase):
             self.g_mapquest_ssl = Geocoder([['omgeo.services.MapQuestSSL',
                                            {'settings': mapquest_settings}]])
 
-        if MAPZEN_API_KEY is not None:
-            mapzen_settings = dict(api_key=MAPZEN_API_KEY)
-            self.g_mapzen = Geocoder([['omgeo.services.Mapzen', {'settings': mapzen_settings}]])
+        if PELIAS_API_KEY is not None:
+            pelias_settings = dict(api_key=PELIAS_API_KEY)
+            self.g_pelias = Geocoder([['omgeo.services.Pelias', {'settings': pelias_settings}]])
 
         if GOOGLE_API_KEY is not None:
             self.g_google = Geocoder([['omgeo.services.Google',
@@ -237,10 +236,10 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g_mapquest_ssl.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
-    @unittest.skipIf(MAPZEN_API_KEY is None, MAPZEN_KEY_REQUIRED_MSG)
-    def test_geocode_mapzen(self):
-        """Test Azavea's address using Mapzen geocoder"""
-        candidates = self.g_mapzen.get_candidates(self.pq['azavea'])
+    @unittest.skipIf(PELIAS_API_KEY is None, PELIAS_KEY_REQUIRED_MSG)
+    def test_geocode_pelias(self):
+        """Test Azavea's address using Pelias geocoder"""
+        candidates = self.g_pelias.get_candidates(self.pq['azavea'])
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     @unittest.skip("FIXME")
