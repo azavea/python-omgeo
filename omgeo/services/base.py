@@ -163,7 +163,7 @@ class GeocodeService():
         Otherwise, return a response object from JSON.
         """
         response = self._get_response(endpoint, query)
-        content = response.read()
+        content = response.read().decode("utf-8")
         try:
             return loads(content)
         except ValueError:
