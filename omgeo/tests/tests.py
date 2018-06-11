@@ -143,7 +143,8 @@ class GeocoderTest(OmgeoTestCase):
         self.g_esri_wgs_postal_ok = Geocoder(GEOCODERS_POSTAL_OK)
 
         #: geocoder with fast timeout
-        self.impatient_geocoder = Geocoder([['omgeo.services.EsriWGS', {'settings': {'timeout': 0.01}}]])
+        self.impatient_geocoder = Geocoder(
+            [['omgeo.services.EsriWGS', {'settings': {'timeout': 0.001}}]])
 
     def tearDown(self):
         pass

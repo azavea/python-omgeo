@@ -26,6 +26,8 @@ setup(
         'Programming Language :: Python :: 2.6'
     ],
     dependency_links=[],
-    install_requires=[],
+    install_requires=[
+        'requests >= 2.18',
+    ],
     test_suite='omgeo.tests.tests',
 )
