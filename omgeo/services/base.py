@@ -2,18 +2,17 @@ import copy
 from datetime import datetime
 from json import loads
 import logging
-import socket
 from traceback import format_exc
 from xml.dom import minidom
+
+import requests
 
 try:
     # python 3
     from urllib.parse import urlencode
-    from urllib.request import urlopen, Request
 except ImportError:
     # python 2
     from urllib import urlencode
-    from urllib2 import urlopen, Request
 
 logger = logging.getLogger(__name__)
 
@@ -141,20 +140,22 @@ class GeocodeService():
         headers = self._settings.get('request_headers', {})
         try:
             if is_post:
-                request = Request(endpoint, data=urlencode(query), headers=headers)
+                response = requests.post(
+                    endpoint, data=query, headers=headers, timeout=timeout_secs)
             else:
-                request = Request('%s?%s' % (endpoint, urlencode(query)), headers=headers)
-            response = urlopen(request, timeout=timeout_secs)
-        except Exception as ex:
-            if type(ex) == socket.timeout:
-                raise Exception('API request timed out after %s seconds.' % timeout_secs)
-            else:
-                raise ex
-        if response.code != 200:
+                response = requests.get(
+                    endpoint, params=query, headers=headers, timeout=timeout_secs)
+        except requests.exceptions.Timeout as e:
+            raise Exception(
+                'API request timed out after %s seconds.' % timeout_secs)
+        except Exception as e:
+            raise e
+
+        if response.status_code != 200:
             raise Exception('Received status code %s from %s. Content is:\n%s'
-                            % (response.code,
+                            % (response.status_code,
                                self.get_service_name(),
-                               response.read()))
+                               response.text))
         return response
 
     def _get_json_obj(self, endpoint, query, is_post=False):
@@ -162,21 +163,21 @@ class GeocodeService():
         Return False if connection could not be made.
         Otherwise, return a response object from JSON.
         """
-        response = self._get_response(endpoint, query)
-        content = response.read()
+        response = self._get_response(endpoint, query, is_post=is_post)
+        content = response.text
         try:
             return loads(content)
         except ValueError:
             raise Exception('Could not decode content to JSON:\n%s'
                             % self.__class__.__name__, content)
 
-    def _get_xml_doc(self, endpoint, query):
+    def _get_xml_doc(self, endpoint, query, is_post=False):
         """
         Return False if connection could not be made.
         Otherwise, return a minidom Document.
         """
-        response = self._get_response(endpoint, query)
-        return minidom.parse(response)
+        response = self._get_response(endpoint, query, is_post=is_post)
+        return minidom.parse(response.text)
 
     def _geocode(self, place_query):
         """

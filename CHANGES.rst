@@ -196,3 +196,7 @@ v4.1.0, 2018-03-19
 v5.0.0, 2018-03-29
 ------------------
  * Rename Mapzen geocoder to Pelias
+
+v5.1.0, 2018-06-19
+------------------
+ * Add HTTP/S support via Requests library
