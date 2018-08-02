@@ -378,6 +378,10 @@ class GeocoderProcessorTest(OmgeoTestCase):
                                      score=99.9, x=-75.163, y=39.959)  # same y
         self.reading_term = Candidate(match_addr='1200 Arch St', locator='rooftop',
                                       score=99.9, x=-75.163, y=39.953)  # same x
+        self.with_address_types = Candidate(match_addr='123 Any St', locator='address',
+                                            entity_types=['address', 'place'])
+        self.with_nonsense_types = Candidate(match_addr='123 Any St', locator='address',
+                                             entity_types=['house', 'building'])
 
         self.locators_worse_to_better = ['address', 'parcel', 'rooftop']
 
@@ -591,6 +595,22 @@ class GeocoderProcessorTest(OmgeoTestCase):
                                    x=-75.158303781, y=39.959040684)]  # about 40m away
         candidates_exp = [candidates_in[0]]  # should just keep the first one.
         candidates_out = SnapPoints(distance=50).process(candidates_in)
+        self.assertEqual_(candidates_out, candidates_exp)
+
+    def test_pro_filter_AttrListIncludes(self):
+        """Test AttrListIncludes postprocessor."""
+        good_values = ['address']
+        candidates_in = [self.with_address_types, self.with_nonsense_types]
+        candidates_exp = [self.with_address_types]
+        candidates_out = AttrListIncludes(good_values, 'entity_types').process(candidates_in)
+        self.assertEqual_(candidates_out, candidates_exp)
+
+    def test_pro_filter_AttrListExcludes(self):
+        """Test AttrListExcludes postprocessor."""
+        bad_values = ['house']
+        candidates_in = [self.with_address_types, self.with_nonsense_types]
+        candidates_exp = [self.with_address_types]
+        candidates_out = AttrListExcludes(bad_values, 'entity_types').process(candidates_in)
         self.assertEqual_(candidates_out, candidates_exp)
 
 

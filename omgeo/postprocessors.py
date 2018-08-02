@@ -271,7 +271,7 @@ class AttrMigrator(_PostProcessor):
 
 class AttrFilter(_PostProcessor):
     """
-    PostProcessor used to ditch results with unwanted attribute values.
+    PostProcessor used to filter out results without desired attribute values.
     """
 
     def __init__(self, good_values=[], attr='locator', exact_match=True):
@@ -301,7 +301,7 @@ class AttrFilter(_PostProcessor):
 
 class AttrExclude(_PostProcessor):
     """
-    PostProcessor used to ditch results with unwanted attribute values.
+    PostProcessor used to filter out results with unwanted attribute values.
     """
 
     def __init__(self, bad_values=[], attr='locator', exact_match=True):
@@ -327,6 +327,54 @@ class AttrExclude(_PostProcessor):
     def __repr__(self):
         return '<%s: %s %s in %s>' % \
             (self.__class__.__name__, self.is_exact(), self.attr, self.bad_values)
+
+
+class AttrListIncludes(_PostProcessor):
+    """
+    PostProcessor used to filter out results without desired attribute list items.
+
+    Similar to `AttrFilter` but operates on attributes containing lists instead of scalar values.
+    """
+
+    def __init__(self, good_values=[], attr='entity_types'):
+        """
+        :arg list good_values: A list of values, one of which must be in the
+                               attribute being filtered on (default [])
+        :arg string attr: The attribute on which to filter
+        """
+        self._init_helper(vars())
+
+    def process(self, candidates):
+        return [c for c in candidates if any(gv in getattr(c, self.attr)
+                                             for gv in self.good_values)]
+
+    def __repr__(self):
+        return '<%s: %s %s in %s>' % \
+            (self.__class__.__name__, self.attr, self.good_values)
+
+
+class AttrListExcludes(_PostProcessor):
+    """
+    PostProcessor used to ditch results with unwanted attribute list items.
+
+    Similar to `AttrExclude` but operates on attributes containing lists instead of scalar values.
+    """
+
+    def __init__(self, bad_values=[], attr='entity_types'):
+        """
+        :arg list bad_values: A list of values, which cannot be in the
+                              attribute being filtered on (default [])
+        :arg string attr: The attribute on which to filter
+        """
+        self._init_helper(vars())
+
+    def process(self, candidates):
+        return [c for c in candidates if not any(bv in getattr(c, self.attr)
+                                                 for bv in self.bad_values)]
+
+    def __repr__(self):
+        return '<%s: %s %s in %s>' % \
+            (self.__class__.__name__, self.attr, self.bad_values)
 
 
 class DupePicker(_PostProcessor):
