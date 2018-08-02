@@ -200,3 +200,8 @@ v5.0.0, 2018-03-29
 v5.1.0, 2018-06-19
 ------------------
  * Add HTTP/S support via Requests library
+
+v6.0.0, 2018-06-19
+------------------
+ * Exclude people/business results from the Google service. This is a *breaking
+   change*.

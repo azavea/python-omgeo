@@ -10,7 +10,7 @@ from omgeo.preprocessors import (CancelIfPOBox, CancelIfRegexInAttr, CountryPreP
                                  RequireCountry, ParseSingleLine, ReplaceRangeWithNumber)
 from omgeo.postprocessors import (AttrFilter, AttrExclude, AttrRename,
                                   AttrSorter, AttrReverseSorter, UseHighScoreIfAtLeast,
-                                  GroupBy, ScoreSorter, SnapPoints)
+                                  GroupBy, ScoreSorter, SnapPoints, AttrListIncludes, AttrListExcludes)
 
 BING_MAPS_API_KEY = os.getenv("BING_MAPS_API_KEY")
 MAPQUEST_API_KEY = os.getenv("MAPQUEST_API_KEY")
@@ -78,6 +78,7 @@ class GeocoderTest(OmgeoTestCase):
             'quebec_hyphenated': PlaceQuery('227-227A Rue Commerciale, Saint-Louis-du-Ha! Ha! QC'),
             'senado_mx': PlaceQuery('Paseo de la Reforma 135, Tabacalera, Cuauhtémoc, Distrito Federal, 06030'),
             'senado_mx_struct': PlaceQuery(address='Paseo de la Reforma 135', neighborhood='Tabacalera, Cuauhtémoc', subregion='', state='Distrito Federal', postal='06030', country='MX'),
+            'robert_cheetham': PlaceQuery('Robert Cheetham, Philadelphia'),
             # European Addresses:
             'london_pieces': PlaceQuery(address='31 Maiden Lane', city='London', country='UK'),
             'london_one_line': PlaceQuery('31 Maiden Lane, London WC2E', country='UK'),
@@ -106,6 +107,10 @@ class GeocoderTest(OmgeoTestCase):
         if GOOGLE_API_KEY is not None:
             self.g_google = Geocoder([['omgeo.services.Google',
                                      {'settings': {'api_key': GOOGLE_API_KEY}}]])
+            self.g_google_wo_postprocess = Geocoder(
+                [['omgeo.services.Google',
+                  {'settings': {'api_key': GOOGLE_API_KEY}, 'postprocessors': []}]]
+            )
 
         #: main geocoder used for tests, using default APIs
         self.g = Geocoder()
@@ -348,9 +353,19 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g_google.get_candidates(PlaceQuery('York', country='US'))
         self.assertOneCandidate(candidates)
         self.assertEqual(candidates[0].match_region, 'PA')
-        candidates = self.g_google.get_candidates(PlaceQuery('York', country='UK'))
+        candidates = self.g_google_wo_postprocess.get_candidates(PlaceQuery('York', country='GB'))
         self.assertOneCandidate(candidates)
         self.assertEqual(candidates[0].match_country, 'GB')
+
+    @unittest.skipIf(GOOGLE_API_KEY is None, GOOGLE_KEY_REQUIRED_MSG)
+    def test_google_geocode_without_postprocessor_allows_people(self):
+        candidates = self.g_google_wo_postprocess.get_candidates(self.pq['robert_cheetham'])
+        self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
+
+    @unittest.skipIf(GOOGLE_API_KEY is None, GOOGLE_KEY_REQUIRED_MSG)
+    def test_google_geocode_excludes_people(self):
+        candidates = self.g_google.get_candidates(self.pq['robert_cheetham'])
+        self.assertEqual(len(candidates) == 0, True, 'Candidate(s) unexpectedly returned.')
 
 
 class GeocoderProcessorTest(OmgeoTestCase):
