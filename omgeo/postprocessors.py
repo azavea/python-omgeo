@@ -418,7 +418,6 @@ class DupePicker(_PostProcessor):
             attr_match = self.attr_dupes
             attr_match_test_val = cleanup(getattr(hsc, attr_match))
             # make a list of candidates that have essentially the same value for attr_match (like 123 Main & 123 MAIN)
-            #import IPython; IPython.embed()
             matching_candidates = [mc for mc in candidates if cleanup(getattr(mc, attr_match)) == attr_match_test_val]
             # sort them in the desired order so the first one has the best attribute value
             matching_candidates = AttrSorter(self.ordered_list, self.attr_sort).process(matching_candidates)
@@ -522,11 +521,11 @@ class SnapPoints(_PostProcessor):
         lat1, lon1 = pnt1
         lat2, lon2 = pnt2
         radius = 6356752  # km
-        dlat = math.radians(lat2-lat1)
-        dlon = math.radians(lon2-lon1)
-        a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
-            * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
-        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        dlat = math.radians(lat2 - lat1)
+        dlon = math.radians(lon2 - lon1)
+        a = math.sin(dlat / 2) * math.sin(dlat / 2) + math.cos(math.radians(lat1)) \
+            * math.cos(math.radians(lat2)) * math.sin(dlon / 2) * math.sin(dlon / 2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         d = radius * c
         return d
 

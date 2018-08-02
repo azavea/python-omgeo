@@ -1,1 +1,1 @@
-from .geocoder import Geocoder
+from .geocoder import Geocoder  # NOQA

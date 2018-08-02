@@ -20,7 +20,7 @@ class Nominatim(GeocodeService):
                                  'leisure.sports_centre', 'lesiure.stadium', 'leisure.track',
                                  'lesiure.water_park', 'man_made.lighthouse', 'man_made.works',
                                  'military.barracks', 'military.bunker', 'office.', 'place.house',
-                                 'amenity.',  'power.generator', 'railway.station',
+                                 'amenity.', 'power.generator', 'railway.station',
                                  'shop.', 'tourism.']
 
     DEFAULT_REJECTED_ENTITIES = ['amenity.drinking_water',

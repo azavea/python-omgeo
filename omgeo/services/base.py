@@ -7,12 +7,6 @@ from xml.dom import minidom
 
 import requests
 
-try:
-    # python 3
-    from urllib.parse import urlencode
-except ImportError:
-    # python 2
-    from urllib import urlencode
 
 logger = logging.getLogger(__name__)
 
@@ -226,7 +220,7 @@ class GeocodeService():
             end = datetime.now()
             response_time_sec = (end - start).total_seconds()
             upstream_response_info.set_response_time(1000 * response_time_sec)
-        except:
+        except Exception:
             upstream_response_info.set_success(False)
             upstream_response_info.errors.append(format_exc())
             return [], upstream_response_info
