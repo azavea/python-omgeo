@@ -2,7 +2,6 @@ import copy
 import logging
 from omgeo.places import PlaceQuery
 from omgeo.postprocessors import DupePicker, SnapPoints
-import time
 
 logger = logging.getLogger(__name__)
 stats_logger = logging.getLogger('omgeo.stats')
@@ -13,9 +12,10 @@ class Geocoder():
     Class for building a custom geocoder using external APIs.
     """
 
-    DEFAULT_SOURCES = [['omgeo.services.EsriWGS', {}],
-                       ['omgeo.services.Nominatim', {}]
-                      ]
+    DEFAULT_SOURCES = [
+        ['omgeo.services.EsriWGS', {}],
+        ['omgeo.services.Nominatim', {}]
+    ]
     DEFAULT_PREPROCESSORS = []
     DEFAULT_POSTPROCESSORS = [
         SnapPoints(),
@@ -96,7 +96,6 @@ class Geocoder():
                    * upstream_response_info - list of UpstreamResponseInfo objects
         """
 
-        start_time = time.time()
         waterfall = self.waterfall if waterfall is None else waterfall
         if type(pq) in (str, str):
             pq = PlaceQuery(pq)
@@ -104,8 +103,6 @@ class Geocoder():
 
         for p in self._preprocessors:  # apply universal address preprocessing
             processed_pq = p.process(processed_pq)
-            if not processed_pq:
-                return get_result()  # universal preprocessor rejects PlaceQuery
 
         upstream_response_info_list = []
         processed_candidates = []

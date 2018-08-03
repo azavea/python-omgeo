@@ -29,5 +29,6 @@ setup(
     install_requires=[
         'requests >= 2.18',
     ],
+    setup_requires=['flake8'],
     test_suite='omgeo.tests.tests',
 )

@@ -271,7 +271,7 @@ class AttrMigrator(_PostProcessor):
 
 class AttrFilter(_PostProcessor):
     """
-    PostProcessor used to ditch results with unwanted attribute values.
+    PostProcessor used to filter out results without desired attribute values.
     """
 
     def __init__(self, good_values=[], attr='locator', exact_match=True):
@@ -301,7 +301,7 @@ class AttrFilter(_PostProcessor):
 
 class AttrExclude(_PostProcessor):
     """
-    PostProcessor used to ditch results with unwanted attribute values.
+    PostProcessor used to filter out results with unwanted attribute values.
     """
 
     def __init__(self, bad_values=[], attr='locator', exact_match=True):
@@ -327,6 +327,54 @@ class AttrExclude(_PostProcessor):
     def __repr__(self):
         return '<%s: %s %s in %s>' % \
             (self.__class__.__name__, self.is_exact(), self.attr, self.bad_values)
+
+
+class AttrListIncludes(_PostProcessor):
+    """
+    PostProcessor used to filter out results without desired attribute list items.
+
+    Similar to `AttrFilter` but operates on attributes containing lists instead of scalar values.
+    """
+
+    def __init__(self, good_values=[], attr='entity_types'):
+        """
+        :arg list good_values: A list of values, one of which must be in the
+                               attribute being filtered on (default [])
+        :arg string attr: The attribute on which to filter
+        """
+        self._init_helper(vars())
+
+    def process(self, candidates):
+        return [c for c in candidates if any(gv in getattr(c, self.attr)
+                                             for gv in self.good_values)]
+
+    def __repr__(self):
+        return '<%s: %s %s in %s>' % \
+            (self.__class__.__name__, self.attr, self.good_values)
+
+
+class AttrListExcludes(_PostProcessor):
+    """
+    PostProcessor used to ditch results with unwanted attribute list items.
+
+    Similar to `AttrExclude` but operates on attributes containing lists instead of scalar values.
+    """
+
+    def __init__(self, bad_values=[], attr='entity_types'):
+        """
+        :arg list bad_values: A list of values, which cannot be in the
+                              attribute being filtered on (default [])
+        :arg string attr: The attribute on which to filter
+        """
+        self._init_helper(vars())
+
+    def process(self, candidates):
+        return [c for c in candidates if not any(bv in getattr(c, self.attr)
+                                                 for bv in self.bad_values)]
+
+    def __repr__(self):
+        return '<%s: %s %s in %s>' % \
+            (self.__class__.__name__, self.attr, self.bad_values)
 
 
 class DupePicker(_PostProcessor):
@@ -418,7 +466,6 @@ class DupePicker(_PostProcessor):
             attr_match = self.attr_dupes
             attr_match_test_val = cleanup(getattr(hsc, attr_match))
             # make a list of candidates that have essentially the same value for attr_match (like 123 Main & 123 MAIN)
-            #import IPython; IPython.embed()
             matching_candidates = [mc for mc in candidates if cleanup(getattr(mc, attr_match)) == attr_match_test_val]
             # sort them in the desired order so the first one has the best attribute value
             matching_candidates = AttrSorter(self.ordered_list, self.attr_sort).process(matching_candidates)
@@ -522,11 +569,11 @@ class SnapPoints(_PostProcessor):
         lat1, lon1 = pnt1
         lat2, lon2 = pnt2
         radius = 6356752  # km
-        dlat = math.radians(lat2-lat1)
-        dlon = math.radians(lon2-lon1)
-        a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
-            * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
-        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        dlat = math.radians(lat2 - lat1)
+        dlon = math.radians(lon2 - lon1)
+        a = math.sin(dlat / 2) * math.sin(dlat / 2) + math.cos(math.radians(lat1)) \
+            * math.cos(math.radians(lat2)) * math.sin(dlon / 2) * math.sin(dlon / 2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         d = radius * c
         return d
 
