@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name="python-omgeo",
-    version="5.1.0",
+    version="6.0.0",
     description="Geocoding Library using ESRI, Bing Maps, and MapQuest geocoders",
     author="Azavea, Inc.",
     author_email="info@azavea.com",
@@ -29,5 +29,6 @@ setup(
     install_requires=[
         'requests >= 2.18',
     ],
+    setup_requires=['flake8'],
     test_suite='omgeo.tests.tests',
 )

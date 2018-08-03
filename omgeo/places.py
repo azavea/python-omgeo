@@ -101,13 +101,13 @@ class Viewbox():
             padding = num_spaces * ' '
             return '%s%s' % (padding, str_)
 
-        return    '          %s\n'\
-                  '        ------------\n'\
-                  '        |          |\n'\
-                  '%s|          |%s\n'\
-                  '        |          |\n'\
-                  '        ------------\n'\
-                  '          %s' % (lbl(top, 'C'), lbl(left, 'R'), lbl(right, 'L'), lbl(bottom, 'C'))
+        return '          %s\n'\
+               '        ------------\n'\
+               '        |          |\n'\
+               '%s|          |%s\n'\
+               '        |          |\n'\
+               '        ------------\n'\
+               '          %s' % (lbl(top, 'C'), lbl(left, 'R'), lbl(right, 'L'), lbl(bottom, 'C'))
 
 
 class PlaceQuery():

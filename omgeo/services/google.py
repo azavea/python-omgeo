@@ -3,6 +3,7 @@ import logging
 from .base import GeocodeService
 from omgeo.places import Candidate
 from omgeo.preprocessors import ComposeSingleLine
+from omgeo.postprocessors import AttrListExcludes
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,17 @@ class Google(GeocodeService):
 
     DEFAULT_PREPROCESSORS = [ComposeSingleLine()]
 
+    DEFAULT_POSTPROCESSORS = [
+        AttrListExcludes([
+            # The Google docs note "establishment" as: typically indicates a place
+            # that has not yet been categorized.
+            #
+            # In practice though, this seems to only appear when searching by a business / location name,
+            # or a person associated with a business or location
+            'establishment',
+        ], 'entity_types')
+    ]
+
     LOCATOR_MAPPING = {
         'ROOFTOP': 'rooftop',
         'RANGE_INTERPOLATED': 'interpolated',
@@ -22,6 +34,7 @@ class Google(GeocodeService):
 
     def __init__(self, preprocessors=None, postprocessors=None, settings=None):
         preprocessors = self.DEFAULT_PREPROCESSORS if preprocessors is None else preprocessors
+        postprocessors = self.DEFAULT_POSTPROCESSORS if postprocessors is None else postprocessors
         GeocodeService.__init__(self, preprocessors, postprocessors, settings)
 
     def _geocode(self, pq):
@@ -45,6 +58,7 @@ class Google(GeocodeService):
         candidate.x = result['geometry']['location']['lng']
         candidate.y = result['geometry']['location']['lat']
         candidate.locator = self.LOCATOR_MAPPING.get(result['geometry']['location_type'], '')
+        candidate.entity_types = result['types']
         candidate.partial_match = result.get('partial_match', False)
 
         component_lookups = {
