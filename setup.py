@@ -30,5 +30,4 @@ setup(
         'requests >= 2.18',
     ],
     test_suite='omgeo.tests.tests',
-    tests_require=['flake8'],
 )
