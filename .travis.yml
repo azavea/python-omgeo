@@ -8,7 +8,7 @@ python:
 
 script:
   - python setup.py test
-  - python setup.py flake8
+  - flake8
 
 deploy:
   provider: pypi
