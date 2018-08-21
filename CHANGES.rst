@@ -205,3 +205,8 @@ v6.0.0, 2018-08-03
 ------------------
  * Exclude people/business results from the Google service. This is a *breaking
    change*.
+
+v6.0.1, 2018-08-21
+------------------
+ * Remove `flake8` as a setup dependency, it was only intended to be required
+   for development.
