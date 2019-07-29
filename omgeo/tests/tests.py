@@ -296,10 +296,10 @@ class GeocoderTest(OmgeoTestCase):
             True, 'Could not find bldg. no. "102" and postcode "6012" in any address.')
 
     def _test_address_components(self, candidate):
-            for field in ['match_streetaddr', 'match_city', 'match_subregion', 'match_region',
-                          'match_postal', 'match_country']:
-                self.assertIsNotNone(getattr(candidate, field, None),
-                                     msg='Missing address component %s' % field)
+        for field in ['match_streetaddr', 'match_city', 'match_subregion', 'match_region',
+                      'match_postal', 'match_country']:
+            self.assertIsNotNone(getattr(candidate, field, None),
+                                 msg='Missing address component %s' % field)
 
     def _test_geocode_results_all_(self, verbosity=0, geocoder=Geocoder(),
                                    expected_results=16):
