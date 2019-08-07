@@ -23,7 +23,8 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Topic :: Scientific/Engineering :: GIS',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 2.6'
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 3'
     ],
     dependency_links=[],
     install_requires=[

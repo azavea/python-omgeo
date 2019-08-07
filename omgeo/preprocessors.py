@@ -42,7 +42,7 @@ class ReplaceRangeWithNumber(_PreProcessor):
     #:  * 789-91
     #:  * 201A-201B
     #:  * 201A-B
-    RE_STREET_NUMBER = re.compile('(^\d+\w*-\d*\w*)\s', re.IGNORECASE)
+    RE_STREET_NUMBER = re.compile(r'(^\d+\w*-\d*\w*)\s', re.IGNORECASE)
 
     def replace_range(self, addr_str):
         match = self.RE_STREET_NUMBER.match(addr_str)
@@ -67,10 +67,10 @@ class ParseSingleLine(_PreProcessor):
     Adapted from `Cicero Live <http://azavea.com/packages/azavea_cicero/blocks/cicero_live/view.js>`_
     """
     # Some Regexes:
-    re_unit_numbered = re.compile('(su?i?te|p\W*[om]\W*b(?:ox)?|(?:ap|dep)(?:ar)?t(?:me?nt)?|ro*m|flo*r?|uni?t|bu?i?ldi?n?g|ha?nga?r|lo?t|pier|slip|spa?ce?|stop|tra?i?le?r|bo?x|no\.?)\s+|#', re.IGNORECASE)
-    re_unit_not_numbered = re.compile('ba?se?me?n?t|fro?nt|lo?bby|lowe?r|off?i?ce?|pe?n?t?ho?u?s?e?|rear|side|uppe?r', re.IGNORECASE)
-    re_UK_postcode = re.compile('[A-Z]{1,2}[0-9R][0-9A-Z]? *[0-9][A-Z]{0,2}', re.IGNORECASE)
-    re_blank = re.compile('\s')
+    re_unit_numbered = re.compile(r'(su?i?te|p\W*[om]\W*b(?:ox)?|(?:ap|dep)(?:ar)?t(?:me?nt)?|ro*m|flo*r?|uni?t|bu?i?ldi?n?g|ha?nga?r|lo?t|pier|slip|spa?ce?|stop|tra?i?le?r|bo?x|no\.?)\s+|#', re.IGNORECASE)
+    re_unit_not_numbered = re.compile(r'ba?se?me?n?t|fro?nt|lo?bby|lowe?r|off?i?ce?|pe?n?t?ho?u?s?e?|rear|side|uppe?r', re.IGNORECASE)
+    re_UK_postcode = re.compile(r'[A-Z]{1,2}[0-9R][0-9A-Z]? *[0-9][A-Z]{0,2}', re.IGNORECASE)
+    re_blank = re.compile(r'\s')
 
     def _comma_join(self, left, right):
         if left == '':
@@ -94,7 +94,7 @@ class ParseSingleLine(_PreProcessor):
 
             query_parts = [part.strip() for part in pq.query.split(',')]
 
-            if postcode is not '' and re.search(postcode, query_parts[0]):
+            if postcode != '' and re.search(postcode, query_parts[0]):
                 # if postcode is in the first part of query_parts, there are probably no commas
                 # get just the part before the postcode
                 part_before_postcode = query_parts[0].split(postcode)[0].strip()
@@ -107,7 +107,7 @@ class ParseSingleLine(_PreProcessor):
 
             for part in query_parts[1:]:
                 part = part.strip()
-                if postcode is not '' and re.search(postcode, part) is not None:
+                if postcode != '' and re.search(postcode, part) is not None:
                     part = part.replace(postcode, '').strip()  # if postcode is in part, remove it
 
                 if self.re_unit_numbered.search(part) is not None:

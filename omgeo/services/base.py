@@ -139,9 +139,8 @@ class GeocodeService():
             else:
                 response = requests.get(
                     endpoint, params=query, headers=headers, timeout=timeout_secs)
-        except requests.exceptions.Timeout as e:
-            raise Exception(
-                'API request timed out after %s seconds.' % timeout_secs)
+        except requests.exceptions.Timeout:
+            raise Exception('API request timed out after %s seconds.' % timeout_secs)
         except Exception as e:
             raise e
 
