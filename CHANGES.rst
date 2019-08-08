@@ -210,3 +210,7 @@ v6.0.1, 2018-08-21
 ------------------
  * Remove `flake8` as a setup dependency, it was only intended to be required
    for development.
+
+v6.0.2, 2019-08-07
+------------------
+ * Add classifier to setup.py to reflect Python 3 support

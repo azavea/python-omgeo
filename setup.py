@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name="python-omgeo",
-    version="6.0.1",
+    version="6.0.2",
     description="Geocoding Library using ESRI, Google, Bing Maps, US Census, OpenStreetMap, Pelias, and MapQuest geocoders",
     author="Azavea, Inc.",
     author_email="info@azavea.com",
@@ -23,7 +23,8 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Topic :: Scientific/Engineering :: GIS',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 2.6'
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 3'
     ],
     dependency_links=[],
     install_requires=[
