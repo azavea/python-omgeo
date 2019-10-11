@@ -200,9 +200,14 @@ class CancelIfRegexInAttr(_PreProcessor):
         :arg bool ignorecase: set to ``False`` for a case-sensitive match (default ``True``)
         """
         regex_type = type(regex)
-        if type(regex) not in (str, str):
+        try:
+            # To make this a py2/py3-compatible check without having to require `future` or
+            # `six`, check `unicode` separately so that it only happens if the value has
+            # already failed to match the py3-compatible types.
+            assert(regex_type in (str, bytes) or regex_type is unicode)
+        except (AssertionError, NameError):
             raise Exception('First param "regex" must be a regex of type'
-                            ' str or unicode, not %s.' % regex_type)
+                            ' str, bytes, or unicode, not %s.' % regex_type)
         attrs_type = type(attrs)
         if attrs_type not in (list, tuple):
             raise Exception('Second param "attrs" must be a list or tuple'
@@ -217,7 +222,10 @@ class CancelIfRegexInAttr(_PreProcessor):
 
     def process(self, pq):
         attrs = [getattr(pq, attr) for attr in self.attrs if hasattr(pq, attr)]
-        if any([self.regex.match(attr) is not None for attr in attrs]):
+        # Get the string type of the regex pattern and cast the keys to that to avoid
+        # incompatibility
+        regex_type = type(self.regex.pattern)
+        if any([self.regex.match(regex_type(attr)) is not None for attr in attrs]):
             return False  # if a match is found
         return pq
 
