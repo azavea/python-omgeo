@@ -6,6 +6,12 @@ from omgeo.postprocessors import DupePicker, SnapPoints
 logger = logging.getLogger(__name__)
 stats_logger = logging.getLogger('omgeo.stats')
 
+# Python 2/3 compatibility: set up 'unicode' for use in string type checking
+try:
+    unicode
+except NameError:
+    unicode = str
+
 
 class Geocoder():
     """
@@ -97,7 +103,7 @@ class Geocoder():
         """
 
         waterfall = self.waterfall if waterfall is None else waterfall
-        if type(pq) in (str, str):
+        if type(pq) in (str, unicode):
             pq = PlaceQuery(pq)
         processed_pq = copy.copy(pq)
 
