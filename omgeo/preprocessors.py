@@ -1,6 +1,12 @@
 from omgeo.processor import _Processor
 import re
 
+# Python 2/3 compatibility: set up 'unicode' for use in string type checking
+try:
+    unicode
+except NameError:
+    unicode = str
+
 
 class _PreProcessor(_Processor):
     """Takes, processes, and returns a geocoding.places.PlaceQuery object."""
@@ -200,14 +206,14 @@ class CancelIfRegexInAttr(_PreProcessor):
         :arg bool ignorecase: set to ``False`` for a case-sensitive match (default ``True``)
         """
         regex_type = type(regex)
-        if type(regex) not in (str, str):
+        if type(regex) not in (str, unicode):
             raise Exception('First param "regex" must be a regex of type'
                             ' str or unicode, not %s.' % regex_type)
         attrs_type = type(attrs)
         if attrs_type not in (list, tuple):
             raise Exception('Second param "attrs" must be a list or tuple'
                             ' of PlaceQuery attributes, not %s.' % attrs_type)
-        if any(type(attr) not in (str, str) for attr in attrs):
+        if any(type(attr) not in (str, unicode) for attr in attrs):
             raise Exception('All given PlaceQuery attributes must be strings.')
         self.attrs = attrs
         if ignorecase:
@@ -217,8 +223,14 @@ class CancelIfRegexInAttr(_PreProcessor):
 
     def process(self, pq):
         attrs = [getattr(pq, attr) for attr in self.attrs if hasattr(pq, attr)]
-        if any([self.regex.match(attr) is not None for attr in attrs]):
-            return False  # if a match is found
+        for attr in attrs:
+            # Handle string type mismatch by decoding if the first attempt raises TypeError
+            try:
+                match = self.regex.match(attr)
+            except TypeError:
+                match = self.regex.match(attr.decode())
+            if match is not None:
+                return False  # don't return the placequery if any match is found
         return pq
 
     def __repr__(self):
