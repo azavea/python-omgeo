@@ -2,6 +2,12 @@ from omgeo.processor import _Processor
 import math
 from operator import attrgetter
 
+# Python 2/3 compatibility: set up 'unicode' for use in string type checking
+try:
+    unicode
+except NameError:
+    unicode = str
+
 
 class _PostProcessor(_Processor):
     """Takes, processes, and returns list of geocoding.places.Candidate objects."""
@@ -451,7 +457,7 @@ class DupePicker(_PostProcessor):
     def process(self, candidates):
         def cleanup(str_):
             """Returns string in uppercase and free of commas."""
-            if type(str_) in [str, str]:
+            if type(str_) in (str, unicode):
                 return str_.replace(',', '').upper()
             return str_
 
