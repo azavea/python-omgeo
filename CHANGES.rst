@@ -214,3 +214,7 @@ v6.0.1, 2018-08-21
 v6.0.2, 2019-08-07
 ------------------
  * Add classifier to setup.py to reflect Python 3 support
+
+v6.0.3, 2019-10-14
+------------------
+ * Improve handling of different string types across Python versions
