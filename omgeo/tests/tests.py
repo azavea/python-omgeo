@@ -436,21 +436,21 @@ class GeocoderProcessorTest(OmgeoTestCase):
 
     def test_pro_CancelIfRegexInAttr_all_unicode(self):
         """Test CancelIfRegexInAttr preprocessor using unicode query, regex, and attrs."""
-        place_in = PlaceQuery(u'PO Box 123, Philadelphia, PA')
+        place_in = PlaceQuery(u'PO Box 123, Lindström, MN')
         place_out = CancelIfRegexInAttr(regex=u"po box", attrs=(u'query',)).process(place_in)
         place_exp = False
         self.assertEqual_(place_out, place_exp)
 
     def test_pro_CancelIfRegexInAttr_unicode_query(self):
         """Test CancelIfRegexInAttr preprocessor using unicode query and default regex/attrs."""
-        place_in = PlaceQuery(u'PO Box 123, Philadelphia, PA')
+        place_in = PlaceQuery(u'PO Box 123, Lindström, MN')
         place_out = CancelIfRegexInAttr(regex="po box", attrs=('query',)).process(place_in)
         place_exp = False
         self.assertEqual_(place_out, place_exp)
 
     def test_pro_CancelIfRegexInAttr_unicode_args(self):
         """Test CancelIfRegexInAttr preprocessor using bytestring query and unicode regex/attrs."""
-        place_in = PlaceQuery(b'PO Box 123, Philadelphia, PA')
+        place_in = PlaceQuery(u'PO Box 123, Lindström, MN'.encode("utf-8"))
         # Test all 3 combinations for completeness, but only test the result once since if they
         # fail it will be by raising exceptions
         place_out = CancelIfRegexInAttr(regex=u"po box", attrs=('query',)).process(place_in)
