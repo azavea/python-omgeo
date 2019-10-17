@@ -355,7 +355,7 @@ class AttrListIncludes(_PostProcessor):
                                              for gv in self.good_values)]
 
     def __repr__(self):
-        return '<%s: %s %s in %s>' % \
+        return '<%s: %s in %s>' % \
             (self.__class__.__name__, self.attr, self.good_values)
 
 
@@ -379,7 +379,7 @@ class AttrListExcludes(_PostProcessor):
                                                  for bv in self.bad_values)]
 
     def __repr__(self):
-        return '<%s: %s %s in %s>' % \
+        return '<%s: %s in %s>' % \
             (self.__class__.__name__, self.attr, self.bad_values)
 
 
