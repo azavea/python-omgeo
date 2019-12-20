@@ -218,3 +218,7 @@ v6.0.2, 2019-08-07
 v6.0.3, 2019-10-14
 ------------------
  * Improve handling of different string types across Python versions
+
+v6.0.4, 2019-12-19
+------------------
+ * Fix template string error in AttrListIncludes and AttrListExcludes __repr__
