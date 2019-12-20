@@ -228,7 +228,7 @@ class CancelIfRegexInAttr(_PreProcessor):
             try:
                 match = self.regex.match(attr)
             except TypeError:
-                match = self.regex.match(attr.decode())
+                match = self.regex.match(attr.decode("utf-8"))
             if match is not None:
                 return False  # don't return the placequery if any match is found
         return pq
