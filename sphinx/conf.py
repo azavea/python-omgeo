@@ -48,7 +48,7 @@ copyright = '2012-2018 Azavea'
 # built documents.
 #
 # The short X.Y version.
-version = '6.0.3'
+version = '6.0.4'
 # The full version, including alpha/beta/rc tags.
 release = version
 
