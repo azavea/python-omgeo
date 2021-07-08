@@ -13,7 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.6", "3.7", "3.8"]
+        # TODO: Running the full matrix seems to make the US Census Geocoder
+        # more likely to return errors; running a single one is more likely
+        # to succeed. This is disabled temporarily. Tracking issue:
+        # https://github.com/azavea/python-omgeo/issues/66
+        # python-version: ["3.6", "3.7", "3.8"]
+        python-version: ["3.8"]
     steps:
       - uses: actions/checkout@v2
 
