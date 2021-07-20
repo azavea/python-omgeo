@@ -128,7 +128,7 @@ class GeocoderTest(OmgeoTestCase):
         if MAPQUEST_API_KEY is not None:  # MapQuest's open Nominatime API now also requires a key
             self.g_nom = Geocoder([['omgeo.services.Nominatim', {}]])
 
-        self.g_census = Geocoder([['omgeo.services.USCensus', {}]])
+        self.g_census = Geocoder([['omgeo.services.USCensus', {'settings': {'timeout': 30}}]])
 
         ESRI_WGS_LOCATOR_MAP = {'PointAddress': 'rooftop',
                                 'StreetAddress': 'interpolation',
@@ -223,6 +223,16 @@ class GeocoderTest(OmgeoTestCase):
         """Test that using authentication with the ESRI WGS geocoder is working"""
         candidates = self.g_esri_wgs_auth.get_candidates(self.pq['azavea'])
         self.assertOneCandidate(candidates)
+
+    def test_esri_short_region(self):
+        """Ensure that Esri uses region abbreviations"""
+        candidate = self.g_esri_wgs.get_candidates(self.pq["azavea"])[0]
+        self.assertEqual(candidate.match_region, "PA")
+
+    def test_google_short_region(self):
+        """Ensure that Google uses region abbreviations"""
+        candidate = self.g_google.get_candidates(self.pq["azavea"])[0]
+        self.assertEqual(candidate.match_region, "PA")
 
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_bing(self):

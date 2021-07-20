@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+  pull_request:
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # TODO: Running the full matrix seems to make the US Census Geocoder
+        # more likely to return errors; running a single one is more likely
+        # to succeed. This is disabled temporarily. Tracking issue:
+        # https://github.com/azavea/python-omgeo/issues/66
+        # python-version: ["3.6", "3.7", "3.8"]
+        python-version: ["3.8"]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('setup.cfg') }}-${{ hashFiles('tox.ini') }}
+          restore-keys: pip-
+
+      - name: Install packages
+        run: pip install flake8
+
+      - name: Lint
+        run: flake8
+
+      - name: Run tests
+        run: python setup.py test
+        env:
+          BING_MAPS_API_KEY: ${{ secrets.BING_MAPS_API_KEY }}
+          ESRI_CLIENT_ID: ${{ secrets.ESRI_CLIENT_ID }}
+          ESRI_CLIENT_SECRET: ${{ secrets.ESRI_CLIENT_SECRET }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          MAPQUEST_API_KEY: ${{ secrets.MAPQUEST_API_KEY }}
+          PELIAS_API_KEY: ${{ secrets.PELIAS_API_KEY }}
+
