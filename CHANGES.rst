@@ -222,3 +222,9 @@ v6.0.3, 2019-10-14
 v6.0.4, 2019-12-19
 ------------------
  * Fix template string error in AttrListIncludes and AttrListExcludes __repr__
+
+v6.1.0, 2021-07-20
+------------------
+ * Populate match_region using RegionAbbr rather than Region from EsriWGS. For
+   example, when using the EsriWGS geocoder, expect 'PA' rather than
+   'Pennsylvania' in match_region.
