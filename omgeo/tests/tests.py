@@ -224,6 +224,16 @@ class GeocoderTest(OmgeoTestCase):
         candidates = self.g_esri_wgs_auth.get_candidates(self.pq['azavea'])
         self.assertOneCandidate(candidates)
 
+    def test_esri_short_region(self):
+        """Ensure that Esri uses region abbreviations"""
+        candidate = self.g_esri_wgs.get_candidates(self.pq["azavea"])[0]
+        self.assertEqual(candidate.match_region, "PA")
+
+    def test_google_short_region(self):
+        """Ensure that Google uses region abbreviations"""
+        candidate = self.g_google.get_candidates(self.pq["azavea"])[0]
+        self.assertEqual(candidate.match_region, "PA")
+
     @unittest.skipIf(BING_MAPS_API_KEY is None, BING_KEY_REQUIRED_MSG)
     def test_geocode_bing(self):
         """Test Azavea's address using Bing geocoder"""

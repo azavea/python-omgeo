@@ -126,7 +126,7 @@ class EsriWGS(GeocodeService):
                      # 'AddBldg',
                      'City',
                      'Subregion',
-                     'Region',
+                     'RegionAbbr',
                      'Postal',
                      'Country',
                      # 'Ymax',
@@ -205,7 +205,7 @@ class EsriWGS(GeocodeService):
 
                 # Optional address component fields.
                 for in_key, out_key in [('City', 'match_city'), ('Subregion', 'match_subregion'),
-                                        ('Region', 'match_region'), ('Postal', 'match_postal'),
+                                        ('RegionAbbr', 'match_region'), ('Postal', 'match_postal'),
                                         ('Country', 'match_country')]:
                     setattr(c, out_key, attributes.get(in_key, ''))
                 setattr(c, 'match_streetaddr', self._street_addr_from_response(attributes))
