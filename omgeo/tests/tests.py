@@ -128,7 +128,7 @@ class GeocoderTest(OmgeoTestCase):
         if MAPQUEST_API_KEY is not None:  # MapQuest's open Nominatime API now also requires a key
             self.g_nom = Geocoder([['omgeo.services.Nominatim', {}]])
 
-        self.g_census = Geocoder([['omgeo.services.USCensus', {}]])
+        self.g_census = Geocoder([['omgeo.services.USCensus', {'settings': {'timeout': 30}}]])
 
         ESRI_WGS_LOCATOR_MAP = {'PointAddress': 'rooftop',
                                 'StreetAddress': 'interpolation',
