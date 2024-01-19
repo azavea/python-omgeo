@@ -55,6 +55,7 @@ class EsriWGS(GeocodeService):
     DEFAULT_POSTPROCESSORS = [
         AttrFilter(['PointAddress',
                     'StreetAddress',
+                    'Locality',
                     # 'PostalExt',
                     # 'Postal'
                     ],
@@ -62,6 +63,7 @@ class EsriWGS(GeocodeService):
         # AttrExclude(['USA_Postal'], 'locator'), #accept postal from everywhere but US (need PostalExt)
         AttrSorter(['PointAddress',
                     'StreetAddress',
+                    'Locality',
                     # 'PostalExt',
                     # 'Postal'
                     ],
