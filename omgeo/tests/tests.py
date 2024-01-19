@@ -208,6 +208,16 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual('340 N 12th' in candidates[0].match_addr, True,
                          '"340 N 12th" not found in match_addr. Got "%s"' % candidates[0].match_addr)
 
+    def test_geocode_esri_wgs_magicKey(self):
+        """Check that geocoding New York, USA with a magicKey returns one result."""
+        esri = self.g_esri_wgs._sources[0]
+        suggestions = esri._get_json_obj(
+            f'{esri._endpoint}/suggest',
+            {'f': 'json', 'text': 'New York, USA'})['suggestions']
+        pq = PlaceQuery(suggestions[0]['text'], key=suggestions[0]['magicKey'])
+        candidates = self.g_esri_wgs.get_candidates(pq)
+        self.assertOneCandidate(candidates)
+
     def test_geocode_esri_wgs_zip_plus_4(self):
         """Check that geocoding 19127-1112 returns one result."""
         candidates = self.g_esri_wgs_postal_ok.get_candidates(self.pq['zip_plus_4_in_postal_plus_country'])
