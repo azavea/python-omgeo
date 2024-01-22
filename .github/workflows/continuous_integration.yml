@@ -42,11 +42,11 @@ jobs:
 
       - name: Run tests
         run: python setup.py test
-        env:
-          BING_MAPS_API_KEY: ${{ secrets.BING_MAPS_API_KEY }}
-          ESRI_CLIENT_ID: ${{ secrets.ESRI_CLIENT_ID }}
-          ESRI_CLIENT_SECRET: ${{ secrets.ESRI_CLIENT_SECRET }}
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          MAPQUEST_API_KEY: ${{ secrets.MAPQUEST_API_KEY }}
-          PELIAS_API_KEY: ${{ secrets.PELIAS_API_KEY }}
+        # env:
+          # BING_MAPS_API_KEY: ${{ secrets.BING_MAPS_API_KEY }}
+          # ESRI_CLIENT_ID: ${{ secrets.ESRI_CLIENT_ID }}
+          # ESRI_CLIENT_SECRET: ${{ secrets.ESRI_CLIENT_SECRET }}
+          # GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          # MAPQUEST_API_KEY: ${{ secrets.MAPQUEST_API_KEY }}
+          # PELIAS_API_KEY: ${{ secrets.PELIAS_API_KEY }}
 
