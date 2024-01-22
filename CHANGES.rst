@@ -228,3 +228,10 @@ v6.1.0, 2021-07-20
  * Populate match_region using RegionAbbr rather than Region from EsriWGS. For
    example, when using the EsriWGS geocoder, expect 'PA' rather than
    'Pennsylvania' in match_region.
+
+v6.2.0, 2024-01-22
+------------------
+ * Fix /findAddressCandidates calls for EsriWGS when using magicKey. They
+   previously would provide an internal Loc_name field in the response which
+   is no longer supplied, which broke the API. Making that field optional in
+   our code fixes this.
