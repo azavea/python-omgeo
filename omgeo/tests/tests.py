@@ -239,6 +239,7 @@ class GeocoderTest(OmgeoTestCase):
         candidate = self.g_esri_wgs.get_candidates(self.pq["azavea"])[0]
         self.assertEqual(candidate.match_region, "PA")
 
+    @unittest.skipIf(GOOGLE_API_KEY is None, GOOGLE_KEY_REQUIRED_MSG)
     def test_google_short_region(self):
         """Ensure that Google uses region abbreviations"""
         candidate = self.g_google.get_candidates(self.pq["azavea"])[0]
@@ -282,8 +283,8 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     def test_geocode_census(self):
-        """Test Azavea's address using US Census geocoder."""
-        candidates = self.g_census.get_candidates(PlaceQuery('1200 Callowhill St, Philadelphia, PA'))
+        """Test Element 84's address using US Census geocoder."""
+        candidates = self.g_census.get_candidates(PlaceQuery('210 N. Lee Street, Alexandria, VA'))
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     def test_EsriWGS_address_components(self):
