@@ -55,6 +55,7 @@ class EsriWGS(GeocodeService):
     DEFAULT_POSTPROCESSORS = [
         AttrFilter(['PointAddress',
                     'StreetAddress',
+                    'Locality',
                     # 'PostalExt',
                     # 'Postal'
                     ],
@@ -62,6 +63,7 @@ class EsriWGS(GeocodeService):
         # AttrExclude(['USA_Postal'], 'locator'), #accept postal from everywhere but US (need PostalExt)
         AttrSorter(['PointAddress',
                     'StreetAddress',
+                    'Locality',
                     # 'PostalExt',
                     # 'Postal'
                     ],
@@ -195,7 +197,7 @@ class EsriWGS(GeocodeService):
                 c = Candidate()
                 attributes = location['attributes']
                 c.match_addr = attributes['Match_addr']
-                c.locator = attributes['Loc_name']
+                c.locator = attributes.get('Loc_name', '')
                 c.locator_type = attributes['Addr_type']
                 c.score = attributes['Score']
                 c.x = attributes['DisplayX']  # represents the actual location of the address.
@@ -210,7 +212,8 @@ class EsriWGS(GeocodeService):
                     setattr(c, out_key, attributes.get(in_key, ''))
                 setattr(c, 'match_streetaddr', self._street_addr_from_response(attributes))
                 returned_candidates.append(c)
-        except KeyError:
+        except KeyError as e:
+            logger.warning('Missing key: ' + e)
             pass
         return returned_candidates
 

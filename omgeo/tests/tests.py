@@ -208,6 +208,16 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual('340 N 12th' in candidates[0].match_addr, True,
                          '"340 N 12th" not found in match_addr. Got "%s"' % candidates[0].match_addr)
 
+    def test_geocode_esri_wgs_magicKey(self):
+        """Check that geocoding New York, USA with a magicKey returns one result."""
+        esri = self.g_esri_wgs._sources[0]
+        suggestions = esri._get_json_obj(
+            f'{esri._endpoint}/suggest',
+            {'f': 'json', 'text': 'New York, USA'})['suggestions']
+        pq = PlaceQuery(suggestions[0]['text'], key=suggestions[0]['magicKey'])
+        candidates = self.g_esri_wgs.get_candidates(pq)
+        self.assertOneCandidate(candidates)
+
     def test_geocode_esri_wgs_zip_plus_4(self):
         """Check that geocoding 19127-1112 returns one result."""
         candidates = self.g_esri_wgs_postal_ok.get_candidates(self.pq['zip_plus_4_in_postal_plus_country'])
@@ -229,6 +239,7 @@ class GeocoderTest(OmgeoTestCase):
         candidate = self.g_esri_wgs.get_candidates(self.pq["azavea"])[0]
         self.assertEqual(candidate.match_region, "PA")
 
+    @unittest.skipIf(GOOGLE_API_KEY is None, GOOGLE_KEY_REQUIRED_MSG)
     def test_google_short_region(self):
         """Ensure that Google uses region abbreviations"""
         candidate = self.g_google.get_candidates(self.pq["azavea"])[0]
@@ -272,8 +283,8 @@ class GeocoderTest(OmgeoTestCase):
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     def test_geocode_census(self):
-        """Test Azavea's address using US Census geocoder."""
-        candidates = self.g_census.get_candidates(PlaceQuery('1200 Callowhill St, Philadelphia, PA'))
+        """Test Element 84's address using US Census geocoder."""
+        candidates = self.g_census.get_candidates(PlaceQuery('210 N. Lee Street, Alexandria, VA'))
         self.assertEqual(len(candidates) > 0, True, 'No candidates returned.')
 
     def test_EsriWGS_address_components(self):
